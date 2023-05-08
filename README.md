@@ -26,21 +26,23 @@ There are a few cases where you probably should _not_ use Kiki:
   While this is perfectly fine for 90% of use cases,
   it's sometimes insufficient for some particularly complex
   or poorly written grammars.
-- **You need semantic actions.**
-  Kiki does not support custom semantic actions.
-- **You want to generate the AST directly**.
+- **You want an _abstract_ syntax tree (AST)**.
+  Kiki does One Thing Well™: parsing.
 
-  Often, you ultimately want an _abstract_ syntax tree (AST)--a tree
-  that has a different structure than the grammar.
-  Kiki's parsers produce a _concrete_ syntax tree (CST)--a tree
-  that directly corresponds to the grammar.
+  Syntax analysis often requires at least 2 jobs.
+  The first is to parse the input.
+  The second is to convert the parse tree (i.e., the concrete syntax tree)
+  into a more developer-friendly form (i.e., the abstract syntax tree).
 
-  This means you must manually implement a CST-to-AST conversion algorithm
-  yourself.
-  If you are okay with this, then you can still use Kiki.
+  Many tools, like Bison, handle both of these jobs in one pass.
+  This sometimes leads to better performance.
+  However, this comes at the cost of greater tool complexity,
+  and weaker separation of concerns.
 
-  However, if you want to generate the AST in one pass
-  (without the intermediate CST), you should use lalrpop (or another more complex tool).
+  Kiki _only_ produces the parse tree.
+  If the developer wants to transform that tree
+  into another form (i.e., an AST), they must
+  implement that code themselves.
 
 ## Quasi-tutorial
 
