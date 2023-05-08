@@ -42,7 +42,7 @@ There are a few cases where you probably should _not_ use Kiki:
   However, if you want to generate the AST in one pass
   (without the intermediate CST), you should use lalrpop (or another more complex tool).
 
-## Tutorial
+## Comparison with Bison
 
 Let's build a toy parser that
 recognizes the arithmetic expressions.
