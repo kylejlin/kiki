@@ -298,3 +298,195 @@ terminal Token {
     $Comma: String
 }
 ```
+
+`kiki.kiki`:
+
+```kiki
+start File
+
+struct File {
+    items: OptItems
+}
+
+enum OptItems {
+    None
+    Cons(
+        OptItems
+        Item
+    )
+}
+
+enum Item {
+    Start(
+        _: $StartKw
+        $Ident
+    )
+    Struct(Struct)
+    Enum(Enum)
+    Terminal(Terminal)
+}
+
+struct Struct {
+    _: $StructKw
+    name: $Ident
+    fieldset: Fieldset
+}
+
+struct Enum {
+    _: $EnumKw
+    name: $Ident
+    _: $LCurly
+    variants: OptEnumVariants
+    _: $RCurly
+}
+
+struct Terminal {
+    _: $TerminalKw
+    name: $Ident
+    _: $LCurly
+    variants: OptTerminalVariants
+    _: $RCurly
+}
+
+enum Fieldset {
+    Empty
+    Named(NamedFieldset)
+    Tuple(TupleFieldset)
+}
+
+struct NamedFieldset {
+    _: $LCurly
+    fields: NamedFields
+    _: $RCurly
+}
+
+enum NamedFields {
+    One(NamedField)
+    Mul {
+        left: NamedFields
+        right: NamedField
+    }
+}
+
+struct NamedField {
+    name: IdentOrUnderscore
+    _: $Colon
+    symbol: IdentOrTerminalIdent
+}
+
+struct TupleFieldset {
+    _: $LParen
+    fields: TupleFields
+    _: $RParen
+}
+
+enum TupleFields {
+    One(TupleField)
+    Cons {
+        left: TupleFields
+        right: TupleField
+    }
+}
+
+enum TupleField {
+    Used(IdentOrTerminalIdent)
+    Skipped(
+        _: $Underscore
+        _: $Colon
+        IdentOrTerminalIdent
+    )
+}
+
+enum OptEnumVariants {
+    Nil
+    Cons {
+        left: OptEnumVariants
+        right: EnumVariant
+    }
+}
+
+struct EnumVariant {
+    name: $Ident
+    fields: Fieldset
+}
+
+enum OptTerminalVariants {
+    Nil
+    Cons {
+        left: OptTerminalVariants
+        right: TerminalVariant
+    }
+}
+
+struct TerminalVariant {
+    name: $TerminalIdent
+    _: $Colon
+    type_: Type
+}
+
+enum Type {
+    Unit(
+        _: $LParen
+        _: $RParen
+    )
+    Path(Path)
+    Complex(ComplexType)
+}
+
+enum Path {
+    One($Ident)
+    Cons {
+        left: Path
+        _: $DoubleColon
+        right: $Ident
+    }
+}
+
+struct ComplexType {
+    callee: Type
+    _: $LAngle
+    Types
+    _: $RAngle
+}
+
+enum CommaSeparatedTypes {
+    One(Type)
+    Cons {
+        left: CommaSeparatedTypes
+        _: $Comma
+        right: Type
+    }
+}
+
+enum IdentOrUnderscore {
+    Ident($Ident)
+    Underscore($Underscore)
+}
+
+enum IdentOrTerminalIdent {
+    Ident($Ident)
+    Terminal($TerminalIdent)
+}
+
+terminal Token {
+    $Underscore: ()
+    $Ident: String // Does not start with "$"
+    $TerminalIdent: String // Starts with "$"
+
+    $StartKw: ()
+    $StructKw: ()
+    $EnumKw: ()
+    $TerminalKw: ()
+
+    $Colon: ()
+    $DoubleColon: ()
+    $Comma: ()
+
+    $LParen: ()
+    $RParen: ()
+    $LCurly: ()
+    $RCurly: ()
+    $LAngle: ()
+    $RAngle: ()
+}
+```
