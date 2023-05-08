@@ -44,6 +44,9 @@ There are a few cases where you probably should _not_ use Kiki:
   into another form (i.e., an AST), they must
   implement that code themselves.
 
+- **You want a built-in lexer.**
+  As stated above, Kiki does One Thing Well™: parsing.
+
 ## Quasi-tutorial
 
 The fastest way to learn is by example.
