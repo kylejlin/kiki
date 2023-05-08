@@ -42,7 +42,16 @@ There are a few cases where you probably should _not_ use Kiki:
   However, if you want to generate the AST in one pass
   (without the intermediate CST), you should use lalrpop (or another more complex tool).
 
-## Comparison with Bison
+## Quasi-tutorial
+
+The fastest way to learn is by example.
+In this section, we translate
+a Bison file into Kiki.
+We don't give detailed explanations,
+which is why it's a _quasi_ tutorial.
+We will save the explanation for future sections.
+
+### A toy parser
 
 Let's build a toy parser that
 recognizes the arithmetic expressions.
@@ -82,6 +91,10 @@ Then you might write:
 }
 
 %token <i32> NUM
+
+// Other than NUM, the rest of the tokens
+// only have one possible value each.
+// So, we set their type to the unit type (`()`).
 %token <()> PLUS
 %token <()> MINUS
 %token <()> STAR
@@ -192,8 +205,15 @@ enum Term {
 }
 ```
 
-Observe that you define the syntax tree data structure
-and the grammar at the same time.
+Observe this code is much simpler.
+The same code defines both the data structures and the grammar.
+This powerful simplification is only possible because
+Kiki parsers produce _concrete_ syntax trees.
+
+This limitation is a double-edged sword.
+On one hand, it greatly simplifies the code.
+On the other hand, it prevents you from having a
+different tree structure than the grammar.
 
 ## More examples
 
