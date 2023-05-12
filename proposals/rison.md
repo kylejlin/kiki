@@ -89,3 +89,24 @@ term: Expr =
         }
 ;
 ```
+
+## `->` syntax
+
+Alternatively, we could use `symbol -> Type : rhs1 | rhs2 ...`,
+instead of `symbol: Type = rhs1 | rhs2 ...`.
+
+```rison
+term -> Expr
+    : NUM
+        {
+            Expr::Num($1)
+        }
+    | LPAREN expr RPAREN
+        {
+            $2
+        }
+;
+```
+
+This is more consistent with Bison.
+Now, the only difference is we add a `-> Type` clause.
