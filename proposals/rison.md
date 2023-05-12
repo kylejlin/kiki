@@ -25,7 +25,7 @@ It is unaffiliated with Bison's maintainers.
     }
 }
 
-%term Token {
+%token Token {
     NUM(i32),
     PLUS,
     MINUS,
