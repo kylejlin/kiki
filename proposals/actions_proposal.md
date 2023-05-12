@@ -1,4 +1,4 @@
-# Actions proposal
+# Proposal: semantic actions
 
 ```kiki
 start OptNumbers

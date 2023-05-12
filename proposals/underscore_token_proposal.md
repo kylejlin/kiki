@@ -1,4 +1,4 @@
-# Underscore token proposal
+# Proposal: underscore terminal type
 
 This Kiki code...
 
