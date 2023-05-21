@@ -2,14 +2,6 @@ use crate::cst::*;
 
 grammar;
 
-// TODO: Delete
-pub Term: i32 = {
-    <n:Underscore> => 0,
-    <n:Ident> => 1,
-    <n:TerminalIdent> => 2,
-    "(" <t:Term> ")" => t,
-};
-
 pub File: File = {
     <items:OptItems> => File { items },
 };
