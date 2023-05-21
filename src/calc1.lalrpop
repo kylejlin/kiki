@@ -1,10 +1,16 @@
-use std::str::FromStr;
+use crate::cst::*;
 
 grammar;
 
 pub Term: i32 = {
-    <n:Num> => n,
+    <n:Underscore> => 0,
+    <n:Ident> => 1,
     "(" <t:Term> ")" => t,
 };
 
-Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+pub Underscore: () = "_" => ();
+pub Ident: Ident = <s:r"[a-zA-Z_][a-zA-Z_0-9]*"> => Ident {
+    name: s.to_owned(),
+    // TODO
+    position: ByteIndex(0),
+};

@@ -163,14 +163,14 @@ pub enum Token {
 #[derive(Clone, Debug)]
 pub struct Ident {
     pub name: String,
-    pub position: BytePosition,
+    pub position: ByteIndex,
 }
 
 #[derive(Clone, Debug)]
 pub struct TerminalIdent {
     pub name: String,
-    pub position: BytePosition,
+    pub position: ByteIndex,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct BytePosition(pub usize);
+pub struct ByteIndex(pub usize);
