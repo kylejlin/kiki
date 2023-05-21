@@ -309,7 +309,7 @@ struct File {
 }
 
 enum OptItems {
-    None
+    Nil
     Cons(
         OptItems
         Item

@@ -5,7 +5,7 @@ pub struct File {
 
 #[derive(Clone, Debug)]
 pub enum OptItems {
-    None,
+    Nil,
     Cons(Box<OptItems>, Item),
 }
 
