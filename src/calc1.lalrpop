@@ -182,10 +182,16 @@ pub File: File = {
     <items:OptItems> => File { items },
 };
 
-// TODO
 pub OptItems: OptItems = {
-    "" => OptItems::Nil,
+    <Epsilon> => OptItems::Nil,
+    <items:OptItems> <item:Item> => OptItems::Cons(Box::new(items), item),
 };
+
+// TODO
+pub Item: Item = "[item]" => Item::Start(Ident {
+    name: "start".to_owned(),
+    position: ByteIndex(0),
+});
 
 pub StartKw: () = "start" => ();
 pub StructKw: () = "struct" => ();
@@ -215,3 +221,6 @@ pub TerminalIdent: TerminalIdent = <s:r"\$[a-zA-Z_][a-zA-Z_0-9]*"> => TerminalId
     // TODO
     position: ByteIndex(0),
 };
+
+#[inline]
+Epsilon: () = ();
