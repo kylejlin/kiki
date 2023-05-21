@@ -2,174 +2,6 @@ use crate::cst::*;
 
 grammar;
 
-// ```kiki
-// start File
-
-// struct File {
-//     items: OptItems
-// }
-
-// enum OptItems {
-//     Nil
-//     Cons(
-//         OptItems
-//         Item
-//     )
-// }
-
-// enum Item {
-//     Start(
-//         _: $StartKw
-//         $Ident
-//     )
-//     Struct(Struct)
-//     Enum(Enum)
-//     Terminal(Terminal)
-// }
-
-// struct Struct {
-//     _: $StructKw
-//     name: $Ident
-//     fieldset: Fieldset
-// }
-
-// struct Enum {
-//     _: $EnumKw
-//     name: $Ident
-//     _: $LCurly
-//     variants: OptEnumVariants
-//     _: $RCurly
-// }
-
-// struct Terminal {
-//     _: $TerminalKw
-//     name: $Ident
-//     _: $LCurly
-//     variants: OptTerminalVariants
-//     _: $RCurly
-// }
-
-// enum Fieldset {
-//     Empty
-//     Named(NamedFieldset)
-//     Tuple(TupleFieldset)
-// }
-
-// struct NamedFieldset {
-//     _: $LCurly
-//     fields: NamedFields
-//     _: $RCurly
-// }
-
-// enum NamedFields {
-//     One(NamedField)
-//     Mul {
-//         left: NamedFields
-//         right: NamedField
-//     }
-// }
-
-// struct NamedField {
-//     name: IdentOrUnderscore
-//     _: $Colon
-//     symbol: IdentOrTerminalIdent
-// }
-
-// struct TupleFieldset {
-//     _: $LParen
-//     fields: TupleFields
-//     _: $RParen
-// }
-
-// enum TupleFields {
-//     One(TupleField)
-//     Cons {
-//         left: TupleFields
-//         right: TupleField
-//     }
-// }
-
-// enum TupleField {
-//     Used(IdentOrTerminalIdent)
-//     Skipped(
-//         _: $Underscore
-//         _: $Colon
-//         IdentOrTerminalIdent
-//     )
-// }
-
-// enum OptEnumVariants {
-//     Nil
-//     Cons {
-//         left: OptEnumVariants
-//         right: EnumVariant
-//     }
-// }
-
-// struct EnumVariant {
-//     name: $Ident
-//     fields: Fieldset
-// }
-
-// enum OptTerminalVariants {
-//     Nil
-//     Cons {
-//         left: OptTerminalVariants
-//         right: TerminalVariant
-//     }
-// }
-
-// struct TerminalVariant {
-//     name: $TerminalIdent
-//     _: $Colon
-//     type_: Type
-// }
-
-// enum Type {
-//     Unit(
-//         _: $LParen
-//         _: $RParen
-//     )
-//     Path(Path)
-//     Complex(ComplexType)
-// }
-
-// enum Path {
-//     One($Ident)
-//     Cons {
-//         left: Path
-//         _: $DoubleColon
-//         right: $Ident
-//     }
-// }
-
-// struct ComplexType {
-//     callee: Type
-//     _: $LAngle
-//     Types
-//     _: $RAngle
-// }
-
-// enum CommaSeparatedTypes {
-//     One(Type)
-//     Cons {
-//         left: CommaSeparatedTypes
-//         _: $Comma
-//         right: Type
-//     }
-// }
-
-// enum IdentOrUnderscore {
-//     Ident($Ident)
-//     Underscore($Underscore)
-// }
-
-// enum IdentOrTerminalIdent {
-//     Ident($Ident)
-//     Terminal($TerminalIdent)
-// }
-// ```
-
 // TODO: Delete
 pub Term: i32 = {
     <n:Underscore> => 0,
@@ -187,11 +19,109 @@ pub OptItems: OptItems = {
     <items:OptItems> <item:Item> => OptItems::Cons(Box::new(items), item),
 };
 
-// TODO
-pub Item: Item = "[item]" => Item::Start(Ident {
-    name: "start".to_owned(),
-    position: ByteIndex(0),
-});
+pub Item: Item = {
+    <start:Start> => Item::Start(start),
+    <struct_:Struct> => Item::Struct(struct_),
+    <enum_:Enum> => Item::Enum(enum_),
+    <terminal:Terminal> => Item::Terminal(terminal),
+};
+
+pub Start: Ident = {
+    <_drop:StartKw> <name:Ident> => name,
+};
+
+pub Struct: Struct = {
+    <_drop:StructKw> <name:Ident> <fieldset:Fieldset> => Struct { name, fieldset },
+};
+
+pub Enum: Enum = {
+    <_drop:EnumKw> <name:Ident> <_drop2:LCurly> <variants:OptEnumVariants> <_drop3:RCurly> => Enum {
+        name,
+        variants,
+    },
+};
+
+pub Terminal: Terminal = {
+    <_drop:TerminalKw> <name:TerminalIdent> <_drop2:LCurly> <variants:OptTerminalVariants> <_drop3:RCurly> => {
+        Terminal { name, variants }
+    },
+};
+
+pub Fieldset: Fieldset = {
+    <_drop:Epsilon> => Fieldset::Empty,
+    <_drop:LCurly> <fields:NamedFields> <_drop2:RCurly> => Fieldset::Named(NamedFieldset { fields }),
+    <_drop:LParen> <fields:TupleFields> <_drop2:RParen> => Fieldset::Tuple(TupleFieldset { fields }),
+};
+
+pub NamedFields: NamedFields = {
+    <field:NamedField> => NamedFields::One(field),
+    <left:NamedFields> <_drop:Comma> <right:NamedField> => NamedFields::Mul(Box::new(left), right),
+};
+
+pub NamedField: NamedField = {
+    <name:IdentOrUnderscore> <_drop:Colon> <symbol:IdentOrTerminalIdent> => NamedField { name, symbol },
+};
+
+pub TupleFields: TupleFields = {
+    <field:TupleField> => TupleFields::One(field),
+    <left:TupleFields> <_drop:Comma> <right:TupleField> => TupleFields::Cons(Box::new(left), right),
+};
+
+pub TupleField: TupleField = {
+    <symbol:IdentOrTerminalIdent> => TupleField::Used(symbol),
+    <_drop:Underscore> <_drop2:Colon> <symbol:IdentOrTerminalIdent> => TupleField::Skipped(symbol),
+};
+
+pub OptEnumVariants: OptEnumVariants = {
+    <Epsilon> => OptEnumVariants::Nil,
+    <left:OptEnumVariants> <right:EnumVariant> => OptEnumVariants::Cons(Box::new(left), right),
+};
+
+pub EnumVariant: EnumVariant = {
+    <name:Ident> <fieldset:Fieldset> => EnumVariant { name, fieldset },
+};
+
+pub OptTerminalVariants: OptTerminalVariants = {
+    <Epsilon> => OptTerminalVariants::Nil,
+    <left:OptTerminalVariants> <right:TerminalVariant> => OptTerminalVariants::Cons(Box::new(left), right),
+};
+
+pub TerminalVariant: TerminalVariant = {
+    <name:TerminalIdent> <_drop:Colon> <type_:Type> => TerminalVariant { name, type_ },
+};
+
+pub Type: Type = {
+    <_drop:LParen> <_drop2:RParen> => Type::Unit,
+    <path:Path> => Type::Path(path),
+    <complex:ComplexType> => Type::Complex(Box::new(complex)),
+};
+
+pub Path: Path = {
+    <name:Ident> => Path::One(name),
+    <left:Path> <_drop:DoubleColon> <right:Ident> => Path::Cons(Box::new(left), right),
+};
+
+pub ComplexType: ComplexType = {
+    <callee:Type> <_drop:LAngle> <types:CommaSeparatedTypes> <_drop2:RAngle> => ComplexType {
+        callee,
+        types,
+    },
+};
+
+pub CommaSeparatedTypes: CommaSeparatedTypes = {
+    <type_:Type> => CommaSeparatedTypes::One(type_),
+    <left:CommaSeparatedTypes> <_drop:Comma> <right:Type> => CommaSeparatedTypes::Cons(Box::new(left), right),
+};
+
+pub IdentOrUnderscore: IdentOrUnderscore = {
+    <ident:Ident> => IdentOrUnderscore::Ident(ident),
+    <_drop:Underscore> => IdentOrUnderscore::Underscore,
+};
+
+pub IdentOrTerminalIdent: IdentOrTerminalIdent = {
+    <ident:Ident> => IdentOrTerminalIdent::Ident(ident),
+    <terminal:TerminalIdent> => IdentOrTerminalIdent::Terminal(terminal),
+};
 
 pub StartKw: () = "start" => ();
 pub StructKw: () = "struct" => ();

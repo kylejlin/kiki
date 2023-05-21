@@ -85,7 +85,7 @@ pub enum OptEnumVariants {
 #[derive(Clone, Debug)]
 pub struct EnumVariant {
     pub name: Ident,
-    pub fields: Fieldset,
+    pub fieldset: Fieldset,
 }
 
 #[derive(Clone, Debug)]
