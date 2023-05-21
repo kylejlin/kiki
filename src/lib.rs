@@ -3,7 +3,7 @@ mod cst;
 #[macro_use]
 extern crate lalrpop_util;
 
-lalrpop_mod!(pub parser); // synthesized by LALRPOP
+lalrpop_mod!(pub parser);
 
 #[cfg(test)]
 mod tests {
