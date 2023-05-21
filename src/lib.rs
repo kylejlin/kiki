@@ -1,16 +1,14 @@
 mod cst;
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#[macro_use]
+extern crate lalrpop_util;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+lalrpop_mod!(pub calc1); // synthesized by LALRPOP
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+#[test]
+fn calc1() {
+    assert!(calc1::TermParser::new().parse("22").is_ok());
+    assert!(calc1::TermParser::new().parse("(22)").is_ok());
+    assert!(calc1::TermParser::new().parse("((((22))))").is_ok());
+    assert!(calc1::TermParser::new().parse("((22)").is_err());
 }
