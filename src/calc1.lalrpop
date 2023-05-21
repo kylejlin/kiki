@@ -9,7 +9,24 @@ pub Term: i32 = {
     "(" <t:Term> ")" => t,
 };
 
+pub StartKw: () = "start" => ();
+pub StructKw: () = "struct" => ();
+pub EnumKw: () = "enum" => ();
+pub TerminalKw: () = "terminal" => ();
+
+pub DoubleColon: () = "::" => ();
+pub Colon: () = ":" => ();
+pub Comma: () = "," => ();
+
+pub LParen: () = "(" => ();
+pub RParen: () = ")" => ();
+pub LCurly: () = "{" => ();
+pub RCurly: () = "}" => ();
+pub LAngle: () = "<" => ();
+pub RAngle: () = ">" => ();
+
 pub Underscore: () = "_" => ();
+
 pub Ident: Ident = <s:r"[a-zA-Z_][a-zA-Z_0-9]*"> => Ident {
     name: s.to_owned(),
     // TODO
