@@ -5,11 +5,17 @@ grammar;
 pub Term: i32 = {
     <n:Underscore> => 0,
     <n:Ident> => 1,
+    <n:TerminalIdent> => 2,
     "(" <t:Term> ")" => t,
 };
 
 pub Underscore: () = "_" => ();
 pub Ident: Ident = <s:r"[a-zA-Z_][a-zA-Z_0-9]*"> => Ident {
+    name: s.to_owned(),
+    // TODO
+    position: ByteIndex(0),
+};
+pub TerminalIdent: TerminalIdent = <s:r"\$[a-zA-Z_][a-zA-Z_0-9]*"> => TerminalIdent {
     name: s.to_owned(),
     // TODO
     position: ByteIndex(0),
