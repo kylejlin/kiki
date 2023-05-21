@@ -7,25 +7,10 @@ lalrpop_mod!(pub calc1); // synthesized by LALRPOP
 
 #[test]
 fn calc1() {
-    assert_eq!(0, calc1::FileParser::new().parse(" ").unwrap().items.len());
-    assert_eq!(
-        1,
-        calc1::FileParser::new()
-            .parse("[item]")
-            .unwrap()
-            .items
-            .len()
-    );
-    assert_eq!(
-        2,
-        calc1::FileParser::new()
-            .parse("[item] [item]")
-            .unwrap()
-            .items
-            .len()
-    );
-
-    assert!(calc1::FileParser::new().parse("foo").is_err());
+    let src = include_str!("examples/json.kiki");
+    calc1::FileParser::new()
+        .parse(src)
+        .expect("should parse correctly");
 }
 
 #[cfg(test)]

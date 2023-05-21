@@ -34,7 +34,7 @@ pub Enum: Enum = {
 };
 
 pub Terminal: Terminal = {
-    <_drop:TerminalKw> <name:TerminalIdent> <_drop2:LCurly> <variants:OptTerminalVariants> <_drop3:RCurly> => {
+    <_drop:TerminalKw> <name:Ident> <_drop2:LCurly> <variants:OptTerminalVariants> <_drop3:RCurly> => {
         Terminal { name, variants }
     },
 };
@@ -47,7 +47,7 @@ pub Fieldset: Fieldset = {
 
 pub NamedFields: NamedFields = {
     <field:NamedField> => NamedFields::One(field),
-    <left:NamedFields> <_drop:Comma> <right:NamedField> => NamedFields::Mul(Box::new(left), right),
+    <left:NamedFields> <right:NamedField> => NamedFields::Mul(Box::new(left), right),
 };
 
 pub NamedField: NamedField = {
@@ -56,7 +56,7 @@ pub NamedField: NamedField = {
 
 pub TupleFields: TupleFields = {
     <field:TupleField> => TupleFields::One(field),
-    <left:TupleFields> <_drop:Comma> <right:TupleField> => TupleFields::Cons(Box::new(left), right),
+    <left:TupleFields> <right:TupleField> => TupleFields::Cons(Box::new(left), right),
 };
 
 pub TupleField: TupleField = {

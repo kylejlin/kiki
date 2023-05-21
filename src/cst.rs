@@ -31,7 +31,7 @@ pub struct Enum {
 
 #[derive(Clone, Debug)]
 pub struct Terminal {
-    pub name: TerminalIdent,
+    pub name: Ident,
     pub variants: OptTerminalVariants,
 }
 
