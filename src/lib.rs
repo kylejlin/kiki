@@ -5,24 +5,23 @@ extern crate lalrpop_util;
 
 lalrpop_mod!(pub calc1); // synthesized by LALRPOP
 
-#[test]
-fn calc1() {
-    let src = include_str!("examples/json.kiki");
-    calc1::FileParser::new()
-        .parse(src)
-        .expect("should parse correctly");
-}
-
 #[cfg(test)]
-mod impl_cst {
-    use crate::cst::*;
+mod tests {
+    use super::*;
 
-    impl OptItems {
-        pub fn len(&self) -> usize {
-            match self {
-                OptItems::Nil => 0,
-                OptItems::Cons(tail, _) => 1 + tail.len(),
-            }
-        }
+    #[test]
+    fn json() {
+        let src = include_str!("examples/json.kiki");
+        calc1::FileParser::new()
+            .parse(src)
+            .expect("should parse correctly");
+    }
+
+    #[test]
+    fn kiki() {
+        let src = include_str!("examples/kiki.kiki");
+        calc1::FileParser::new()
+            .parse(src)
+            .expect("should parse correctly");
     }
 }

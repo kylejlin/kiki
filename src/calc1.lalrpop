@@ -2,6 +2,13 @@ use crate::cst::*;
 
 grammar;
 
+match {
+    r"//[^\n]*" => {},
+    r"\s+" => {}
+} else {
+    _
+}
+
 pub File: File = {
     <items:OptItems> => File { items },
 };
