@@ -1,5 +1,7 @@
 pub mod ast;
 pub mod cst;
+pub mod machine;
+pub mod table;
 
 #[derive(Debug)]
 pub enum KikiErr {
@@ -11,3 +13,5 @@ pub struct RustSrc(pub String);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ByteIndex(pub usize);
+
+pub use crate::logic::oset::Oset;
