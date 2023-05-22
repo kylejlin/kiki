@@ -1,3 +1,5 @@
+use crate::ByteIndex;
+
 #[derive(Clone, Debug)]
 pub struct File {
     pub items: OptItems,
@@ -171,6 +173,3 @@ pub struct TerminalIdent {
     pub name: String,
     pub position: ByteIndex,
 }
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ByteIndex(pub usize);
