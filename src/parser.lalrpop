@@ -55,7 +55,7 @@ pub Fieldset: Fieldset = {
 
 pub NamedFields: NamedFields = {
     <field:NamedField> => NamedFields::One(field),
-    <left:NamedFields> <right:NamedField> => NamedFields::Mul(Box::new(left), right),
+    <left:NamedFields> <right:NamedField> => NamedFields::Cons(Box::new(left), right),
 };
 
 pub NamedField: NamedField = {

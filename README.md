@@ -90,7 +90,7 @@ Then you might write:
     enum OpKind {
         Add,
         Sub,
-        Mul,
+        Cons,
         Div,
     }
 }
@@ -136,7 +136,7 @@ expr
         {
             $$ = Expr::Op {
                 left: Box::new($1),
-                kind: OpKind::Mul,
+                kind: OpKind::Cons,
                 right: Box::new($3),
             };
         }
@@ -196,7 +196,7 @@ enum Expr {
 enum OpKind {
     Add(_: $Plus)
     Sub(_: $Minus)
-    Mul(_: $Star)
+    Cons(_: $Star)
     Div(_: $Div)
 }
 
@@ -362,7 +362,7 @@ struct NamedFieldset {
 
 enum NamedFields {
     One(NamedField)
-    Mul {
+    Cons {
         left: NamedFields
         right: NamedField
     }

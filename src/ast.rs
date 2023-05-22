@@ -43,8 +43,8 @@ pub struct NamedFieldset {
 
 #[derive(Clone, Debug)]
 pub struct NamedField {
-    pub name: Ident,
-    pub symbol: Ident,
+    pub name: IdentOrUnderscore,
+    pub symbol: IdentOrTerminalIdent,
 }
 
 #[derive(Clone, Debug)]
@@ -54,8 +54,8 @@ pub struct TupleFieldset {
 
 #[derive(Clone, Debug)]
 pub enum TupleField {
-    Used(Ident),
-    Skipped(Ident),
+    Used(IdentOrTerminalIdent),
+    Skipped(IdentOrTerminalIdent),
 }
 
 #[derive(Clone, Debug)]
@@ -66,7 +66,7 @@ pub struct EnumVariant {
 
 #[derive(Clone, Debug)]
 pub struct TerminalVariant {
-    pub name: Ident,
+    pub name: TerminalIdent,
     pub type_: Type,
 }
 

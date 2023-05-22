@@ -52,7 +52,7 @@ pub struct NamedFieldset {
 #[derive(Clone, Debug)]
 pub enum NamedFields {
     One(NamedField),
-    Mul(Box<NamedFields>, NamedField),
+    Cons(Box<NamedFields>, NamedField),
 }
 
 #[derive(Clone, Debug)]

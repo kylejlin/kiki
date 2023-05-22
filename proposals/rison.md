@@ -20,7 +20,7 @@ It is unaffiliated with Bison's maintainers.
     enum OpKind {
         Add,
         Sub,
-        Mul,
+        Cons,
         Div,
     }
 }
@@ -64,7 +64,7 @@ expr: Expr =
         {
             Expr::Op {
                 left: Box::new($1),
-                kind: OpKind::Mul,
+                kind: OpKind::Cons,
                 right: Box::new($3),
             }
         }

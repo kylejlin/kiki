@@ -58,7 +58,7 @@ struct NamedFieldset {
 
 enum NamedFields {
     One(NamedField)
-    Mul {
+    Cons {
         left: NamedFields
         right: NamedField
     }
