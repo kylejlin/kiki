@@ -1,0 +1,13 @@
+pub mod ast;
+pub mod cst;
+
+#[derive(Debug)]
+pub enum KikiErr {
+    Parse(ByteIndex, String, ByteIndex),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct RustSrc(pub String);
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ByteIndex(pub usize);

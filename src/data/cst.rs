@@ -1,4 +1,4 @@
-use crate::ByteIndex;
+use crate::data::ByteIndex;
 
 #[derive(Clone, Debug)]
 pub struct File {

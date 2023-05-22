@@ -1,4 +1,4 @@
-use crate::{ast::*, KikiErr, RustSrc};
+use crate::data::{ast::*, KikiErr, RustSrc};
 
 impl TryFrom<&File> for RustSrc {
     type Error = KikiErr;

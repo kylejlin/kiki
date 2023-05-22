@@ -89,4 +89,4 @@ pub struct ComplexType {
     pub types: Vec<Type>,
 }
 
-pub use crate::cst::{Ident, IdentOrTerminalIdent, IdentOrUnderscore, TerminalIdent, Token};
+pub use crate::data::cst::{Ident, IdentOrTerminalIdent, IdentOrUnderscore, TerminalIdent, Token};

@@ -1,4 +1,4 @@
-use crate::{ast, cst};
+use crate::data::{ast, cst};
 
 impl From<cst::File> for ast::File {
     fn from(cst: cst::File) -> Self {

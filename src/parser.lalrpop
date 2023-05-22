@@ -1,5 +1,5 @@
-use crate::cst::*;
-use crate::ByteIndex;
+use crate::data::cst::*;
+use crate::data::ByteIndex;
 
 grammar;
 
