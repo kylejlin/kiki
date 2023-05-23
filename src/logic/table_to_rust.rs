@@ -51,6 +51,19 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .map(|line| format!("{INDENT}{}\n", line))
         .collect();
 
+    let rule_kinds = file
+        .nonterminals
+        .iter()
+        .map(|nonterminal| match nonterminal {
+            Nonterminal::Struct(_) => 1,
+            Nonterminal::Enum(e) => e.variants.len(),
+        })
+        .sum();
+    let rule_kind_enum_variants_src_indent_1: String = (0..rule_kinds)
+        .map(|i| format!("R{i},"))
+        .map(|line| format!("{INDENT}{}\n", line))
+        .collect();
+
     Ok(RustSrc(format!(
         r#"enum {token_or_eof_src} {{
     Token({token_src}),
@@ -80,7 +93,9 @@ enum {action_src} {{
     Err,
 }}
 
-{rule_kind_enum_def_src}
+enum {rule_kind_src} {{
+{rule_kind_enum_variants_src_indent_1}
+}}
 
 pub fn parse<S>(src: S) -> Result<{start_src}, {token_src}>
 where S: IntoIterator<Item = {token_src}> {{
