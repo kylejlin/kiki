@@ -1,10 +1,12 @@
 use crate::data::{table::*, validated_file::*, KikiErr, RustSrc};
 use std::collections::HashSet;
 
+const INDENT: &str = "    ";
+
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
-    let mut used_identifiers = file.used_identifiers;
+    let mut used_identifiers = file.defined_identifiers;
     let start_src = &file.start;
-    let token_src = &file.terminal_enum;
+    let token_src = &file.terminal_enum.name;
     let token_or_eof_src = create_unique_identifier("TokenOrEof", &mut used_identifiers);
     let token_kind_src = create_unique_identifier("TokenKind", &mut used_identifiers);
     let nonterminal_kind_src = create_unique_identifier("NonterminalKind", &mut used_identifiers);
@@ -13,13 +15,27 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let action_src = create_unique_identifier("Action", &mut used_identifiers);
     let rule_kind_src = create_unique_identifier("RuleKind", &mut used_identifiers);
 
+    let token_kind_enum_variants_src_indent_1 = file
+        .terminal_enum
+        .variants
+        .iter()
+        .map(|variant| {
+            let name = &variant.dollarless_name;
+            let type_ = &variant.type_;
+            format!("{name}(type_),")
+        })
+        .map(|line| format!("{INDENT}{}\n", line))
+        .collect::<String>();
+
     Ok(RustSrc(format!(
         r#"enum {token_or_eof_src} {{
     Token({token_src}),
     Eof,
 }}
 
-{token_kind_enum_def_src}
+enum {token_kind_src} {{
+{token_kind_enum_variants_src_indent_1}
+}}
 
 {nonterminal_kind_enum_def_src}
 
