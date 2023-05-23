@@ -64,6 +64,28 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .map(|line| format!("{INDENT}{}\n", line))
         .collect();
 
+    let rule_kind_match_arms_src_indent_2: String = file
+        .nonterminals
+        .iter()
+        .flat_map(|nonterminal| match nonterminal {
+            Nonterminal::Struct(s) => vec![(&s.name.name, None, &s.fieldset)],
+            Nonterminal::Enum(e) => e
+                .variants
+                .iter()
+                .map(|v| (&e.name.name, Some(&v.name.name), &v.fieldset))
+                .collect(),
+        })
+        .enumerate()
+        .flat_map(|(rule_index, (type_name, opt_variant_name, fieldset))| {
+            vec![
+                format!("{rule_kind_src}::R{rule_index} => {{"),
+                // TODO: Reduction code
+                format!("}}"),
+            ]
+        })
+        .map(|line| format!("{INDENT}{INDENT}{}\n", line))
+        .collect();
+
     Ok(RustSrc(format!(
         r#"enum {token_or_eof_src} {{
     Token({token_src}),
