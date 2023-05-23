@@ -39,6 +39,18 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .map(|line| format!("{INDENT}{}\n", line))
         .collect();
 
+    let node_enum_variants_src_indent_1: String = file
+        .nonterminals
+        .iter()
+        .map(|nonterminal| format!("{name}({name}),", name = nonterminal.name()))
+        .chain(file.terminal_enum.variants.iter().map(|variant| {
+            let name = &variant.dollarless_name;
+            let type_ = &variant.type_;
+            format!("{name}({type_}),")
+        }))
+        .map(|line| format!("{INDENT}{}\n", line))
+        .collect();
+
     Ok(RustSrc(format!(
         r#"enum {token_or_eof_src} {{
     Token({token_src}),
@@ -57,7 +69,9 @@ enum {state_src} {{
 {state_enum_variants_src_indent_1}
 }}
 
-{node_enum_def_src}
+enum {node_src} {{
+{node_enum_variants_src_indent_1}
+}}
 
 enum {action_src} {{
     Shift({state_src}),
