@@ -95,15 +95,18 @@ enum {quasitoken_src} {{
     {eof_src},
 }}
 
+#[derive(Clone, Copy)]
 enum {quasitoken_kind_src} {{
 {token_kind_enum_variants_src_indent_1}
     {eof_src},
 }}
 
+#[derive(Clone, Copy)]
 enum {nonterminal_kind_src} {{
 {nonterminal_kind_enum_variants_src_indent_1}
 }}
 
+#[derive(Clone, Copy)]
 enum {state_src} {{
 {state_enum_variants_src_indent_1}
 }}
@@ -112,6 +115,7 @@ enum {node_src} {{
 {node_enum_variants_src_indent_1}
 }}
 
+#[derive(Clone, Copy)]
 enum {action_src} {{
     Shift({state_src}),
     Reduce({rule_kind_src}),
@@ -119,6 +123,7 @@ enum {action_src} {{
     Err,
 }}
 
+#[derive(Clone, Copy)]
 enum {rule_kind_src} {{
 {rule_kind_enum_variants_src_indent_1}
 }}
