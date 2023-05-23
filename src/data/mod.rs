@@ -2,6 +2,7 @@ pub mod ast;
 pub mod cst;
 pub mod machine;
 pub mod table;
+pub mod validated_file;
 
 #[derive(Debug)]
 pub enum KikiErr {
