@@ -19,3 +19,9 @@ pub enum Goto {
     Goto(usize),
     Err,
 }
+
+impl Table {
+    pub fn states(&self) -> usize {
+        self.actions.len() / self.terminals.len()
+    }
+}

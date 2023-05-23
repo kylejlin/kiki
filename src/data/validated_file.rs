@@ -26,3 +26,12 @@ pub enum Nonterminal {
     Struct(Struct),
     Enum(Enum),
 }
+
+impl Nonterminal {
+    pub fn name(&self) -> &str {
+        match self {
+            Nonterminal::Struct(s) => &s.name.name,
+            Nonterminal::Enum(e) => &e.name.name,
+        }
+    }
+}
