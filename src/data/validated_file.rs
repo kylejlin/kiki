@@ -6,6 +6,7 @@ pub struct ValidatedFile {
     pub raw: File,
     pub start: String,
     pub terminal_enum: TerminalEnum,
+    pub nonterminals: Vec<Nonterminal>,
     pub defined_identifiers: HashSet<String>,
 }
 
@@ -19,4 +20,10 @@ pub struct TerminalEnum {
 pub struct TerminalVariant {
     pub dollarless_name: String,
     pub type_: String,
+}
+
+#[derive(Debug, Clone)]
+pub enum Nonterminal {
+    Struct(Struct),
+    Enum(Enum),
 }

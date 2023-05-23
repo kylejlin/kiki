@@ -15,7 +15,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let action_src = create_unique_identifier("Action", &mut used_identifiers);
     let rule_kind_src = create_unique_identifier("RuleKind", &mut used_identifiers);
 
-    let token_kind_enum_variants_src_indent_1 = file
+    let token_kind_enum_variants_src_indent_1: String = file
         .terminal_enum
         .variants
         .iter()
@@ -25,7 +25,10 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
             format!("{name}(type_),")
         })
         .map(|line| format!("{INDENT}{}\n", line))
-        .collect::<String>();
+        .collect();
+
+    let nonterminal_kind_enum_variants_src_indent_1: String =
+        file.nonterminals.iter().map(Nonterminal::name).collect();
 
     Ok(RustSrc(format!(
         r#"enum {token_or_eof_src} {{
@@ -37,7 +40,9 @@ enum {token_kind_src} {{
 {token_kind_enum_variants_src_indent_1}
 }}
 
-{nonterminal_kind_enum_def_src}
+enum {nonterminal_kind_src} {{
+{nonterminal_kind_enum_variants_src_indent_1}
+}}
 
 {state_enum_def_src}
 
@@ -112,5 +117,14 @@ fn create_unique_identifier(preferred_name: &str, used: &mut HashSet<String>) ->
             return name;
         }
         i += 1;
+    }
+}
+
+impl Nonterminal {
+    fn name(&self) -> &str {
+        match self {
+            Nonterminal::Struct(s) => &s.name.name,
+            Nonterminal::Enum(e) => &e.name.name,
+        }
     }
 }
