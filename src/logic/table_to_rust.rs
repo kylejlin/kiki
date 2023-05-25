@@ -65,7 +65,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .map(|line| format!("{INDENT}{}\n", line))
         .collect();
 
-    let rule_kind_match_arms_src_indent_2: String = file
+    let pop_and_reduce_match_arms_indent_2: String = file
         .nonterminals
         .iter()
         .flat_map(|nonterminal| match nonterminal {
@@ -166,7 +166,7 @@ where S: IntoIterator<Item = {token_src}> {{
 
 fn pop_and_reduce(states: &mut Vec<{state_src}>, nodes: &mut Vec<{node_src}>, rule_kind: {rule_kind_src}) -> ({node_src}, {nonterminal_kind_src}) {{
     match rule_kind {{
-{rule_kind_match_arms_src_indent_2}
+{pop_and_reduce_match_arms_indent_2}
     }}
 }}
 
