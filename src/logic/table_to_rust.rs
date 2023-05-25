@@ -7,7 +7,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let mut used_identifiers = file.defined_identifiers;
     let start_type_name = &file.start;
     let token_enum_name = &file.terminal_enum.name;
-    let token_enum_name = create_unique_identifier("Eof", &mut used_identifiers);
+    let eof_variant_name = create_unique_identifier("Eof", &mut used_identifiers);
     let quasitoken_enum_name = create_unique_identifier("Quasitoken", &mut used_identifiers);
     let quasitoken_kind_enum_name =
         create_unique_identifier("QuasitokenKind", &mut used_identifiers);
@@ -115,13 +115,13 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
 
 enum {quasitoken_enum_name} {{
     Token({token_enum_name}),
-    {token_enum_name},
+    {eof_variant_name},
 }}
 
 #[derive(Clone, Copy)]
 enum {quasitoken_kind_enum_name} {{
 {token_kind_enum_variants_src_indent_1}
-    {token_enum_name},
+    {eof_variant_name},
 }}
 
 #[derive(Clone, Copy)]
@@ -197,7 +197,7 @@ impl {quasitoken_kind_enum_name} {{
     fn from_quasitoken(quasitoken: &{quasitoken_enum_name}) -> Self {{
         match quasitoken {{
             Self::Token(token) => Self::from_token(token),
-            Self::{token_enum_name} => Self::{token_enum_name},
+            Self::{eof_variant_name} => Self::{eof_variant_name},
         }}
     }}
 
