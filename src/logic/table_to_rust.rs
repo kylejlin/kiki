@@ -77,13 +77,15 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         })
         .enumerate()
         .map(|(rule_index, (type_name, opt_variant_name, fieldset))| {
+            let reduction_code_indent_1 = todo;
             format!(
                 r#"{rule_kind_enum_name}::R{rule_index} => {{
-    // TODO: Reduction code
+{reduction_code_indent_1}
 }}"#
             )
         })
-        .collect::<String>()
+        .collect::<Vec<_>>()
+        .join("\n")
         .indent(2);
 
     let quasitoken_kind_from_token_match_arms_indent_3: String = file
