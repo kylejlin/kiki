@@ -283,6 +283,8 @@ fn get_goto(top_state: {state_enum_name}, new_node_kind: {nonterminal_kind_enum_
 impl {node_enum_name} {{
 {node_try_into_terminal_variant_name_variant_index_fns_indent_1}
 }}
+
+// TODO: Add nonterminal type definitions.
 "#
     )))
 }
