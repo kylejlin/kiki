@@ -172,7 +172,9 @@ where S: IntoIterator<Item = {token_enum_name}> {{
                 let (new_node, new_node_kind) = pop_and_reduce(&mut states, &mut nodes, rule_kind);
                 nodes.push(new_node);
                 let temp_top_state = *states.last().unwrap();
-                let new_state = get_goto(temp_top_state, new_node_kind);
+                let Some(new_state) = get_goto(temp_top_state, new_node_kind) else {{
+                    return Err(tokens.next().unwrap());
+                }};
                 states.push(new_state);
             }}
 
@@ -230,7 +232,9 @@ fn get_action(top_state: {state_enum_name}, next_quasitoken_kind: {quasitoken_ki
     todo!()
 }}
 
-// TODO: get_goto
+fn get_goto(top_state: {state_enum_name}, new_node_kind: {nonterminal_kind_enum_name}) -> Option<{state_enum_name}> {{
+    todo!()
+}}
 
 // TODO: impl TryFrom<Node> for <each node variant>
 "#
