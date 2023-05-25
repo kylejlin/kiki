@@ -1,8 +1,6 @@
 use crate::data::{table::*, validated_file::*, KikiErr, RustSrc};
 use std::collections::HashSet;
 
-const INDENT: &str = "    ";
-
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
     let mut used_identifiers = file.defined_identifiers;
     let start_type_name = &file.start;
@@ -18,28 +16,28 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let action_enum_name = create_unique_identifier("Action", &mut used_identifiers);
     let rule_kind_enum_name = create_unique_identifier("RuleKind", &mut used_identifiers);
 
-    let token_kind_enum_variants_indent_1: String = file
+    let token_kind_enum_variants_indent_1 = file
         .terminal_enum
         .variants
         .iter()
         .map(|variant| {
             let name = &variant.dollarless_name;
-            format!("{name},")
+            format!("{name},\n")
         })
-        .map(|line| format!("{INDENT}{}\n", line))
-        .collect();
+        .collect::<String>()
+        .indent(1);
 
-    let nonterminal_kind_enum_variants_indent_1: String = file
+    let nonterminal_kind_enum_variants_indent_1 = file
         .nonterminals
         .iter()
-        .map(|nonterminal| format!("{},", nonterminal.name()))
-        .map(|line| format!("{INDENT}{}\n", line))
-        .collect();
+        .map(|nonterminal| format!("{},\n", nonterminal.name()))
+        .collect::<String>()
+        .indent(1);
 
-    let state_enum_variants_indent_1: String = (0..table.states())
+    let state_enum_variants_indent_1 = (0..table.states())
         .map(|i| format!("S{i},"))
-        .map(|line| format!("{INDENT}{}\n", line))
-        .collect();
+        .collect::<String>()
+        .indent(1);
 
     let node_enum_variants_indent_1: String = file
         .nonterminals
@@ -48,10 +46,10 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .chain(file.terminal_enum.variants.iter().map(|variant| {
             let name = &variant.dollarless_name;
             let type_ = &variant.type_;
-            format!("{name}({type_}),")
+            format!("{name}({type_}),\n")
         }))
-        .map(|line| format!("{INDENT}{}\n", line))
-        .collect();
+        .collect::<String>()
+        .indent(1);
 
     let rule_kinds = file
         .nonterminals
@@ -62,9 +60,9 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         })
         .sum();
     let rule_kind_enum_variants_indent_1: String = (0..rule_kinds)
-        .map(|i| format!("R{i},"))
-        .map(|line| format!("{INDENT}{}\n", line))
-        .collect();
+        .map(|i| format!("R{i},\n"))
+        .collect::<String>()
+        .indent(1);
 
     let pop_and_reduce_match_arms_indent_2: String = file
         .nonterminals
@@ -78,15 +76,15 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
                 .collect(),
         })
         .enumerate()
-        .flat_map(|(rule_index, (type_name, opt_variant_name, fieldset))| {
-            vec![
-                format!("{rule_kind_enum_name}::R{rule_index} => {{"),
-                // TODO: Reduction code
-                format!("}}"),
-            ]
+        .map(|(rule_index, (type_name, opt_variant_name, fieldset))| {
+            format!(
+                r#"{rule_kind_enum_name}::R{rule_index} => {{
+    // TODO: Reduction code
+}}"#
+            )
         })
-        .map(|line| format!("{INDENT}{INDENT}{}\n", line))
-        .collect();
+        .collect::<String>()
+        .indent(2);
 
     let quasitoken_kind_from_token_match_arms_indent_3: String = file
         .terminal_enum
@@ -94,10 +92,10 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .iter()
         .map(|variant| {
             let name = &variant.dollarless_name;
-            format!("{token_enum_name}::{name}(_) => Self::{name},")
+            format!("{token_enum_name}::{name}(_) => Self::{name},\n")
         })
-        .map(|line| format!("{INDENT}{INDENT}{INDENT}{}\n", line))
-        .collect();
+        .collect::<String>()
+        .indent(3);
 
     let node_from_token_match_arms_indent_3: String = file
         .terminal_enum
@@ -105,10 +103,10 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .iter()
         .map(|variant| {
             let name = &variant.dollarless_name;
-            format!("{token_enum_name}::{name}(t) => Self::{name}(t),")
+            format!("{token_enum_name}::{name}(t) => Self::{name}(t),\n")
         })
-        .map(|line| format!("{INDENT}{INDENT}{INDENT}{}\n", line))
-        .collect();
+        .collect::<String>()
+        .indent(3);
 
     let impl_try_from_node_for_each_nonterminal: String = file
         .nonterminals
@@ -136,8 +134,8 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .variants
         .iter()
         .map()
-        .map(|line| format!("{INDENT}{}\n", line))
-        .collect();
+        .collect::<String>()
+        .indent(1);
 
     Ok(RustSrc(format!(
         r#"// This code was generated by Kiki.
@@ -288,5 +286,24 @@ fn create_unique_identifier(preferred_name: &str, used: &mut HashSet<String>) ->
             return name;
         }
         i += 1;
+    }
+}
+
+trait Indent {
+    fn indent(&self, indent: usize) -> String;
+}
+
+impl Indent for str {
+    fn indent(&self, level: usize) -> String {
+        let mut out = String::new();
+        let indent = &"    ".repeat(level);
+        out.push_str(indent);
+        for c in self.chars() {
+            out.push(c);
+            if c == '\n' {
+                out.push_str(indent);
+            }
+        }
+        out
     }
 }
