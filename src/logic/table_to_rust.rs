@@ -161,8 +161,8 @@ where S: IntoIterator<Item = {token_enum_name}> {{
     let mut nodes: Vec<{node_enum_name}> = vec![];
     loop {{
         let top_state = *states.last().unwrap();
-        let top_token_kind = {quasitoken_kind_enum_name}::from_quasitoken(tokens.peek().unwrap());
-        match get_action(top_state, top_token_kind) {{
+        let next_quasitoken_kind = {quasitoken_kind_enum_name}::from_quasitoken(tokens.peek().unwrap());
+        match get_action(top_state, next_quasitoken_kind) {{
             {action_enum_name}::Shift(new_state) => {{
                 states.push(new_state);
                 nodes.push({node_enum_name}::from_token(tokens.next().unwrap().try_into_token().unwrap()));
@@ -226,7 +226,9 @@ impl {quasitoken_enum_name} {{
     }}
 }}
 
-// TODO: get_action
+fn get_action(top_state: {state_enum_name}, next_quasitoken_kind: {quasitoken_kind_enum_name}) -> {action_enum_name} {{
+    todo!()
+}}
 
 // TODO: get_goto
 
