@@ -217,7 +217,14 @@ impl {node_enum_name} {{
     }}
 }}
 
-// TODO: Quasitoken::try_into_token
+impl {quasitoken_enum_name} {{
+    fn try_into_token(self) -> Result<{token_enum_name}, ()> {{
+        match self {{
+            Self::Token(token) => Ok(token),
+            Self::{eof_variant_name} => Err(()),
+        }}
+    }}
+}}
 
 // TODO: get_action
 
