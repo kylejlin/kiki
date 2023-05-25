@@ -129,12 +129,25 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .collect::<Vec<_>>()
         .join("\n\n");
 
-    let try_into_terminal_variant_name_variant_index_fns_indent_1: String = file
+    let node_try_into_terminal_variant_name_variant_index_fns_indent_1: String = file
         .terminal_enum
         .variants
         .iter()
-        .map()
-        .collect::<String>()
+        .enumerate()
+        .map(|(variant_index, variant)| {
+            let variant_name_snake_case = pascal_to_snake_case(&variant.dollarless_name);
+            let variant_name_original_case = &variant.dollarless_name;
+            let type_ = &variant.type_;
+            format!(
+                r#"fn try_into_{variant_name_snake_case}_{variant_index}(self) -> Result<{type_}, Self> {{
+    match self {{
+        Self::{variant_name_original_case}(t) => Ok(t),
+        _ => Err(self),
+    }}
+}}"#
+            )
+        })
+        .collect::<Vec<_>>().join("\n\n")
         .indent(1);
 
     Ok(RustSrc(format!(
@@ -266,7 +279,7 @@ fn get_goto(top_state: {state_enum_name}, new_node_kind: {nonterminal_kind_enum_
 {impl_try_from_node_for_each_nonterminal}
 
 impl {node_enum_name} {{
-{try_into_terminal_variant_name_variant_index_fns_indent_1}
+{node_try_into_terminal_variant_name_variant_index_fns_indent_1}
 }}
 "#
     )))
@@ -305,5 +318,66 @@ impl Indent for str {
             }
         }
         out
+    }
+}
+
+fn pascal_to_snake_case(s: &str) -> String {
+    let mut out = String::new();
+    let mut chars = s.chars().fuse();
+
+    if let Some(c) = s.chars().next() {
+        out.push(c.to_ascii_lowercase());
+    }
+
+    for c in chars {
+        if c.is_uppercase() {
+            out.push('_');
+        }
+        out.push(c.to_ascii_lowercase());
+    }
+
+    out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    mod pascal_to_snake_case {
+        use super::*;
+
+        #[test]
+        fn lower_x() {
+            assert_eq!("x", pascal_to_snake_case("x"));
+        }
+
+        #[test]
+        fn upper_x() {
+            assert_eq!("x", pascal_to_snake_case("X"));
+        }
+
+        #[test]
+        fn lower_hi() {
+            assert_eq!("hi", pascal_to_snake_case("hi"));
+        }
+
+        #[test]
+        fn titlecase_hi() {
+            assert_eq!("hi", pascal_to_snake_case("Hi"));
+        }
+
+        #[test]
+        fn uppercase_hi() {
+            assert_eq!("h_i", pascal_to_snake_case("HI"));
+        }
+
+        #[test]
+        fn titlecase_hi_there() {
+            assert_eq!("hi_there", pascal_to_snake_case("HiThere"));
+        }
+
+        #[test]
+        fn uppercase_hi_titlecase_there() {
+            assert_eq!("h_i_there", pascal_to_snake_case("HIThere"));
+        }
     }
 }
