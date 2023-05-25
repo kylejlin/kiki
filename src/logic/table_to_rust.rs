@@ -18,7 +18,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let action_enum_name = create_unique_identifier("Action", &mut used_identifiers);
     let rule_kind_enum_name = create_unique_identifier("RuleKind", &mut used_identifiers);
 
-    let token_kind_enum_variants_src_indent_1: String = file
+    let token_kind_enum_variants_indent_1: String = file
         .terminal_enum
         .variants
         .iter()
@@ -29,19 +29,19 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .map(|line| format!("{INDENT}{}\n", line))
         .collect();
 
-    let nonterminal_kind_enum_variants_src_indent_1: String = file
+    let nonterminal_kind_enum_variants_indent_1: String = file
         .nonterminals
         .iter()
         .map(|nonterminal| format!("{},", nonterminal.name()))
         .map(|line| format!("{INDENT}{}\n", line))
         .collect();
 
-    let state_enum_variants_src_indent_1: String = (0..table.states())
+    let state_enum_variants_indent_1: String = (0..table.states())
         .map(|i| format!("S{i},"))
         .map(|line| format!("{INDENT}{}\n", line))
         .collect();
 
-    let node_enum_variants_src_indent_1: String = file
+    let node_enum_variants_indent_1: String = file
         .nonterminals
         .iter()
         .map(|nonterminal| format!("{name}({name}),", name = nonterminal.name()))
@@ -61,7 +61,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
             Nonterminal::Enum(e) => e.variants.len(),
         })
         .sum();
-    let rule_kind_enum_variants_src_indent_1: String = (0..rule_kinds)
+    let rule_kind_enum_variants_indent_1: String = (0..rule_kinds)
         .map(|i| format!("R{i},"))
         .map(|line| format!("{INDENT}{}\n", line))
         .collect();
@@ -110,7 +110,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .map(|line| format!("{INDENT}{INDENT}{INDENT}{}\n", line))
         .collect();
 
-    let impl_try_from_node_for_each_nonterminal_src: String = file
+    let impl_try_from_node_for_each_nonterminal: String = file
         .nonterminals
         .iter()
         .map(|nonterminal| {
@@ -131,7 +131,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .collect::<Vec<_>>()
         .join("\n\n");
 
-    let try_into_terminal_variant_name_variant_index_fns_src_indent_1: String = file
+    let try_into_terminal_variant_name_variant_index_fns_indent_1: String = file
         .terminal_enum
         .variants
         .iter()
@@ -149,22 +149,22 @@ enum {quasitoken_enum_name} {{
 
 #[derive(Clone, Copy)]
 enum {quasitoken_kind_enum_name} {{
-{token_kind_enum_variants_src_indent_1}
+{token_kind_enum_variants_indent_1}
     {eof_variant_name},
 }}
 
 #[derive(Clone, Copy)]
 enum {nonterminal_kind_enum_name} {{
-{nonterminal_kind_enum_variants_src_indent_1}
+{nonterminal_kind_enum_variants_indent_1}
 }}
 
 #[derive(Clone, Copy)]
 enum {state_enum_name} {{
-{state_enum_variants_src_indent_1}
+{state_enum_variants_indent_1}
 }}
 
 enum {node_enum_name} {{
-{node_enum_variants_src_indent_1}
+{node_enum_variants_indent_1}
 }}
 
 #[derive(Clone, Copy)]
@@ -177,7 +177,7 @@ enum {action_enum_name} {{
 
 #[derive(Clone, Copy)]
 enum {rule_kind_enum_name} {{
-{rule_kind_enum_variants_src_indent_1}
+{rule_kind_enum_variants_indent_1}
 }}
 
 pub fn parse<S>(src: S) -> Result<{start_type_name}, {token_enum_name}>
@@ -265,10 +265,10 @@ fn get_goto(top_state: {state_enum_name}, new_node_kind: {nonterminal_kind_enum_
     todo!()
 }}
 
-{impl_try_from_node_for_each_nonterminal_src}
+{impl_try_from_node_for_each_nonterminal}
 
 impl {node_enum_name} {{
-{try_into_terminal_variant_name_variant_index_fns_src_indent_1}
+{try_into_terminal_variant_name_variant_index_fns_indent_1}
 }}
 "#
     )))
