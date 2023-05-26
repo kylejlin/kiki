@@ -1,4 +1,4 @@
-use crate::data::{table::*, validated_file::*, KikiErr, RustSrc};
+use crate::data::{ast::*, table::*, validated_file::*, KikiErr, RustSrc};
 use std::collections::HashSet;
 
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
@@ -68,16 +68,57 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .nonterminals
         .iter()
         .flat_map(|nonterminal| match nonterminal {
-            Nonterminal::Struct(s) => vec![(&s.name.name, None, &s.fieldset)],
+            Nonterminal::Struct(s) => vec![(s.name.name.to_owned(), &s.fieldset)],
             Nonterminal::Enum(e) => e
                 .variants
                 .iter()
-                .map(|v| (&e.name.name, Some(&v.name.name), &v.fieldset))
+                .map(|v| {
+                    let enum_name = &e.name.name;
+                    let variant_name = &v.name.name;
+                    (format!("{enum_name}::{variant_name}"), &v.fieldset)
+                })
                 .collect(),
         })
         .enumerate()
-        .map(|(rule_index, (type_name, opt_variant_name, fieldset))| {
-            let reduction_code_indent_1 = todo;
+        .map(|(rule_index, (constructor_name, fieldset))| {
+            let reduction_code_indent_1: String = match fieldset {
+                Fieldset::Empty => constructor_name,
+                Fieldset::Named(NamedFieldset { fields }) => todo!(),
+                Fieldset::Tuple(TupleFieldset { fields }) => {
+                    const ANONYMOUS_FIELD_PREFIX: &str = "t";
+                    let child_vars: String = fields
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .map(|(field_index, field)| match field {
+                            TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
+                            TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
+                                let field_type_name = &field_type.name;
+                                format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
+                            },
+                            TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
+                                let try_into_method_name = node_to_terminal_method_names.get(&field_type.name).unwrap();
+                                format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
+                            },
+                        })
+                        .collect();
+
+                    let parent_fields_indent_1: String = fields
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(field_index, field)| match field {
+                            TupleField::Skipped(_) => None,
+                            TupleField::Used(field_type) => {
+                                Some(format!("{ANONYMOUS_FIELD_PREFIX}{field_index},\n"))
+                            }
+                        })
+                        .collect::<String>()
+                        .indent(1);
+
+                    format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1})")
+                }
+            }
+            .indent(1);
             format!(
                 r#"{rule_kind_enum_name}::R{rule_index} => {{
 {reduction_code_indent_1}
