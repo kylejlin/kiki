@@ -253,7 +253,20 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
                 let fieldset = get_fieldset_src(&s.fieldset, &file.terminal_enum);
                 format!("{NONTERMINAL_DERIVE_CLAUSE}\npub struct {nonterminal_name}{fieldset}")
             },
-            Nonterminal::Enum(e) => todo!(),
+            Nonterminal::Enum(e) => {
+                let nonterminal_name = &e.name.name;
+                let variants_indent_1 = e.variants
+                    .iter()
+                    .map(|variant| {
+                        let variant_name = &variant.name.name;
+                        let variant_fieldset = get_fieldset_src(&variant.fieldset, &file.terminal_enum);
+                        format!("{variant_name}{variant_fieldset},")
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+                    .indent(1);
+                format!("{NONTERMINAL_DERIVE_CLAUSE}\npub enum {nonterminal_name}{{\n{variants_indent_1}\n}}")
+            },
         })
         .collect::<Vec<_>>()
         .join("\n\n");
