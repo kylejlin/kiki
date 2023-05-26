@@ -96,7 +96,41 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .map(|(rule_index, (constructor_name, fieldset))| {
             let reduction_code_indent_1: String = match fieldset {
                 Fieldset::Empty => constructor_name,
-                Fieldset::Named(NamedFieldset { fields }) => todo!(),
+                Fieldset::Named(NamedFieldset { fields }) => {
+                    let child_vars: String = fields
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .map(|(field_index, field)| match (&field.name, &field.symbol) {
+                            (IdentOrUnderscore::Underscore, _) => "nodes.pop().unwrap();\n".to_owned(),
+                            (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
+                                let field_name = &field_name.name;
+                                let field_type_name = &field_type.name;
+                                format!("let {field_name}_{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
+                            },
+                            (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Terminal(field_type)) => {
+                                let field_name = &field_name.name;
+                                let try_into_method_name = node_to_terminal_method_names.get(&field_type.name).unwrap();
+                                format!("let {field_name}_{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
+                            }
+                        })
+                        .collect();
+                    
+                    let parent_fields_indent_1: String = fields
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(field_index, field)| match field.name {
+                            IdentOrUnderscore::Underscore => None,
+                            IdentOrUnderscore::Ident(field_name) => {
+                                let field_name = &field_name.name;
+                                Some(format!("{field_name}: {field_name}_{field_index},"))
+                            }
+                        })
+                        .collect::<Vec<_>>().join("\n")
+                        .indent(1);
+
+                    format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
+                },
                 Fieldset::Tuple(TupleFieldset { fields }) => {
                     const ANONYMOUS_FIELD_PREFIX: &str = "t";
                     let child_vars: String = fields
@@ -122,13 +156,13 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
                         .filter_map(|(field_index, field)| match field {
                             TupleField::Skipped(_) => None,
                             TupleField::Used(field_type) => {
-                                Some(format!("{ANONYMOUS_FIELD_PREFIX}{field_index},\n"))
+                                Some(format!("{ANONYMOUS_FIELD_PREFIX}{field_index},"))
                             }
                         })
-                        .collect::<String>()
+                        .collect::<Vec<_>>().join("\n")
                         .indent(1);
 
-                    format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1})")
+                    format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
                 }
             }
             .indent(1);
