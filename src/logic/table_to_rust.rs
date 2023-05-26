@@ -280,17 +280,20 @@ enum {quasitoken_enum_name} {{
     {eof_variant_name},
 }}
 
+// TODO: Add ` = n` to each variant.
 #[derive(Clone, Copy, Debug)]
 enum {quasitoken_kind_enum_name} {{
 {token_kind_enum_variants_indent_1}
     {eof_variant_name},
 }}
 
+// TODO: Add ` = n` to each variant.
 #[derive(Clone, Copy, Debug)]
 enum {nonterminal_kind_enum_name} {{
 {nonterminal_kind_enum_variants_indent_1}
 }}
 
+// TODO: Add ` = n` to each variant.
 #[derive(Clone, Copy, Debug)]
 enum {state_enum_name} {{
 {state_enum_variants_indent_1}
