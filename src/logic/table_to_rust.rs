@@ -1,5 +1,5 @@
 use crate::data::{ast::*, table::*, validated_file::*, KikiErr, RustSrc};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
     let mut used_identifiers = file.defined_identifiers;
@@ -15,6 +15,19 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let node_enum_name = create_unique_identifier("Node", &mut used_identifiers);
     let action_enum_name = create_unique_identifier("Action", &mut used_identifiers);
     let rule_kind_enum_name = create_unique_identifier("RuleKind", &mut used_identifiers);
+
+    let node_to_terminal_method_names: HashMap<String, String> = file
+        .terminal_enum
+        .variants
+        .iter()
+        .enumerate()
+        .map(|(variant_index, variant)| {
+            let variant_name_snake_case = pascal_to_snake_case(&variant.dollarless_name);
+            let variant_name_original_case = &variant.dollarless_name;
+            let method_name = format!("try_into_{variant_name_snake_case}_{variant_index}");
+            (variant_name_original_case.to_owned(), method_name)
+        })
+        .collect();
 
     let token_kind_enum_variants_indent_1 = file
         .terminal_enum
@@ -178,11 +191,13 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .iter()
         .enumerate()
         .map(|(variant_index, variant)| {
-            let variant_name_snake_case = pascal_to_snake_case(&variant.dollarless_name);
             let variant_name_original_case = &variant.dollarless_name;
+            let method_name = node_to_terminal_method_names
+                .get(variant_name_original_case)
+                .unwrap();
             let type_ = &variant.type_;
             format!(
-                r#"fn try_into_{variant_name_snake_case}_{variant_index}(self) -> Result<{type_}, Self> {{
+                r#"fn {method_name}(self) -> Result<{type_}, Self> {{
     match self {{
         Self::{variant_name_original_case}(t) => Ok(t),
         _ => Err(self),
@@ -190,7 +205,8 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
 }}"#
             )
         })
-        .collect::<Vec<_>>().join("\n\n")
+        .collect::<Vec<_>>()
+        .join("\n\n")
         .indent(1);
 
     Ok(RustSrc(format!(
