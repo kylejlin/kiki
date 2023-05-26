@@ -15,6 +15,15 @@ pub struct TerminalEnum {
     pub variants: Vec<TerminalVariant>,
 }
 
+impl TerminalEnum {
+    pub fn get_type(&self, dollarless_variant_name: &str) -> Option<&str> {
+        self.variants
+            .iter()
+            .find(|variant| variant.dollarless_name == dollarless_variant_name)
+            .map(|variant| -> &str { &variant.type_ })
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct TerminalVariant {
     pub dollarless_name: String,
