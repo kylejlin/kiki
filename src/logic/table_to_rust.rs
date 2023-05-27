@@ -4,6 +4,7 @@ use std::collections::{HashMap, HashSet};
 const NONTERMINAL_DERIVE_CLAUSE: &str = "#[derive(Clone, Debug)]";
 const STATE_VARIANT_PREFIX: &str = "S";
 const RULE_KIND_VARIANT_PREFIX: &str = "R";
+const ACTION_SHIFT_VARIANT_NAME: &str = "Shift";
 
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
     let builder = SrcBuilder::new(table, file);
@@ -216,7 +217,7 @@ enum {node_enum_name} {{
 
 #[derive(Clone, Copy, Debug)]
 enum {action_enum_name} {{
-    Shift({state_enum_name}),
+    {ACTION_SHIFT_VARIANT_NAME}({state_enum_name}),
     Reduce({rule_kind_enum_name}),
     Accept,
     Err,
@@ -239,7 +240,7 @@ where S: IntoIterator<Item = {token_enum_name}> {{
         let top_state = *states.last().unwrap();
         let next_quasitoken_kind = {quasitoken_kind_enum_name}::from_quasitoken(tokens.peek().unwrap());
         match get_action(top_state, next_quasitoken_kind) {{
-            {action_enum_name}::Shift(new_state) => {{
+            {action_enum_name}::{ACTION_SHIFT_VARIANT_NAME}(new_state) => {{
                 states.push(new_state);
                 nodes.push({node_enum_name}::from_token(tokens.next().unwrap().try_into_token().unwrap()));
             }}
@@ -589,7 +590,7 @@ impl {node_enum_name} {{
         let rule_kind_enum_name = &self.rule_kind_enum_name;
         match action {
             Action::Shift(state_index) => {
-                format!("Shift({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
+                format!("{ACTION_SHIFT_VARIANT_NAME}({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
             }
             Action::Reduce(rule_index) => {
                 format!("Reduce({rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index})")
