@@ -98,20 +98,8 @@ impl SrcBuilder<'_> {
         let token_kind_enum_variants_indent_1 = self.get_token_kind_enum_variants_src().indent(1);
         let num_of_token_variants = file.terminal_enum.variants.len();
         let nonterminal_kind_enum_variants_indent_1 = self.get_nonterminal_kind_enum_variants_src().indent(1);
-
         let state_enum_variants_indent_1 = self.get_state_enum_variants_src().indent(1);
-
-        let node_enum_variants_indent_1: String = file
-            .nonterminals
-            .iter()
-            .map(|nonterminal| format!("{name}({name}),", name = nonterminal.name()))
-            .chain(file.terminal_enum.variants.iter().map(|variant| {
-                let name = &variant.dollarless_name;
-                let type_ = &variant.type_;
-                format!("{name}({type_}),\n")
-            }))
-            .collect::<String>()
-            .indent(1);
+        let node_enum_variants_indent_1 = self.get_node_enum_variants_src().indent(1);
 
         let rule_kinds = file
             .nonterminals
@@ -497,6 +485,20 @@ impl {node_enum_name} {{
     fn get_state_enum_variants_src(&self) -> String {
         (0..self.table.states())
             .map(|i| format!("S{i} = {i},"))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    fn get_node_enum_variants_src(&self) -> String {
+        self.file
+            .nonterminals
+            .iter()
+            .map(|nonterminal| format!("{name}({name}),", name = nonterminal.name()))
+            .chain(self.file.terminal_enum.variants.iter().map(|variant| {
+                let name = &variant.dollarless_name;
+                let type_ = &variant.type_;
+                format!("{name}({type_}),")
+            }))
             .collect::<Vec<_>>()
             .join("\n")
     }
