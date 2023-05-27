@@ -93,17 +93,7 @@ impl SrcBuilder<'_> {
             node_to_terminal_method_names,
         } = self;
 
-        let token_kind_enum_variants_indent_1 = file
-            .terminal_enum
-            .variants
-            .iter()
-            .enumerate()
-            .map(|(variant_index, variant)| {
-                let name = &variant.dollarless_name;
-                format!("{name} = {variant_index},\n")
-            })
-            .collect::<String>()
-            .indent(1);
+        let token_kind_enum_variants_indent_1 = self.get_token_kind_enum_variants_src().indent(1);
 
         let num_of_token_variants = file.terminal_enum.variants.len();
 
@@ -488,6 +478,24 @@ impl {node_enum_name} {{
 {nonterminal_type_defs}
 "#
         )))
+    }
+
+    fn get_token_kind_enum_variants_src(&self) -> String {
+        let Self {
+            file,
+            ..
+        } = self;
+        file
+            .terminal_enum
+            .variants
+            .iter()
+            .enumerate()
+            .map(|(variant_index, variant)| {
+                let name = &variant.dollarless_name;
+                format!("{name} = {variant_index},")
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
 
