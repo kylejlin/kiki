@@ -5,6 +5,7 @@ const NONTERMINAL_DERIVE_CLAUSE: &str = "#[derive(Clone, Debug)]";
 const STATE_VARIANT_PREFIX: &str = "S";
 const RULE_KIND_VARIANT_PREFIX: &str = "R";
 const ACTION_SHIFT_VARIANT_NAME: &str = "Shift";
+const ACTION_REDUCE_VARIANT_NAME: &str = "Reduce";
 
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
     let builder = SrcBuilder::new(table, file);
@@ -218,7 +219,7 @@ enum {node_enum_name} {{
 #[derive(Clone, Copy, Debug)]
 enum {action_enum_name} {{
     {ACTION_SHIFT_VARIANT_NAME}({state_enum_name}),
-    Reduce({rule_kind_enum_name}),
+    {ACTION_REDUCE_VARIANT_NAME}({rule_kind_enum_name}),
     Accept,
     Err,
 }}
@@ -245,7 +246,7 @@ where S: IntoIterator<Item = {token_enum_name}> {{
                 nodes.push({node_enum_name}::from_token(tokens.next().unwrap().try_into_token().unwrap()));
             }}
 
-            {action_enum_name}::Reduce(rule_kind) => {{
+            {action_enum_name}::{ACTION_REDUCE_VARIANT_NAME}(rule_kind) => {{
                 let (new_node, new_node_kind) = pop_and_reduce(&mut states, &mut nodes, rule_kind);
                 nodes.push(new_node);
                 let temp_top_state = *states.last().unwrap();
@@ -593,7 +594,7 @@ impl {node_enum_name} {{
                 format!("{ACTION_SHIFT_VARIANT_NAME}({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
             }
             Action::Reduce(rule_index) => {
-                format!("Reduce({rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index})")
+                format!("{ACTION_REDUCE_VARIANT_NAME}({rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index})")
             }
             Action::Accept => format!("Accept"),
             Action::Err => format!("Err"),
