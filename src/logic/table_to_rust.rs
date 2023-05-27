@@ -76,11 +76,6 @@ impl SrcBuilder<'_> {
     }
 
     fn file_src(&self) -> Result<RustSrc, KikiErr> {
-        // TODO: Delete
-        // let file = &self.file;
-        // let table = self.table;
-        // let node_to_terminal_method_names = &self.node_to_terminal_method_names;
-
         let Self {
             table,
             file,
