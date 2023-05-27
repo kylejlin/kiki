@@ -233,7 +233,7 @@ where S: IntoIterator<Item = {token_enum_name}> {{
         .map({quasitoken_enum_name}::Token)
         .chain(std::iter::once({quasitoken_enum_name}::Eof))
         .peekable();
-    let mut states = vec![{state_enum_name}::S0];
+    let mut states = vec![{state_enum_name}::{STATE_VARIANT_PREFIX}0];
     let mut nodes: Vec<{node_enum_name}> = vec![];
     loop {{
         let top_state = *states.last().unwrap();
