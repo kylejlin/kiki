@@ -102,7 +102,6 @@ impl SrcBuilder<'_> {
         let state_enum_variants_indent_1 = self.get_state_enum_variants_src().indent(1);
         let node_enum_variants_indent_1 = self.get_node_enum_variants_src().indent(1);
         let rule_kind_enum_variants_indent_1 = self.get_rule_kind_enum_variants_src().indent(1);
-
         let pop_and_reduce_match_arms_indent_2 = self.get_pop_and_reduce_match_arms_src().indent(2);
 
         let quasitoken_kind_from_token_match_arms_indent_3: String = file
