@@ -416,7 +416,8 @@ impl {node_enum_name} {{
     fn get_pop_and_reduce_match_arms_src(&self) -> String {
         self.get_rules()
             .enumerate()
-            .map(|(rule_index, (ConstructorName(constructor_name), fieldset))| {
+            .map(|(rule_index, (constructor_name, fieldset))| {
+                let constructor_name = constructor_name.to_string();
                 let reduction_code_indent_1: String = match fieldset {
                     Fieldset::Empty => constructor_name,
                     Fieldset::Named(NamedFieldset { fields }) => {
@@ -500,27 +501,42 @@ impl {node_enum_name} {{
             .join("\n")
     }
 
-    fn get_rules(&self) -> impl Iterator<Item = (ConstructorName, &Fieldset)> {
+    fn get_rules(&self) -> impl Iterator<Item = (ConstructorName<'_>, &Fieldset)> {
         self.file
             .nonterminals
             .iter()
             .flat_map(|nonterminal| match nonterminal {
-                Nonterminal::Struct(s) => vec![(ConstructorName(s.name.name.to_owned()), &s.fieldset)],
+                Nonterminal::Struct(s) => vec![(ConstructorName::Struct(&s.name.name), &s.fieldset)],
                 Nonterminal::Enum(e) => e
                     .variants
                     .iter()
                     .map(|v| {
                         let enum_name = &e.name.name;
                         let variant_name = &v.name.name;
-                        (ConstructorName(format!("{enum_name}::{variant_name}")), &v.fieldset)
+                        (ConstructorName::Enum { enum_name, variant_name }, &v.fieldset)
                     })
                     .collect(),
             })
     }
 }
 
-#[derive(Debug)]
-struct ConstructorName(String);
+#[derive(Debug, Clone, Copy)]
+enum ConstructorName<'a> {
+    Struct(&'a str),
+    Enum {
+        enum_name: &'a str,
+        variant_name: &'a str,
+    },
+}
+
+impl ConstructorName<'_> {
+    fn to_string(&self) -> String {
+        match self {
+            ConstructorName::Struct(name) => name.to_string(),
+            ConstructorName::Enum { enum_name, variant_name } => format!("{enum_name}::{variant_name}"),
+        }
+    }
+}
 
 fn create_unique_identifier(preferred_name: &str, used: &mut HashSet<String>) -> String {
     if !used.contains(preferred_name) {
