@@ -48,7 +48,11 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let nonterminal_kind_enum_variants_indent_1 = file
         .nonterminals
         .iter()
-        .map(|nonterminal| format!("{},\n", nonterminal.name()))
+        .enumerate()
+        .map(|(nonterminal_index, nonterminal)| {
+            let nonterminal_name = nonterminal.name();
+            format!("{nonterminal_name} = {nonterminal_index},\n")
+        })
         .collect::<String>()
         .indent(1);
 
@@ -289,7 +293,6 @@ enum {quasitoken_kind_enum_name} {{
     {eof_variant_name} = {num_of_token_variants},
 }}
 
-// TODO: Add ` = n` to each variant.
 #[derive(Clone, Copy, Debug)]
 enum {nonterminal_kind_enum_name} {{
 {nonterminal_kind_enum_variants_indent_1}
