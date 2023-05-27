@@ -29,6 +29,7 @@ struct SrcBuilder<'a> {
     action_enum_name: String,
     rule_kind_enum_name: String,
     action_table_name: String,
+    goto_table_name: String,
 
     node_to_terminal_method_names: HashMap<String, String>,
 }
@@ -49,6 +50,7 @@ impl SrcBuilder<'_> {
         let action_enum_name = create_unique_identifier("Action", used_identifiers);
         let rule_kind_enum_name = create_unique_identifier("RuleKind", used_identifiers);
         let action_table_name = create_unique_identifier("ACTION_TABLE", used_identifiers);
+        let goto_table_name = create_unique_identifier("GOTO_TABLE", used_identifiers);
 
         let node_to_terminal_method_names: HashMap<String, String> = file
             .terminal_enum
@@ -77,6 +79,7 @@ impl SrcBuilder<'_> {
             action_enum_name,
             rule_kind_enum_name,
             action_table_name,
+            goto_table_name,
             node_to_terminal_method_names,
         }
     }
@@ -98,6 +101,7 @@ impl SrcBuilder<'_> {
             action_enum_name,
             rule_kind_enum_name,
             action_table_name,
+            goto_table_name,
             ..
         } = self;
 
@@ -115,6 +119,7 @@ impl SrcBuilder<'_> {
         let node_from_token_match_arms_indent_3 =
             self.get_node_from_token_match_arms_src().indent(3);
         let action_table_rows_indent_1 = self.get_action_table_rows_src().indent(1);
+        let goto_table_rows_indent_1 = self.get_goto_table_rows_src().indent(1);
         let impl_try_from_node_for_each_nonterminal =
             self.get_impl_try_from_node_for_each_nonterminal_src();
         let node_try_into_terminal_variant_name_variant_index_fns_indent_1 = self
@@ -123,6 +128,7 @@ impl SrcBuilder<'_> {
         let nonterminal_type_defs = self.get_nonterminal_type_defs_src();
 
         let num_of_quasitoken_kind_variants = file.terminal_enum.variants.len() + 1;
+        let num_of_nonterminal_kind_variants = file.nonterminals.len();
         let num_of_state_variants = table.states();
 
         Ok(RustSrc(format!(
@@ -252,8 +258,12 @@ fn get_action(top_state: {state_enum_name}, next_quasitoken_kind: {quasitoken_ki
     {action_table_name}[top_state as usize][next_quasitoken_kind as usize]
 }}
 
+const {goto_table_name}: [[Option<{state_enum_name}>; {num_of_nonterminal_kind_variants}]; {num_of_state_variants}] = [
+{goto_table_rows_indent_1}
+];
+
 fn get_goto(top_state: {state_enum_name}, new_node_kind: {nonterminal_kind_enum_name}) -> Option<{state_enum_name}> {{
-    todo!()
+    {goto_table_name}[top_state as usize][new_node_kind as usize]
 }}
 
 {impl_try_from_node_for_each_nonterminal}
@@ -537,6 +547,10 @@ impl {node_enum_name} {{
             Action::Accept => format!("{ACTION_ACCEPT_VARIANT_NAME}"),
             Action::Err => format!("{ACTION_ERR_VARIANT_NAME}"),
         }
+    }
+
+    fn get_goto_table_rows_src(&self) -> String {
+        todo!()
     }
 
     fn get_impl_try_from_node_for_each_nonterminal_src(&self) -> String {
