@@ -98,7 +98,7 @@ impl SrcBuilder<'_> {
             action_enum_name,
             rule_kind_enum_name,
             action_table_name,
-            node_to_terminal_method_names,
+            ..
         } = self;
 
         let token_kind_enum_variants_indent_1 = self.get_token_kind_enum_variants_src().indent(1);
@@ -117,32 +117,12 @@ impl SrcBuilder<'_> {
         let action_table_rows_indent_1 = self.get_action_table_rows_src().indent(1);
         let impl_try_from_node_for_each_nonterminal =
             self.get_impl_try_from_node_for_each_nonterminal_src();
+        let node_try_into_terminal_variant_name_variant_index_fns_indent_1 = self
+            .get_node_try_into_terminal_variant_name_variant_index_fns_src()
+            .indent(1);
 
         let num_of_quasitoken_kind_variants = file.terminal_enum.variants.len() + 1;
         let num_of_state_variants = table.states();
-
-        let node_try_into_terminal_variant_name_variant_index_fns_indent_1: String = file
-            .terminal_enum
-            .variants
-            .iter()
-            .map(|variant| {
-                let variant_name_original_case = &variant.dollarless_name;
-                let method_name = node_to_terminal_method_names
-                    .get(variant_name_original_case)
-                    .unwrap();
-                let type_ = &variant.type_;
-                format!(
-                    r#"fn {method_name}(self) -> Result<{type_}, Self> {{
-        match self {{
-            Self::{variant_name_original_case}(t) => Ok(t),
-            _ => Err(self),
-        }}
-    }}"#
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n\n")
-            .indent(1);
 
         let nonterminal_type_defs: String = file.nonterminals
             .iter()
@@ -600,6 +580,31 @@ impl {node_enum_name} {{
             {node_enum_name}::{nonterminal_name}(n) => Ok(n),
             _ => Err(node),
         }}
+    }}
+}}"#
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    }
+
+    fn get_node_try_into_terminal_variant_name_variant_index_fns_src(&self) -> String {
+        self.file
+            .terminal_enum
+            .variants
+            .iter()
+            .map(|variant| {
+                let variant_name_original_case = &variant.dollarless_name;
+                let method_name = self
+                    .node_to_terminal_method_names
+                    .get(variant_name_original_case)
+                    .unwrap();
+                let type_ = &variant.type_;
+                format!(
+                    r#"fn {method_name}(self) -> Result<{type_}, Self> {{
+    match self {{
+        Self::{variant_name_original_case}(t) => Ok(t),
+        _ => Err(self),
     }}
 }}"#
                 )
