@@ -2,6 +2,7 @@ use crate::data::{ast::*, table::*, validated_file::*, KikiErr, RustSrc};
 use std::collections::{HashMap, HashSet};
 
 const NONTERMINAL_DERIVE_CLAUSE: &str = "#[derive(Clone, Debug)]";
+const STATE_VARIANT_PREFIX: &str = "S";
 
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
     let builder = SrcBuilder::new(table, file);
@@ -353,7 +354,7 @@ impl {node_enum_name} {{
 
     fn get_state_enum_variants_src(&self) -> String {
         (0..self.table.states())
-            .map(|i| format!("S{i} = {i},"))
+            .map(|i| format!("{STATE_VARIANT_PREFIX}{i} = {i},"))
             .collect::<Vec<_>>()
             .join("\n")
     }
@@ -586,7 +587,9 @@ impl {node_enum_name} {{
         let state_enum_name = &self.state_enum_name;
         let rule_kind_enum_name = &self.rule_kind_enum_name;
         match action {
-            Action::Shift(state_index) => format!("Shift({state_enum_name}::S{state_index})"),
+            Action::Shift(state_index) => {
+                format!("Shift({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
+            }
             Action::Reduce(rule_index) => format!("Reduce({rule_kind_enum_name}::{rule_index})"),
             Action::Accept => format!("Accept"),
             Action::Err => format!("Err"),
