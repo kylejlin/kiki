@@ -97,109 +97,13 @@ impl SrcBuilder<'_> {
 
         let token_kind_enum_variants_indent_1 = self.get_token_kind_enum_variants_src().indent(1);
         let num_of_token_variants = file.terminal_enum.variants.len();
-        let nonterminal_kind_enum_variants_indent_1 = self.get_nonterminal_kind_enum_variants_src().indent(1);
+        let nonterminal_kind_enum_variants_indent_1 =
+            self.get_nonterminal_kind_enum_variants_src().indent(1);
         let state_enum_variants_indent_1 = self.get_state_enum_variants_src().indent(1);
         let node_enum_variants_indent_1 = self.get_node_enum_variants_src().indent(1);
         let rule_kind_enum_variants_indent_1 = self.get_rule_kind_enum_variants_src().indent(1);
 
-        let pop_and_reduce_match_arms_indent_2: String = file
-            .nonterminals
-            .iter()
-            .flat_map(|nonterminal| match nonterminal {
-                Nonterminal::Struct(s) => vec![(s.name.name.to_owned(), &s.fieldset)],
-                Nonterminal::Enum(e) => e
-                    .variants
-                    .iter()
-                    .map(|v| {
-                        let enum_name = &e.name.name;
-                        let variant_name = &v.name.name;
-                        (format!("{enum_name}::{variant_name}"), &v.fieldset)
-                    })
-                    .collect(),
-            })
-            .enumerate()
-            .map(|(rule_index, (constructor_name, fieldset))| {
-                let reduction_code_indent_1: String = match fieldset {
-                    Fieldset::Empty => constructor_name,
-                    Fieldset::Named(NamedFieldset { fields }) => {
-                        let child_vars: String = fields
-                            .iter()
-                            .enumerate()
-                            .rev()
-                            .map(|(field_index, field)| match (&field.name, &field.symbol) {
-                                (IdentOrUnderscore::Underscore, _) => "nodes.pop().unwrap();\n".to_owned(),
-                                (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
-                                    let field_name = &field_name.name;
-                                    let field_type_name = &field_type.name;
-                                    format!("let {field_name}_{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
-                                },
-                                (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Terminal(field_type)) => {
-                                    let field_name = &field_name.name;
-                                    let try_into_method_name = node_to_terminal_method_names.get(&field_type.name).unwrap();
-                                    format!("let {field_name}_{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
-                                }
-                            })
-                            .collect();
-                        
-                        let parent_fields_indent_1: String = fields
-                            .iter()
-                            .enumerate()
-                            .filter_map(|(field_index, field)| match &field.name {
-                                IdentOrUnderscore::Underscore => None,
-                                IdentOrUnderscore::Ident(field_name) => {
-                                    let field_name = &field_name.name;
-                                    Some(format!("{field_name}: {field_name}_{field_index},"))
-                                }
-                            })
-                            .collect::<Vec<_>>().join("\n")
-                            .indent(1);
-
-                        format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
-                    },
-                    Fieldset::Tuple(TupleFieldset { fields }) => {
-                        const ANONYMOUS_FIELD_PREFIX: &str = "t";
-                        let child_vars: String = fields
-                            .iter()
-                            .enumerate()
-                            .rev()
-                            .map(|(field_index, field)| match field {
-                                TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
-                                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
-                                    let field_type_name = &field_type.name;
-                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
-                                },
-                                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                                    let try_into_method_name = node_to_terminal_method_names.get(&field_type.name).unwrap();
-                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
-                                },
-                            })
-                            .collect();
-
-                        let parent_fields_indent_1: String = fields
-                            .iter()
-                            .enumerate()
-                            .filter_map(|(field_index, field)| match field {
-                                TupleField::Skipped(_) => None,
-                                TupleField::Used(_) => {
-                                    Some(format!("{ANONYMOUS_FIELD_PREFIX}{field_index},"))
-                                }
-                            })
-                            .collect::<Vec<_>>().join("\n")
-                            .indent(1);
-
-                        format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
-                    }
-                }
-                .indent(1);
-                format!(
-                    r#"{rule_kind_enum_name}::R{rule_index} => {{
-    {reduction_code_indent_1}
-    }}"#
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-            .indent(2);
+        let pop_and_reduce_match_arms_indent_2 = self.get_pop_and_reduce_match_arms_src().indent(2);
 
         let quasitoken_kind_from_token_match_arms_indent_3: String = file
             .terminal_enum
@@ -490,7 +394,7 @@ impl {node_enum_name} {{
             .collect::<Vec<_>>()
             .join("\n")
     }
-    
+
     fn get_rule_kind_enum_variants_src(&self) -> String {
         (0..self.get_number_of_rule_kinds())
             .map(|i| format!("R{i},"))
@@ -507,6 +411,107 @@ impl {node_enum_name} {{
                 Nonterminal::Enum(e) => e.variants.len(),
             })
             .sum()
+    }
+
+    fn get_pop_and_reduce_match_arms_src(&self) -> String {
+        self.file
+            .nonterminals
+            .iter()
+            .flat_map(|nonterminal| match nonterminal {
+                Nonterminal::Struct(s) => vec![(s.name.name.to_owned(), &s.fieldset)],
+                Nonterminal::Enum(e) => e
+                    .variants
+                    .iter()
+                    .map(|v| {
+                        let enum_name = &e.name.name;
+                        let variant_name = &v.name.name;
+                        (format!("{enum_name}::{variant_name}"), &v.fieldset)
+                    })
+                    .collect(),
+            })
+            .enumerate()
+            .map(|(rule_index, (constructor_name, fieldset))| {
+                let reduction_code_indent_1: String = match fieldset {
+                    Fieldset::Empty => constructor_name,
+                    Fieldset::Named(NamedFieldset { fields }) => {
+                        let child_vars: String = fields
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .map(|(field_index, field)| match (&field.name, &field.symbol) {
+                                (IdentOrUnderscore::Underscore, _) => "nodes.pop().unwrap();\n".to_owned(),
+                                (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
+                                    let field_name = &field_name.name;
+                                    let field_type_name = &field_type.name;
+                                    format!("let {field_name}_{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
+                                },
+                                (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Terminal(field_type)) => {
+                                    let field_name = &field_name.name;
+                                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
+                                    format!("let {field_name}_{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
+                                }
+                            })
+                            .collect();
+                        
+                        let parent_fields_indent_1: String = fields
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(field_index, field)| match &field.name {
+                                IdentOrUnderscore::Underscore => None,
+                                IdentOrUnderscore::Ident(field_name) => {
+                                    let field_name = &field_name.name;
+                                    Some(format!("{field_name}: {field_name}_{field_index},"))
+                                }
+                            })
+                            .collect::<Vec<_>>().join("\n")
+                            .indent(1);
+
+                        format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
+                    },
+                    Fieldset::Tuple(TupleFieldset { fields }) => {
+                        const ANONYMOUS_FIELD_PREFIX: &str = "t";
+                        let child_vars: String = fields
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .map(|(field_index, field)| match field {
+                                TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
+                                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
+                                    let field_type_name = &field_type.name;
+                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
+                                },
+                                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
+                                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
+                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
+                                },
+                            })
+                            .collect();
+
+                        let parent_fields_indent_1: String = fields
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(field_index, field)| match field {
+                                TupleField::Skipped(_) => None,
+                                TupleField::Used(_) => {
+                                    Some(format!("{ANONYMOUS_FIELD_PREFIX}{field_index},"))
+                                }
+                            })
+                            .collect::<Vec<_>>().join("\n")
+                            .indent(1);
+
+                        format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
+                    }
+                }
+                .indent(1);
+                let rule_kind_enum_name = &self.rule_kind_enum_name;
+                format!(
+                    r#"{rule_kind_enum_name}::R{rule_index} => {{
+{reduction_code_indent_1}
+}}"#
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
 
@@ -531,27 +536,36 @@ fn get_fieldset_src(fieldset: &Fieldset, terminal_enum: &TerminalEnum) -> String
     match fieldset {
         Fieldset::Empty => ";".to_owned(),
         Fieldset::Named(fieldset) => {
-            let fields_indent_1 = fieldset.fields
+            let fields_indent_1 = fieldset
+                .fields
                 .iter()
                 .filter_map(|field| match (&field.name, &field.symbol) {
                     (IdentOrUnderscore::Underscore, _) => None,
-                    (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
+                    (
+                        IdentOrUnderscore::Ident(field_name),
+                        IdentOrTerminalIdent::Ident(field_type),
+                    ) => {
                         let field_name = &field_name.name;
                         let field_type_name = &field_type.name;
                         Some(format!("{field_name}: {field_type_name},"))
                     }
-                    (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Terminal(field_type)) => {
+                    (
+                        IdentOrUnderscore::Ident(field_name),
+                        IdentOrTerminalIdent::Terminal(field_type),
+                    ) => {
                         let field_name = &field_name.name;
                         let field_type_name = terminal_enum.get_type(&field_type.name).unwrap();
                         Some(format!("{field_name}: {field_type_name},"))
                     }
                 })
-                .collect::<Vec<_>>().join("\n")
+                .collect::<Vec<_>>()
+                .join("\n")
                 .indent(1);
             format!("{{\n{fields_indent_1}\n}}")
-        },
+        }
         Fieldset::Tuple(fieldset) => {
-            let fields_indent_1 = fieldset.fields
+            let fields_indent_1 = fieldset
+                .fields
                 .iter()
                 .filter_map(|field| match field {
                     TupleField::Skipped(_) => None,
@@ -564,7 +578,8 @@ fn get_fieldset_src(fieldset: &Fieldset, terminal_enum: &TerminalEnum) -> String
                         Some(format!("{field_type_name},"))
                     }
                 })
-                .collect::<Vec<_>>().join("\n")
+                .collect::<Vec<_>>()
+                .join("\n")
                 .indent(1);
             format!("(\n{fields_indent_1}\n);")
         }
@@ -572,11 +587,10 @@ fn get_fieldset_src(fieldset: &Fieldset, terminal_enum: &TerminalEnum) -> String
 }
 
 fn get_action_table_row_src(table: &Table, _state: usize) -> String {
-    let row_items_indent_1 = table.terminals
+    let row_items_indent_1 = table
+        .terminals
         .iter()
-        .map(|_terminal| {
-            "TODO"
-        })
+        .map(|_terminal| "TODO")
         .collect::<Vec<_>>()
         .join("\n")
         .indent(1);
