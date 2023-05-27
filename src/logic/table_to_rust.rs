@@ -421,40 +421,9 @@ impl {node_enum_name} {{
                     Fieldset::Empty => constructor_name.to_string(),
                     Fieldset::Named(NamedFieldset { fields }) => {
                         self.get_named_fieldset_rule_reduction_src(constructor_name, fields)
-                    },
+                    }
                     Fieldset::Tuple(TupleFieldset { fields }) => {
-                        const ANONYMOUS_FIELD_PREFIX: &str = "t";
-                        let constructor_name = constructor_name.to_string();
-                        let child_vars: String = fields
-                            .iter()
-                            .enumerate()
-                            .rev()
-                            .map(|(field_index, field)| match field {
-                                TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
-                                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
-                                    let field_type_name = &field_type.name;
-                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
-                                },
-                                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
-                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
-                                },
-                            })
-                            .collect();
-
-                        let parent_fields_indent_1: String = fields
-                            .iter()
-                            .enumerate()
-                            .filter_map(|(field_index, field)| match field {
-                                TupleField::Skipped(_) => None,
-                                TupleField::Used(_) => {
-                                    Some(format!("{ANONYMOUS_FIELD_PREFIX}{field_index},"))
-                                }
-                            })
-                            .collect::<Vec<_>>().join("\n")
-                            .indent(1);
-
-                        format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
+                        self.get_tuple_fieldset_rule_reduction_src(constructor_name, fields)
                     }
                 }
                 .indent(1);
@@ -529,6 +498,44 @@ impl {node_enum_name} {{
                     let field_name = &field_name.name;
                     Some(format!("{field_name}: {field_name}_{field_index},"))
                 }
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+            .indent(1);
+
+        format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
+    }
+
+    fn get_tuple_fieldset_rule_reduction_src(
+        &self,
+        constructor_name: ConstructorName,
+        fields: &[TupleField],
+    ) -> String {
+        const ANONYMOUS_FIELD_PREFIX: &str = "t";
+        let constructor_name = constructor_name.to_string();
+        let child_vars: String = fields
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .map(|(field_index, field)| match field {
+                                TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
+                                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
+                                    let field_type_name = &field_type.name;
+                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
+                                },
+                                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
+                                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
+                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
+                                },
+                            })
+                            .collect();
+
+        let parent_fields_indent_1: String = fields
+            .iter()
+            .enumerate()
+            .filter_map(|(field_index, field)| match field {
+                TupleField::Skipped(_) => None,
+                TupleField::Used(_) => Some(format!("{ANONYMOUS_FIELD_PREFIX}{field_index},")),
             })
             .collect::<Vec<_>>()
             .join("\n")
