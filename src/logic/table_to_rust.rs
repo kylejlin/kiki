@@ -417,25 +417,34 @@ impl {node_enum_name} {{
         self.get_rules()
             .enumerate()
             .map(|(rule_index, (constructor_name, fieldset))| {
-                let reduction_code_indent_1: String = match fieldset {
-                    Fieldset::Empty => constructor_name.to_string(),
-                    Fieldset::Named(NamedFieldset { fields }) => {
-                        self.get_named_fieldset_rule_reduction_src(constructor_name, fields)
-                    }
-                    Fieldset::Tuple(TupleFieldset { fields }) => {
-                        self.get_tuple_fieldset_rule_reduction_src(constructor_name, fields)
-                    }
-                }
-                .indent(1);
-                let rule_kind_enum_name = &self.rule_kind_enum_name;
-                format!(
-                    r#"{rule_kind_enum_name}::R{rule_index} => {{
-{reduction_code_indent_1}
-}}"#
-                )
+                self.get_rule_reduction_src(rule_index, constructor_name, fieldset)
             })
             .collect::<Vec<_>>()
             .join("\n")
+    }
+
+    fn get_rule_reduction_src(
+        &self,
+        rule_index: usize,
+        constructor_name: ConstructorName,
+        fieldset: &Fieldset,
+    ) -> String {
+        let reduction_code_indent_1: String = match fieldset {
+            Fieldset::Empty => constructor_name.to_string(),
+            Fieldset::Named(NamedFieldset { fields }) => {
+                self.get_named_fieldset_rule_reduction_src(constructor_name, fields)
+            }
+            Fieldset::Tuple(TupleFieldset { fields }) => {
+                self.get_tuple_fieldset_rule_reduction_src(constructor_name, fields)
+            }
+        }
+        .indent(1);
+        let rule_kind_enum_name = &self.rule_kind_enum_name;
+        format!(
+            r#"{rule_kind_enum_name}::R{rule_index} => {{
+{reduction_code_indent_1}
+}}"#
+        )
     }
 
     fn get_rules(&self) -> impl Iterator<Item = (ConstructorName<'_>, &Fieldset)> {
