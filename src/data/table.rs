@@ -6,7 +6,7 @@ pub struct Table {
     pub gotos: Vec<Goto>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Action {
     Shift(usize),
     Reduce(usize),
@@ -14,7 +14,7 @@ pub enum Action {
     Err,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Goto {
     Goto(usize),
     Err,
@@ -23,5 +23,38 @@ pub enum Goto {
 impl Table {
     pub fn states(&self) -> usize {
         self.actions.len() / self.terminals.len()
+    }
+
+    /// ## Panics
+    /// 1. Panics if the terminal is not in the table.
+    /// 2. Panics if the state is too large.
+    pub fn action(&self, state: usize, terminal: &str) -> Action {
+        let terminal_index = self
+            .terminals
+            .iter()
+            .position(|t| t == terminal)
+            .expect("Terminal not found in table");
+
+        if state >= self.states() {
+            let states = self.states();
+            panic!("State {state} is too large. There are only {states} states.");
+        }
+
+        self.actions[state * self.terminals.len() + terminal_index]
+    }
+
+    pub fn goto(&self, state: usize, nontermial: &str) -> Goto {
+        let nonterminal_index = self
+            .nonterminals
+            .iter()
+            .position(|t| t == nontermial)
+            .expect("Nonterminal not found in table");
+
+        if state >= self.states() {
+            let states = self.states();
+            panic!("State {state} is too large. There are only {states} states.");
+        }
+
+        self.gotos[state * self.nonterminals.len() + nonterminal_index]
     }
 }
