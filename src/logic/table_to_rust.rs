@@ -115,30 +115,11 @@ impl SrcBuilder<'_> {
         let node_from_token_match_arms_indent_3 =
             self.get_node_from_token_match_arms_src().indent(3);
         let action_table_rows_indent_1 = self.get_action_table_rows_src().indent(1);
+        let impl_try_from_node_for_each_nonterminal =
+            self.get_impl_try_from_node_for_each_nonterminal_src();
 
         let num_of_quasitoken_kind_variants = file.terminal_enum.variants.len() + 1;
         let num_of_state_variants = table.states();
-
-        let impl_try_from_node_for_each_nonterminal: String = file
-            .nonterminals
-            .iter()
-            .map(|nonterminal| {
-                let nonterminal_name = nonterminal.name();
-                format!(
-                    r#"impl TryFrom<{node_enum_name}> for {nonterminal_name} {{
-        type Error = {node_enum_name};
-
-        fn try_from(node: {node_enum_name}) -> Result<Self, Self::Error> {{
-            match node {{
-                {node_enum_name}::{nonterminal_name}(n) => Ok(n),
-                _ => Err(node),
-            }}
-        }}
-    }}"#
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n\n");
 
         let node_try_into_terminal_variant_name_variant_index_fns_indent_1: String = file
             .terminal_enum
@@ -601,6 +582,30 @@ impl {node_enum_name} {{
             Action::Accept => format!("{ACTION_ACCEPT_VARIANT_NAME}"),
             Action::Err => format!("{ACTION_ERR_VARIANT_NAME}"),
         }
+    }
+
+    fn get_impl_try_from_node_for_each_nonterminal_src(&self) -> String {
+        let node_enum_name = &self.node_enum_name;
+        self.file
+            .nonterminals
+            .iter()
+            .map(|nonterminal| {
+                let nonterminal_name = nonterminal.name();
+                format!(
+                    r#"impl TryFrom<{node_enum_name}> for {nonterminal_name} {{
+    type Error = {node_enum_name};
+
+    fn try_from(node: {node_enum_name}) -> Result<Self, Self::Error> {{
+        match node {{
+            {node_enum_name}::{nonterminal_name}(n) => Ok(n),
+            _ => Err(node),
+        }}
+    }}
+}}"#
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n\n")
     }
 }
 
