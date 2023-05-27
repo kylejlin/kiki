@@ -74,7 +74,9 @@ impl SrcBuilder<'_> {
             node_to_terminal_method_names,
         }
     }
+}
 
+impl SrcBuilder<'_> {
     fn file_src(&self) -> Result<RustSrc, KikiErr> {
         let Self {
             table,
