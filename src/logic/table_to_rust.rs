@@ -525,8 +525,8 @@ impl {node_enum_name} {{
             .iter()
             .map(|terminal| {
                 let action = self.table.action(state, terminal);
-                let variant = self.get_action_variant_src(action);
-                format!("{action_enum_name}::{variant},")
+                let unqualified_variant = self.get_action_variant_unqualified_src(action);
+                format!("{action_enum_name}::{unqualified_variant},")
             })
             .collect::<Vec<_>>()
             .join("\n")
@@ -534,7 +534,7 @@ impl {node_enum_name} {{
         format!("[\n{row_items_indent_1}\n],")
     }
 
-    fn get_action_variant_src(&self, action: Action) -> String {
+    fn get_action_variant_unqualified_src(&self, action: Action) -> String {
         let state_enum_name = &self.state_enum_name;
         let rule_kind_enum_name = &self.rule_kind_enum_name;
         match action {
@@ -550,7 +550,36 @@ impl {node_enum_name} {{
     }
 
     fn get_goto_table_rows_src(&self) -> String {
-        todo!()
+        (0..self.table.states())
+            .map(|state| self.get_goto_table_row_src(state))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    fn get_goto_table_row_src(&self, state: usize) -> String {
+        let row_items_indent_1 = self
+            .table
+            .terminals
+            .iter()
+            .map(|terminal| {
+                let goto = self.table.goto(state, terminal);
+                let qualified_variant = self.get_goto_variant_qualified_src(goto);
+                format!("{qualified_variant},")
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+            .indent(1);
+        format!("[\n{row_items_indent_1}\n],")
+    }
+
+    fn get_goto_variant_qualified_src(&self, goto: Goto) -> String {
+        let state_enum_name = &self.state_enum_name;
+        match goto {
+            Goto::Goto(state_index) => {
+                format!("Some({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
+            }
+            Goto::Err => format!("None"),
+        }
     }
 
     fn get_impl_try_from_node_for_each_nonterminal_src(&self) -> String {
