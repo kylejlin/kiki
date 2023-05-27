@@ -7,6 +7,7 @@ const RULE_KIND_VARIANT_PREFIX: &str = "R";
 const ACTION_SHIFT_VARIANT_NAME: &str = "Shift";
 const ACTION_REDUCE_VARIANT_NAME: &str = "Reduce";
 const ACTION_ACCEPT_VARIANT_NAME: &str = "Accept";
+const ACTION_ERR_VARIANT_NAME: &str = "Err";
 
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
     let builder = SrcBuilder::new(table, file);
@@ -222,7 +223,7 @@ enum {action_enum_name} {{
     {ACTION_SHIFT_VARIANT_NAME}({state_enum_name}),
     {ACTION_REDUCE_VARIANT_NAME}({rule_kind_enum_name}),
     {ACTION_ACCEPT_VARIANT_NAME},
-    Err,
+    {ACTION_ERR_VARIANT_NAME},
 }}
 
 #[derive(Clone, Copy, Debug)]
@@ -261,7 +262,7 @@ where S: IntoIterator<Item = {token_enum_name}> {{
                 return Ok({start_type_name}::try_from(nodes.pop().unwrap()).unwrap());
             }}
 
-            {action_enum_name}::Err => {{
+            {action_enum_name}::{ACTION_ERR_VARIANT_NAME} => {{
                 return Err(tokens.next().unwrap());
             }}
         }}
@@ -598,7 +599,7 @@ impl {node_enum_name} {{
                 format!("{ACTION_REDUCE_VARIANT_NAME}({rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index})")
             }
             Action::Accept => format!("{ACTION_ACCEPT_VARIANT_NAME}"),
-            Action::Err => format!("Err"),
+            Action::Err => format!("{ACTION_ERR_VARIANT_NAME}"),
         }
     }
 }
