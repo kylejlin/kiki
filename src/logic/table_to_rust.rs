@@ -12,8 +12,8 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
 struct SrcBuilder<'a> {
     table: &'a Table,
     file: ValidatedFile,
-    start_type_name: &'a str,
-    token_enum_name: &'a str,
+    start_type_name: String,
+    token_enum_name: String,
     eof_variant_name: String,
     quasitoken_enum_name: String,
     quasitoken_kind_enum_name: String,
@@ -28,10 +28,10 @@ struct SrcBuilder<'a> {
 }
 
 impl SrcBuilder<'_> {
-    fn new(table: &Table, mut file: ValidatedFile) -> Self {
+    fn new(table: &Table, mut file: ValidatedFile) -> SrcBuilder {
         let used_identifiers = &mut file.defined_identifiers;
-        let start_type_name = &file.start;
-        let token_enum_name = &file.terminal_enum.name;
+        let start_type_name = file.start.to_owned();
+        let token_enum_name = file.terminal_enum.name.to_owned();
         let eof_variant_name = create_unique_identifier("Eof", used_identifiers);
         let quasitoken_enum_name = create_unique_identifier("Quasitoken", used_identifiers);
         let quasitoken_kind_enum_name =
@@ -57,7 +57,7 @@ impl SrcBuilder<'_> {
             })
             .collect();
 
-        Self {
+        SrcBuilder {
             table,
             file,
             start_type_name,
@@ -195,7 +195,7 @@ impl SrcBuilder<'_> {
                         let parent_fields_indent_1: String = fields
                             .iter()
                             .enumerate()
-                            .filter_map(|(field_index, field)| match field.name {
+                            .filter_map(|(field_index, field)| match &field.name {
                                 IdentOrUnderscore::Underscore => None,
                                 IdentOrUnderscore::Ident(field_name) => {
                                     let field_name = &field_name.name;
