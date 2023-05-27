@@ -100,19 +100,7 @@ impl SrcBuilder<'_> {
         let nonterminal_kind_enum_variants_indent_1 = self.get_nonterminal_kind_enum_variants_src().indent(1);
         let state_enum_variants_indent_1 = self.get_state_enum_variants_src().indent(1);
         let node_enum_variants_indent_1 = self.get_node_enum_variants_src().indent(1);
-
-        let rule_kinds = file
-            .nonterminals
-            .iter()
-            .map(|nonterminal| match nonterminal {
-                Nonterminal::Struct(_) => 1,
-                Nonterminal::Enum(e) => e.variants.len(),
-            })
-            .sum();
-        let rule_kind_enum_variants_indent_1: String = (0..rule_kinds)
-            .map(|i| format!("R{i},\n"))
-            .collect::<String>()
-            .indent(1);
+        let rule_kind_enum_variants_indent_1 = self.get_rule_kind_enum_variants_src().indent(1);
 
         let pop_and_reduce_match_arms_indent_2: String = file
             .nonterminals
@@ -501,6 +489,24 @@ impl {node_enum_name} {{
             }))
             .collect::<Vec<_>>()
             .join("\n")
+    }
+    
+    fn get_rule_kind_enum_variants_src(&self) -> String {
+        (0..self.get_number_of_rule_kinds())
+            .map(|i| format!("R{i},"))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    fn get_number_of_rule_kinds(&self) -> usize {
+        self.file
+            .nonterminals
+            .iter()
+            .map(|nonterminal| match nonterminal {
+                Nonterminal::Struct(_) => 1,
+                Nonterminal::Enum(e) => e.variants.len(),
+            })
+            .sum()
     }
 }
 
