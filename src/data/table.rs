@@ -43,6 +43,9 @@ impl Table {
         self.actions[state * self.terminals.len() + terminal_index]
     }
 
+    /// ## Panics
+    /// 1. Panics if the nonterminal is not in the table.
+    /// 2. Panics if the state is too large.
     pub fn goto(&self, state: usize, nontermial: &str) -> Goto {
         let nonterminal_index = self
             .nonterminals
