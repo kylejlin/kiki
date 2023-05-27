@@ -589,13 +589,12 @@ impl {node_enum_name} {{
     }
 
     fn get_nonterminal_type_defs_src(&self) -> String {
-        let file = &self.file;
-        file.nonterminals
+        self.file.nonterminals
             .iter()
             .map(|nonterminal| match nonterminal {
                 Nonterminal::Struct(s) => {
                     let nonterminal_name = &s.name.name;
-                    let fieldset = get_fieldset_src(&s.fieldset, &file.terminal_enum);
+                    let fieldset = self.get_fieldset_src(&s.fieldset);
                     format!("{NONTERMINAL_DERIVE_CLAUSE}\npub struct {nonterminal_name}{fieldset}")
                 },
                 Nonterminal::Enum(e) => {
@@ -604,7 +603,7 @@ impl {node_enum_name} {{
                         .iter()
                         .map(|variant| {
                             let variant_name = &variant.name.name;
-                            let variant_fieldset = get_fieldset_src(&variant.fieldset, &file.terminal_enum);
+                            let variant_fieldset = self.get_fieldset_src(&variant.fieldset);
                             format!("{variant_name}{variant_fieldset},")
                         })
                         .collect::<Vec<_>>()
@@ -615,6 +614,61 @@ impl {node_enum_name} {{
             })
             .collect::<Vec<_>>()
             .join("\n\n")
+    }
+
+    fn get_fieldset_src(&self, fieldset: &Fieldset) -> String {
+        let terminal_enum = &self.file.terminal_enum;
+        match fieldset {
+            Fieldset::Empty => ";".to_owned(),
+            Fieldset::Named(fieldset) => {
+                let fields_indent_1 = fieldset
+                    .fields
+                    .iter()
+                    .filter_map(|field| match (&field.name, &field.symbol) {
+                        (IdentOrUnderscore::Underscore, _) => None,
+                        (
+                            IdentOrUnderscore::Ident(field_name),
+                            IdentOrTerminalIdent::Ident(field_type),
+                        ) => {
+                            let field_name = &field_name.name;
+                            let field_type_name = &field_type.name;
+                            Some(format!("{field_name}: {field_type_name},"))
+                        }
+                        (
+                            IdentOrUnderscore::Ident(field_name),
+                            IdentOrTerminalIdent::Terminal(field_type),
+                        ) => {
+                            let field_name = &field_name.name;
+                            let field_type_name = terminal_enum.get_type(&field_type.name).unwrap();
+                            Some(format!("{field_name}: {field_type_name},"))
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+                    .indent(1);
+                format!("{{\n{fields_indent_1}\n}}")
+            }
+            Fieldset::Tuple(fieldset) => {
+                let fields_indent_1 = fieldset
+                    .fields
+                    .iter()
+                    .filter_map(|field| match field {
+                        TupleField::Skipped(_) => None,
+                        TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
+                            let field_type_name = &field_type.name;
+                            Some(format!("{field_type_name},"))
+                        }
+                        TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
+                            let field_type_name = terminal_enum.get_type(&field_type.name).unwrap();
+                            Some(format!("{field_type_name},"))
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+                    .indent(1);
+                format!("(\n{fields_indent_1}\n);")
+            }
+        }
     }
 }
 
@@ -653,60 +707,6 @@ fn create_unique_identifier(preferred_name: &str, used: &mut HashSet<String>) ->
             return name;
         }
         i += 1;
-    }
-}
-
-fn get_fieldset_src(fieldset: &Fieldset, terminal_enum: &TerminalEnum) -> String {
-    match fieldset {
-        Fieldset::Empty => ";".to_owned(),
-        Fieldset::Named(fieldset) => {
-            let fields_indent_1 = fieldset
-                .fields
-                .iter()
-                .filter_map(|field| match (&field.name, &field.symbol) {
-                    (IdentOrUnderscore::Underscore, _) => None,
-                    (
-                        IdentOrUnderscore::Ident(field_name),
-                        IdentOrTerminalIdent::Ident(field_type),
-                    ) => {
-                        let field_name = &field_name.name;
-                        let field_type_name = &field_type.name;
-                        Some(format!("{field_name}: {field_type_name},"))
-                    }
-                    (
-                        IdentOrUnderscore::Ident(field_name),
-                        IdentOrTerminalIdent::Terminal(field_type),
-                    ) => {
-                        let field_name = &field_name.name;
-                        let field_type_name = terminal_enum.get_type(&field_type.name).unwrap();
-                        Some(format!("{field_name}: {field_type_name},"))
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("\n")
-                .indent(1);
-            format!("{{\n{fields_indent_1}\n}}")
-        }
-        Fieldset::Tuple(fieldset) => {
-            let fields_indent_1 = fieldset
-                .fields
-                .iter()
-                .filter_map(|field| match field {
-                    TupleField::Skipped(_) => None,
-                    TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
-                        let field_type_name = &field_type.name;
-                        Some(format!("{field_type_name},"))
-                    }
-                    TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                        let field_type_name = terminal_enum.get_type(&field_type.name).unwrap();
-                        Some(format!("{field_type_name},"))
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("\n")
-                .indent(1);
-            format!("(\n{fields_indent_1}\n);")
-        }
     }
 }
 
