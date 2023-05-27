@@ -523,21 +523,21 @@ impl {node_enum_name} {{
         const ANONYMOUS_FIELD_PREFIX: &str = "t";
         let constructor_name = constructor_name.to_string();
         let child_vars: String = fields
-                            .iter()
-                            .enumerate()
-                            .rev()
-                            .map(|(field_index, field)| match field {
-                                TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
-                                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
-                                    let field_type_name = &field_type.name;
-                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
-                                },
-                                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
-                                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
-                                },
-                            })
-                            .collect();
+            .iter()
+            .enumerate()
+            .rev()
+            .map(|(field_index, field)| match field {
+                TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
+                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
+                    let field_type_name = &field_type.name;
+                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
+                },
+                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
+                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
+                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
+                },
+            })
+            .collect();
 
         let parent_fields_indent_1: String = fields
             .iter()
