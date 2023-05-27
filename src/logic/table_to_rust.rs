@@ -17,6 +17,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let node_enum_name = create_unique_identifier("Node", &mut used_identifiers);
     let action_enum_name = create_unique_identifier("Action", &mut used_identifiers);
     let rule_kind_enum_name = create_unique_identifier("RuleKind", &mut used_identifiers);
+    let action_table_name = create_unique_identifier("ACTION_TABLE", &mut used_identifiers);
 
     let node_to_terminal_method_names: HashMap<String, String> = file
         .terminal_enum
@@ -206,6 +207,9 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         })
         .collect::<String>()
         .indent(3);
+
+    let num_of_quasitoken_kind_variants = file.terminal_enum.variants.len() + 1;
+    let num_of_state_variants = table.states();
 
     let impl_try_from_node_for_each_nonterminal: String = file
         .nonterminals
@@ -397,8 +401,12 @@ impl {quasitoken_enum_name} {{
     }}
 }}
 
+const {action_table_name}: [[{action_enum_name}; {num_of_quasitoken_kind_variants}]; {num_of_state_variants}] = [
+{action_table_rows_indent_1}
+];
+
 fn get_action(top_state: {state_enum_name}, next_quasitoken_kind: {quasitoken_kind_enum_name}) -> {action_enum_name} {{
-    todo!()
+    {action_table_name}[top_state as usize][next_quasitoken_kind as usize]
 }}
 
 fn get_goto(top_state: {state_enum_name}, new_node_kind: {nonterminal_kind_enum_name}) -> Option<{state_enum_name}> {{
