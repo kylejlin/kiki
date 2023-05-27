@@ -828,7 +828,9 @@ mod tests {
                 .map(ToOwned::to_owned)
                 .collect(),
         };
-        let rust = table_to_rust(&table, file).unwrap();
+
+        let RustSrc(rust_src) = table_to_rust(&table, file).unwrap();
+        insta::assert_debug_snapshot!(rust_src);
     }
 
     fn positionless_ident(s: &str) -> Ident {

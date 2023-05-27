@@ -12,3 +12,6 @@ regex = "1"
 
 [build-dependencies]
 lalrpop = "0.19.7"
+
+[dev-dependencies]
+insta = "1.26.0"
