@@ -35,12 +35,15 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .terminal_enum
         .variants
         .iter()
-        .map(|variant| {
+        .enumerate()
+        .map(|(variant_index, variant)| {
             let name = &variant.dollarless_name;
-            format!("{name},\n")
+            format!("{name} = {variant_index},\n")
         })
         .collect::<String>()
         .indent(1);
+
+    let num_of_token_variants = file.terminal_enum.variants.len();
 
     let nonterminal_kind_enum_variants_indent_1 = file
         .nonterminals
@@ -280,11 +283,10 @@ enum {quasitoken_enum_name} {{
     {eof_variant_name},
 }}
 
-// TODO: Add ` = n` to each variant.
 #[derive(Clone, Copy, Debug)]
 enum {quasitoken_kind_enum_name} {{
 {token_kind_enum_variants_indent_1}
-    {eof_variant_name},
+    {eof_variant_name} = {num_of_token_variants},
 }}
 
 // TODO: Add ` = n` to each variant.
