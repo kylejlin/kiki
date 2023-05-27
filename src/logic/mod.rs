@@ -1,5 +1,6 @@
 pub mod ast_to_machine;
 pub mod ast_to_rust;
+pub mod ast_to_validated_file;
 pub mod build_kiki_err;
 pub mod cst_to_ast;
 pub mod machine_to_table;

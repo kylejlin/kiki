@@ -226,7 +226,7 @@ impl SrcBuilder<'_> {
                             .enumerate()
                             .filter_map(|(field_index, field)| match field {
                                 TupleField::Skipped(_) => None,
-                                TupleField::Used(field_type) => {
+                                TupleField::Used(_) => {
                                     Some(format!("{ANONYMOUS_FIELD_PREFIX}{field_index},"))
                                 }
                             })
@@ -303,8 +303,7 @@ impl SrcBuilder<'_> {
             .terminal_enum
             .variants
             .iter()
-            .enumerate()
-            .map(|(variant_index, variant)| {
+            .map(|variant| {
                 let variant_name_original_case = &variant.dollarless_name;
                 let method_name = node_to_terminal_method_names
                     .get(variant_name_original_case)
@@ -553,10 +552,10 @@ fn get_fieldset_src(fieldset: &Fieldset, terminal_enum: &TerminalEnum) -> String
     }
 }
 
-fn get_action_table_row_src(table: &Table, state: usize) -> String {
+fn get_action_table_row_src(table: &Table, _state: usize) -> String {
     let row_items_indent_1 = table.terminals
         .iter()
-        .map(|terminal| {
+        .map(|_terminal| {
             "TODO"
         })
         .collect::<Vec<_>>()
@@ -588,7 +587,7 @@ fn pascal_to_snake_case(s: &str) -> String {
     let mut out = String::new();
     let mut chars = s.chars().fuse();
 
-    if let Some(c) = s.chars().next() {
+    if let Some(c) = chars.next() {
         out.push(c.to_ascii_lowercase());
     }
 

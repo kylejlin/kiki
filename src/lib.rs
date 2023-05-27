@@ -18,5 +18,6 @@ pub fn generate(src: &str) -> Result<RustSrc, KikiErr> {
         .parse(src)
         .map_err(|e| KikiErr::parse_err(src, e))?;
     let ast: data::ast::File = cst.into();
-    ast_to_rust(&ast)
+    let validated = logic::ast_to_validated_file::ast_to_validated_file(ast)?;
+    ast_to_rust(validated)
 }
