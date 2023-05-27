@@ -57,7 +57,7 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
         .indent(1);
 
     let state_enum_variants_indent_1 = (0..table.states())
-        .map(|i| format!("S{i},"))
+        .map(|i| format!("S{i} = {i},"))
         .collect::<String>()
         .indent(1);
 
@@ -298,7 +298,6 @@ enum {nonterminal_kind_enum_name} {{
 {nonterminal_kind_enum_variants_indent_1}
 }}
 
-// TODO: Add ` = n` to each variant.
 #[derive(Clone, Copy, Debug)]
 enum {state_enum_name} {{
 {state_enum_variants_indent_1}
