@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 const NONTERMINAL_DERIVE_CLAUSE: &str = "#[derive(Clone, Debug)]";
 const STATE_VARIANT_PREFIX: &str = "S";
+const RULE_KIND_VARIANT_PREFIX: &str = "R";
 
 pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, KikiErr> {
     let builder = SrcBuilder::new(table, file);
@@ -375,7 +376,7 @@ impl {node_enum_name} {{
 
     fn get_rule_kind_enum_variants_src(&self) -> String {
         (0..self.get_number_of_rule_kinds())
-            .map(|i| format!("R{i},"))
+            .map(|i| format!("{RULE_KIND_VARIANT_PREFIX}{i},"))
             .collect::<Vec<_>>()
             .join("\n")
     }
@@ -419,7 +420,7 @@ impl {node_enum_name} {{
         .indent(1);
         let rule_kind_enum_name = &self.rule_kind_enum_name;
         format!(
-            r#"{rule_kind_enum_name}::R{rule_index} => {{
+            r#"{rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index} => {{
 {reduction_code_indent_1}
 }}"#
         )
@@ -590,7 +591,9 @@ impl {node_enum_name} {{
             Action::Shift(state_index) => {
                 format!("Shift({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
             }
-            Action::Reduce(rule_index) => format!("Reduce({rule_kind_enum_name}::{rule_index})"),
+            Action::Reduce(rule_index) => {
+                format!("Reduce({rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index})")
+            }
             Action::Accept => format!("Accept"),
             Action::Err => format!("Err"),
         }
