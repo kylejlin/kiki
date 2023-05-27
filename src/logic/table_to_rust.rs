@@ -108,15 +108,10 @@ impl SrcBuilder<'_> {
             .indent(3);
         let node_from_token_match_arms_indent_3 =
             self.get_node_from_token_match_arms_src().indent(3);
+        let action_table_rows_indent_1 = self.get_action_table_rows_src().indent(1);
 
         let num_of_quasitoken_kind_variants = file.terminal_enum.variants.len() + 1;
         let num_of_state_variants = table.states();
-
-        let action_table_rows_indent_1: String = (0..table.states())
-            .map(|state| get_action_table_row_src(table, state))
-            .collect::<Vec<_>>()
-            .join("\n")
-            .indent(1);
 
         let impl_try_from_node_for_each_nonterminal: String = file
             .nonterminals
@@ -562,6 +557,25 @@ impl {node_enum_name} {{
             .collect::<Vec<_>>()
             .join("\n")
     }
+
+    fn get_action_table_rows_src(&self) -> String {
+        (0..self.table.states())
+            .map(|state| self.get_action_table_row_src(state))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    fn get_action_table_row_src(&self, _state: usize) -> String {
+        let row_items_indent_1 = self
+            .table
+            .terminals
+            .iter()
+            .map(|_terminal| "TODO")
+            .collect::<Vec<_>>()
+            .join("\n")
+            .indent(1);
+        format!("[\n{row_items_indent_1}\n],")
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -654,17 +668,6 @@ fn get_fieldset_src(fieldset: &Fieldset, terminal_enum: &TerminalEnum) -> String
             format!("(\n{fields_indent_1}\n);")
         }
     }
-}
-
-fn get_action_table_row_src(table: &Table, _state: usize) -> String {
-    let row_items_indent_1 = table
-        .terminals
-        .iter()
-        .map(|_terminal| "TODO")
-        .collect::<Vec<_>>()
-        .join("\n")
-        .indent(1);
-    format!("[\n{row_items_indent_1}\n],")
 }
 
 trait Indent {
