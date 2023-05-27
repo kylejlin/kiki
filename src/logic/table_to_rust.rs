@@ -484,7 +484,7 @@ impl {node_enum_name} {{
                         let enum_name = &e.name.name;
                         let variant_name = &v.name.name;
                         (
-                            ConstructorName::Enum {
+                            ConstructorName::EnumVariant {
                                 enum_name,
                                 variant_name,
                             },
@@ -541,7 +541,7 @@ impl {node_enum_name} {{
 #[derive(Debug, Clone, Copy)]
 enum ConstructorName<'a> {
     Struct(&'a str),
-    Enum {
+    EnumVariant {
         enum_name: &'a str,
         variant_name: &'a str,
     },
@@ -551,7 +551,7 @@ impl ConstructorName<'_> {
     fn to_string(&self) -> String {
         match self {
             ConstructorName::Struct(name) => name.to_string(),
-            ConstructorName::Enum {
+            ConstructorName::EnumVariant {
                 enum_name,
                 variant_name,
             } => format!("{enum_name}::{variant_name}"),
