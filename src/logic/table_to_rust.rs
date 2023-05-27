@@ -795,6 +795,49 @@ fn pascal_to_snake_case(s: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::data::{validated_file::TerminalVariant, ByteIndex};
+
+    #[test]
+    fn balanced_parens() {
+        let table = Table {
+            terminals: vec!["LParen".to_string(), "RParen".to_string()],
+            nonterminals: vec!["Expr".to_string()],
+            // TODO
+            actions: vec![],
+            gotos: vec![],
+        };
+        let file = ValidatedFile {
+            start: "Expr".to_owned(),
+            terminal_enum: TerminalEnum {
+                name: "Token".to_string(),
+                variants: vec![TerminalVariant {
+                    dollarless_name: "LParen".to_string(),
+                    type_: "()".to_string(),
+                }],
+            },
+            nonterminals: vec![Nonterminal::Enum(Enum {
+                name: positionless_ident("Expr"),
+                variants: vec![EnumVariant {
+                    name: positionless_ident("Empty"),
+                    fieldset: Fieldset::Empty,
+                }],
+            })],
+            defined_identifiers: vec!["Expr", "Token"]
+                .into_iter()
+                .map(ToOwned::to_owned)
+                .collect(),
+        };
+        let rust = table_to_rust(&table, file).unwrap();
+    }
+
+    fn positionless_ident(s: &str) -> Ident {
+        Ident {
+            name: s.to_owned(),
+            position: ByteIndex(0),
+        }
+    }
+
     mod pascal_to_snake_case {
         use super::*;
 
