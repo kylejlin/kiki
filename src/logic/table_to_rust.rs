@@ -617,30 +617,10 @@ impl {node_enum_name} {{
     }
 
     fn get_fieldset_src(&self, fieldset: &Fieldset) -> String {
-        let terminal_enum = &self.file.terminal_enum;
         match fieldset {
             Fieldset::Empty => ";".to_owned(),
             Fieldset::Named(fieldset) => self.get_named_fieldset_src(fieldset),
-            Fieldset::Tuple(fieldset) => {
-                let fields_indent_1 = fieldset
-                    .fields
-                    .iter()
-                    .filter_map(|field| match field {
-                        TupleField::Skipped(_) => None,
-                        TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
-                            let field_type_name = &field_type.name;
-                            Some(format!("{field_type_name},"))
-                        }
-                        TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                            let field_type_name = terminal_enum.get_type(&field_type.name).unwrap();
-                            Some(format!("{field_type_name},"))
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n")
-                    .indent(1);
-                format!("(\n{fields_indent_1}\n);")
-            }
+            Fieldset::Tuple(fieldset) => self.get_tuple_fieldset_src(fieldset),
         }
     }
 
@@ -669,6 +649,28 @@ impl {node_enum_name} {{
             .join("\n")
             .indent(1);
         format!("{{\n{fields_indent_1}\n}}")
+    }
+
+    fn get_tuple_fieldset_src(&self, fieldset: &TupleFieldset) -> String {
+        let fields_indent_1 = fieldset
+            .fields
+            .iter()
+            .filter_map(|field| match field {
+                TupleField::Skipped(_) => None,
+                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
+                    let field_type_name = &field_type.name;
+                    Some(format!("{field_type_name},"))
+                }
+                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
+                    let field_type_name =
+                        self.file.terminal_enum.get_type(&field_type.name).unwrap();
+                    Some(format!("{field_type_name},"))
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+            .indent(1);
+        format!("(\n{fields_indent_1}\n);")
     }
 }
 
