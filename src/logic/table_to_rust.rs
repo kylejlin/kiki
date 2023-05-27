@@ -103,21 +103,11 @@ impl SrcBuilder<'_> {
         let node_enum_variants_indent_1 = self.get_node_enum_variants_src().indent(1);
         let rule_kind_enum_variants_indent_1 = self.get_rule_kind_enum_variants_src().indent(1);
         let pop_and_reduce_match_arms_indent_2 = self.get_pop_and_reduce_match_arms_src().indent(2);
-
         let quasitoken_kind_from_token_match_arms_indent_3 = self
             .get_quasitoken_kind_from_token_match_arms_src()
             .indent(3);
-
-        let node_from_token_match_arms_indent_3: String = file
-            .terminal_enum
-            .variants
-            .iter()
-            .map(|variant| {
-                let name = &variant.dollarless_name;
-                format!("{token_enum_name}::{name}(t) => Self::{name}(t),\n")
-            })
-            .collect::<String>()
-            .indent(3);
+        let node_from_token_match_arms_indent_3 =
+            self.get_node_from_token_match_arms_src().indent(3);
 
         let num_of_quasitoken_kind_variants = file.terminal_enum.variants.len() + 1;
         let num_of_state_variants = table.states();
@@ -554,6 +544,20 @@ impl {node_enum_name} {{
             .map(|variant| {
                 let name = &variant.dollarless_name;
                 format!("{token_enum_name}::{name}(_) => Self::{name},")
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    fn get_node_from_token_match_arms_src(&self) -> String {
+        let token_enum_name = &self.token_enum_name;
+        self.file
+            .terminal_enum
+            .variants
+            .iter()
+            .map(|variant| {
+                let name = &variant.dollarless_name;
+                format!("{token_enum_name}::{name}(t) => Self::{name}(t),")
             })
             .collect::<Vec<_>>()
             .join("\n")
