@@ -414,23 +414,9 @@ impl {node_enum_name} {{
     }
 
     fn get_pop_and_reduce_match_arms_src(&self) -> String {
-        self.file
-            .nonterminals
-            .iter()
-            .flat_map(|nonterminal| match nonterminal {
-                Nonterminal::Struct(s) => vec![(s.name.name.to_owned(), &s.fieldset)],
-                Nonterminal::Enum(e) => e
-                    .variants
-                    .iter()
-                    .map(|v| {
-                        let enum_name = &e.name.name;
-                        let variant_name = &v.name.name;
-                        (format!("{enum_name}::{variant_name}"), &v.fieldset)
-                    })
-                    .collect(),
-            })
+        self.get_rules()
             .enumerate()
-            .map(|(rule_index, (constructor_name, fieldset))| {
+            .map(|(rule_index, (ConstructorName(constructor_name), fieldset))| {
                 let reduction_code_indent_1: String = match fieldset {
                     Fieldset::Empty => constructor_name,
                     Fieldset::Named(NamedFieldset { fields }) => {
@@ -513,7 +499,28 @@ impl {node_enum_name} {{
             .collect::<Vec<_>>()
             .join("\n")
     }
+
+    fn get_rules(&self) -> impl Iterator<Item = (ConstructorName, &Fieldset)> {
+        self.file
+            .nonterminals
+            .iter()
+            .flat_map(|nonterminal| match nonterminal {
+                Nonterminal::Struct(s) => vec![(ConstructorName(s.name.name.to_owned()), &s.fieldset)],
+                Nonterminal::Enum(e) => e
+                    .variants
+                    .iter()
+                    .map(|v| {
+                        let enum_name = &e.name.name;
+                        let variant_name = &v.name.name;
+                        (ConstructorName(format!("{enum_name}::{variant_name}")), &v.fieldset)
+                    })
+                    .collect(),
+            })
+    }
 }
+
+#[derive(Debug)]
+struct ConstructorName(String);
 
 fn create_unique_identifier(preferred_name: &str, used: &mut HashSet<String>) -> String {
     if !used.contains(preferred_name) {
