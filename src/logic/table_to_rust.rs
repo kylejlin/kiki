@@ -211,7 +211,11 @@ pub fn table_to_rust(table: &Table, file: ValidatedFile) -> Result<RustSrc, Kiki
     let num_of_quasitoken_kind_variants = file.terminal_enum.variants.len() + 1;
     let num_of_state_variants = table.states();
 
-    let action_table_rows_indent_1: String = todo;
+    let action_table_rows_indent_1: String = (0..table.states())
+        .map(|state| get_action_table_row_src(table, state))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .indent(1);
 
     let impl_try_from_node_for_each_nonterminal: String = file
         .nonterminals
@@ -485,6 +489,18 @@ fn get_fieldset_src(fieldset: &Fieldset, terminal_enum: &TerminalEnum) -> String
             format!("(\n{fields_indent_1}\n);")
         }
     }
+}
+
+fn get_action_table_row_src(table: &Table, state: usize) -> String {
+    let row_items_indent_1 = table.terminals
+        .iter()
+        .map(|terminal| {
+            "TODO"
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+        .indent(1);
+    format!("[\n{row_items_indent_1}\n],")
 }
 
 trait Indent {
