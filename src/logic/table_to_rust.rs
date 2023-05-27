@@ -565,16 +565,32 @@ impl {node_enum_name} {{
             .join("\n")
     }
 
-    fn get_action_table_row_src(&self, _state: usize) -> String {
+    fn get_action_table_row_src(&self, state: usize) -> String {
+        let action_enum_name = &self.action_enum_name;
         let row_items_indent_1 = self
             .table
             .terminals
             .iter()
-            .map(|_terminal| "TODO")
+            .map(|terminal| {
+                let action = self.table.action(state, terminal);
+                let variant = self.get_action_variant_src(action);
+                format!("{action_enum_name}::{variant},")
+            })
             .collect::<Vec<_>>()
             .join("\n")
             .indent(1);
         format!("[\n{row_items_indent_1}\n],")
+    }
+
+    fn get_action_variant_src(&self, action: Action) -> String {
+        let state_enum_name = &self.state_enum_name;
+        let rule_kind_enum_name = &self.rule_kind_enum_name;
+        match action {
+            Action::Shift(state_index) => format!("Shift({state_enum_name}::S{state_index})"),
+            Action::Reduce(rule_index) => format!("Reduce({rule_kind_enum_name}::{rule_index})"),
+            Action::Accept => format!("Accept"),
+            Action::Err => format!("Err"),
+        }
     }
 }
 
