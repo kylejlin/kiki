@@ -521,7 +521,7 @@ impl {node_enum_name} {{
         let action_enum_name = &self.action_enum_name;
         let row_items_indent_1 = self
             .table
-            .terminals
+            .dollarless_terminals
             .iter()
             .map(|terminal| {
                 let action = self.table.action(state, terminal);
@@ -559,7 +559,7 @@ impl {node_enum_name} {{
     fn get_goto_table_row_src(&self, state: usize) -> String {
         let row_items_indent_1 = self
             .table
-            .terminals
+            .dollarless_terminals
             .iter()
             .map(|terminal| {
                 let goto = self.table.goto(state, terminal);
@@ -801,7 +801,7 @@ mod tests {
     #[test]
     fn balanced_parens() {
         let table = Table {
-            terminals: vec!["LParen".to_string(), "RParen".to_string()],
+            dollarless_terminals: vec!["LParen".to_string(), "RParen".to_string()],
             nonterminals: vec!["Expr".to_string()],
             // TODO
             actions: vec![],

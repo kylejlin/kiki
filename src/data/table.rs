@@ -1,6 +1,6 @@
 #[derive(Debug, Clone)]
 pub struct Table {
-    pub terminals: Vec<String>,
+    pub dollarless_terminals: Vec<String>,
     pub nonterminals: Vec<String>,
     pub actions: Vec<Action>,
     pub gotos: Vec<Goto>,
@@ -22,7 +22,7 @@ pub enum Goto {
 
 impl Table {
     pub fn states(&self) -> usize {
-        self.actions.len() / self.terminals.len()
+        self.actions.len() / self.dollarless_terminals.len()
     }
 
     /// ## Panics
@@ -46,7 +46,7 @@ impl Table {
     /// 2. Panics if the state is too large.
     fn action_index(&self, state: usize, terminal: &str) -> usize {
         let terminal_index = self
-            .terminals
+            .dollarless_terminals
             .iter()
             .position(|t| t == terminal)
             .expect("Terminal not found in table");
@@ -56,7 +56,7 @@ impl Table {
             panic!("State {state} is too large. There are only {states} states.");
         }
 
-        state * self.terminals.len() + terminal_index
+        state * self.dollarless_terminals.len() + terminal_index
     }
 
     /// ## Panics
