@@ -836,10 +836,16 @@ mod tests {
             start: "Expr".to_owned(),
             terminal_enum: TerminalEnum {
                 name: "Token".to_string(),
-                variants: vec![TerminalVariant {
-                    dollarless_name: DollarlessTerminalName::remove_dollars("LParen"),
-                    type_: "()".to_string(),
-                }],
+                variants: vec![
+                    TerminalVariant {
+                        dollarless_name: DollarlessTerminalName::remove_dollars("LParen"),
+                        type_: "()".to_string(),
+                    },
+                    TerminalVariant {
+                        dollarless_name: DollarlessTerminalName::remove_dollars("RParen"),
+                        type_: "()".to_string(),
+                    },
+                ],
             },
             nonterminals: vec![Nonterminal::Enum(Enum {
                 name: positionless_ident("Expr"),
