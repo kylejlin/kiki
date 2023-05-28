@@ -438,7 +438,7 @@ impl {node_enum_name} {{
             })
             .collect();
 
-        let parent_fields_indent_1: String = fields
+        let parent_fields_indent_2: String = fields
             .iter()
             .enumerate()
             .filter_map(|(field_index, field)| match &field.name {
@@ -450,12 +450,12 @@ impl {node_enum_name} {{
             })
             .collect::<Vec<_>>()
             .join("\n")
-            .indent(1);
+            .indent(2);
 
         format!(
             r#"(
     {node_enum_name}::{parent_type_name}({child_vars}{constructor_name}(
-{parent_fields_indent_1}
+{parent_fields_indent_2}
     )),
     {nonterminal_kind_enum_name}::{parent_type_name}
 )"#
