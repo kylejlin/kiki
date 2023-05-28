@@ -575,7 +575,7 @@ impl {node_enum_name} {{
     fn get_goto_variant_qualified_src(&self, goto: Goto) -> String {
         let state_enum_name = &self.state_enum_name;
         match goto {
-            Goto::Goto(state_index) => {
+            Goto::State(state_index) => {
                 format!("Some({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
             }
             Goto::Err => format!("None"),
@@ -806,15 +806,31 @@ mod tests {
 
     #[test]
     fn balanced_parens() {
+        let actions = {
+            use Action::*;
+            [
+                [Shift(2), Err, Reduce(1)],
+                [Err, Err, Accept],
+                [Shift(2), Reduce(1), Err],
+                [Err, Shift(4), Err],
+                [Err, Reduce(2), Reduce(2)],
+            ]
+            .into_iter()
+            .flatten()
+            .collect()
+        };
+        let gotos = {
+            use Goto::*;
+            vec![State(1), Err, State(3), Err, Err]
+        };
         let table = Table {
             dollarless_terminals: vec![
                 DollarlessTerminalName::remove_dollars("LParen"),
                 DollarlessTerminalName::remove_dollars("RParen"),
             ],
             nonterminals: vec!["Expr".to_string()],
-            // TODO
-            actions: vec![],
-            gotos: vec![],
+            actions,
+            gotos,
         };
         let file = ValidatedFile {
             start: "Expr".to_owned(),

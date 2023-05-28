@@ -18,7 +18,7 @@ pub enum Action {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Goto {
-    Goto(usize),
+    State(usize),
     Err,
 }
 
