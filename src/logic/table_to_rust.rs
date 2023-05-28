@@ -388,7 +388,7 @@ impl {node_enum_name} {{
         fieldset: &Fieldset,
     ) -> String {
         let reduction_code_indent_1: String = match fieldset {
-            Fieldset::Empty => constructor_name.to_string(),
+            Fieldset::Empty => self.get_empty_fieldset_rule_reduction_src(constructor_name),
             Fieldset::Named(NamedFieldset { fields }) => {
                 self.get_named_fieldset_rule_reduction_src(constructor_name, fields)
             }
@@ -403,6 +403,11 @@ impl {node_enum_name} {{
 {reduction_code_indent_1}
 }}"#
         )
+    }
+
+    fn get_empty_fieldset_rule_reduction_src(&self, constructor_name: ConstructorName) -> String {
+        // TODO
+        constructor_name.to_string()
     }
 
     fn get_named_fieldset_rule_reduction_src(
