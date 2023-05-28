@@ -523,8 +523,10 @@ impl {node_enum_name} {{
             .table
             .dollarless_terminals
             .iter()
-            .map(|terminal| {
-                let action = self.table.action(state, terminal);
+            .map(Quasiterminal::Terminal)
+            .chain(std::iter::once(Quasiterminal::Eof))
+            .map(|quasiterminal| {
+                let action = self.table.action(state, quasiterminal);
                 let unqualified_variant = self.get_action_variant_unqualified_src(action);
                 format!("{action_enum_name}::{unqualified_variant},")
             })

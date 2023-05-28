@@ -22,15 +22,21 @@ pub enum Goto {
     Err,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum Quasiterminal<'a> {
+    Terminal(&'a DollarlessTerminalName),
+    Eof,
+}
+
 impl Table {
     pub fn states(&self) -> usize {
-        self.actions.len() / self.dollarless_terminals.len()
+        self.actions.len() / (self.dollarless_terminals.len() + 1)
     }
 
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn action(&self, state: usize, terminal: &DollarlessTerminalName) -> Action {
+    pub fn action(&self, state: usize, terminal: Quasiterminal) -> Action {
         let i = self.action_index(state, terminal);
         self.actions[i]
     }
@@ -38,7 +44,7 @@ impl Table {
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn set_action(&mut self, state: usize, terminal: &DollarlessTerminalName, val: Action) {
+    pub fn set_action(&mut self, state: usize, terminal: Quasiterminal, val: Action) {
         let i = self.action_index(state, terminal);
         self.actions[i] = val;
     }
@@ -46,19 +52,22 @@ impl Table {
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    fn action_index(&self, state: usize, terminal: &DollarlessTerminalName) -> usize {
-        let terminal_index = self
-            .dollarless_terminals
-            .iter()
-            .position(|t| t == terminal)
-            .expect("Terminal not found in table");
+    fn action_index(&self, state: usize, quasiterminal: Quasiterminal) -> usize {
+        let quasiterminal_index = match quasiterminal {
+            Quasiterminal::Terminal(terminal) => self
+                .dollarless_terminals
+                .iter()
+                .position(|t| t == terminal)
+                .expect("Terminal not found in table"),
+            Quasiterminal::Eof => self.dollarless_terminals.len(),
+        };
 
         if state >= self.states() {
             let states = self.states();
             panic!("State {state} is too large. There are only {states} states.");
         }
 
-        state * self.dollarless_terminals.len() + terminal_index
+        state * self.dollarless_terminals.len() + quasiterminal_index
     }
 
     /// ## Panics
