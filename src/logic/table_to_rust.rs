@@ -827,12 +827,34 @@ mod tests {
             },
             nonterminals: vec![Nonterminal::Enum(Enum {
                 name: positionless_ident("Expr"),
-                variants: vec![EnumVariant {
-                    name: positionless_ident("Empty"),
-                    fieldset: Fieldset::Empty,
-                }],
+                variants: vec![
+                    EnumVariant {
+                        name: positionless_ident("Empty"),
+                        fieldset: Fieldset::Empty,
+                    },
+                    EnumVariant {
+                        name: positionless_ident("Wrap"),
+                        fieldset: Fieldset::Tuple(TupleFieldset {
+                            fields: vec![
+                                TupleField::Used(IdentOrTerminalIdent::Terminal(
+                                    positionless_terminal_ident(
+                                        &DollarlessTerminalName::remove_dollars("LParen"),
+                                    ),
+                                )),
+                                TupleField::Used(IdentOrTerminalIdent::Ident(positionless_ident(
+                                    "Expr",
+                                ))),
+                                TupleField::Used(IdentOrTerminalIdent::Terminal(
+                                    positionless_terminal_ident(
+                                        &DollarlessTerminalName::remove_dollars("RParen"),
+                                    ),
+                                )),
+                            ],
+                        }),
+                    },
+                ],
             })],
-            defined_identifiers: vec!["Expr", "Token"]
+            defined_identifiers: vec!["Expr", "Token", "LParen", "RParen"]
                 .into_iter()
                 .map(ToOwned::to_owned)
                 .collect(),
@@ -845,6 +867,13 @@ mod tests {
     fn positionless_ident(s: &str) -> Ident {
         Ident {
             name: s.to_owned(),
+            position: ByteIndex(0),
+        }
+    }
+
+    fn positionless_terminal_ident(s: &DollarlessTerminalName) -> TerminalIdent {
+        TerminalIdent {
+            dollared_name: format!("${}", s.raw()),
             position: ByteIndex(0),
         }
     }
