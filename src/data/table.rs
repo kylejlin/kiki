@@ -67,7 +67,7 @@ impl Table {
             panic!("State {state} is too large. There are only {states} states.");
         }
 
-        state * self.dollarless_terminals.len() + quasiterminal_index
+        state * (self.dollarless_terminals.len() + 1) + quasiterminal_index
     }
 
     /// ## Panics
