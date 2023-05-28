@@ -2,7 +2,7 @@ start Expr
 
 enum Expr {
     Empty
-    Wrap(Expr)
+    Wrap($LParen Expr $RParen)
 }
 
 terminal Token {
