@@ -406,8 +406,17 @@ impl {node_enum_name} {{
     }
 
     fn get_empty_fieldset_rule_reduction_src(&self, constructor_name: ConstructorName) -> String {
-        // TODO
-        constructor_name.to_string()
+        let node_enum_name = &self.node_enum_name;
+        let nonterminal_kind_enum_name = &self.nonterminal_kind_enum_name;
+        let parent_type_name = constructor_name.type_name();
+        let constructor_name = constructor_name.to_string();
+
+        format!(
+            r#"(
+    {node_enum_name}::{parent_type_name}({constructor_name}),
+    {nonterminal_kind_enum_name}::{parent_type_name},
+)"#
+        )
     }
 
     fn get_named_fieldset_rule_reduction_src(
