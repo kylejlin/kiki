@@ -156,6 +156,7 @@ enum {state_enum_name} {{
 {state_enum_variants_indent_1}
 }}
 
+#[derive(Debug)]
 enum {node_enum_name} {{
 {node_enum_variants_indent_1}
 }}
