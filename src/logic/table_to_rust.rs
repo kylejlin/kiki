@@ -355,30 +355,6 @@ impl {node_enum_name} {{
             .join("\n")
     }
 
-    fn get_rule_reduction_src(
-        &self,
-        rule_index: usize,
-        constructor_name: ConstructorName,
-        fieldset: &Fieldset,
-    ) -> String {
-        let reduction_code_indent_1: String = match fieldset {
-            Fieldset::Empty => constructor_name.to_string(),
-            Fieldset::Named(NamedFieldset { fields }) => {
-                self.get_named_fieldset_rule_reduction_src(constructor_name, fields)
-            }
-            Fieldset::Tuple(TupleFieldset { fields }) => {
-                self.get_tuple_fieldset_rule_reduction_src(constructor_name, fields)
-            }
-        }
-        .indent(1);
-        let rule_kind_enum_name = &self.rule_kind_enum_name;
-        format!(
-            r#"{rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index} => {{
-{reduction_code_indent_1}
-}}"#
-        )
-    }
-
     fn get_rules(&self) -> impl Iterator<Item = (ConstructorName<'_>, &Fieldset)> {
         self.file
             .nonterminals
@@ -403,6 +379,30 @@ impl {node_enum_name} {{
                     })
                     .collect(),
             })
+    }
+
+    fn get_rule_reduction_src(
+        &self,
+        rule_index: usize,
+        constructor_name: ConstructorName,
+        fieldset: &Fieldset,
+    ) -> String {
+        let reduction_code_indent_1: String = match fieldset {
+            Fieldset::Empty => constructor_name.to_string(),
+            Fieldset::Named(NamedFieldset { fields }) => {
+                self.get_named_fieldset_rule_reduction_src(constructor_name, fields)
+            }
+            Fieldset::Tuple(TupleFieldset { fields }) => {
+                self.get_tuple_fieldset_rule_reduction_src(constructor_name, fields)
+            }
+        }
+        .indent(1);
+        let rule_kind_enum_name = &self.rule_kind_enum_name;
+        format!(
+            r#"{rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index} => {{
+{reduction_code_indent_1}
+}}"#
+        )
     }
 
     fn get_named_fieldset_rule_reduction_src(
