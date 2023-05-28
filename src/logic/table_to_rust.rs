@@ -237,7 +237,6 @@ impl {node_enum_name} {{
         match token {{
 {node_from_token_match_arms_indent_3}
         }}
-        }}
     }}
 }}
 
