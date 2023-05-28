@@ -326,7 +326,7 @@ impl {node_enum_name} {{
 
     fn get_rule_kind_enum_variants_src(&self) -> String {
         (0..self.get_number_of_rule_kinds())
-            .map(|i| format!("{RULE_KIND_VARIANT_PREFIX}{i},"))
+            .map(|i| format!("{RULE_KIND_VARIANT_PREFIX}{i} = {i},"))
             .collect::<Vec<_>>()
             .join("\n")
     }
