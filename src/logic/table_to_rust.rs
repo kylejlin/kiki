@@ -438,7 +438,7 @@ impl {node_enum_name} {{
             })
             .collect();
 
-        let parent_fields_indent_2: String = fields
+        let parent_fields_indent_2 = fields
             .iter()
             .enumerate()
             .filter_map(|(field_index, field)| match &field.name {
@@ -468,6 +468,9 @@ impl {node_enum_name} {{
         fields: &[TupleField],
     ) -> String {
         const ANONYMOUS_FIELD_PREFIX: &str = "t";
+        let node_enum_name = &self.node_enum_name;
+        let nonterminal_kind_enum_name = &self.nonterminal_kind_enum_name;
+        let parent_type_name = constructor_name.type_name();
         let constructor_name = constructor_name.to_string();
         let child_vars: String = fields
             .iter()
@@ -486,7 +489,7 @@ impl {node_enum_name} {{
             })
             .collect();
 
-        let parent_fields_indent_1: String = fields
+        let parent_fields_indent_2 = fields
             .iter()
             .enumerate()
             .filter_map(|(field_index, field)| match field {
@@ -495,9 +498,16 @@ impl {node_enum_name} {{
             })
             .collect::<Vec<_>>()
             .join("\n")
-            .indent(1);
+            .indent(2);
 
-        format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
+        format!(
+            r#"(
+    {node_enum_name}::{parent_type_name}({child_vars}{constructor_name}(
+{parent_fields_indent_2}
+    )),
+    {nonterminal_kind_enum_name}::{parent_type_name}
+)"#
+        )
     }
 
     fn get_quasitoken_kind_from_token_match_arms_src(&self) -> String {
