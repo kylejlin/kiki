@@ -639,7 +639,7 @@ impl {node_enum_name} {{
             .map(|nonterminal| match nonterminal {
                 Nonterminal::Struct(s) => {
                     let nonterminal_name = &s.name.name;
-                    let fieldset = self.get_fieldset_src(&s.fieldset);
+                    let fieldset = self.get_fieldset_src_with_semicolon_if_unnamed(&s.fieldset);
                     format!("{NONTERMINAL_DERIVE_CLAUSE}\npub struct {nonterminal_name}{fieldset}")
                 },
                 Nonterminal::Enum(e) => {
@@ -648,7 +648,7 @@ impl {node_enum_name} {{
                         .iter()
                         .map(|variant| {
                             let variant_name = &variant.name.name;
-                            let variant_fieldset = self.get_fieldset_src(&variant.fieldset);
+                            let variant_fieldset = self.get_fieldset_src_without_semicolon(&variant.fieldset);
                             format!("{variant_name}{variant_fieldset},")
                         })
                         .collect::<Vec<_>>()
@@ -661,12 +661,26 @@ impl {node_enum_name} {{
             .join("\n\n")
     }
 
-    fn get_fieldset_src(&self, fieldset: &Fieldset) -> String {
+    fn get_fieldset_src_with_semicolon_if_unnamed(&self, fieldset: &Fieldset) -> String {
+        self.get_fieldset_src(fieldset, true)
+    }
+
+    fn get_fieldset_src_without_semicolon(&self, fieldset: &Fieldset) -> String {
+        self.get_fieldset_src(fieldset, false)
+    }
+
+    fn get_fieldset_src(&self, fieldset: &Fieldset, use_semicolon_if_unnamed: bool) -> String {
         match fieldset {
-            Fieldset::Empty => ";".to_owned(),
+            Fieldset::Empty => self.get_empty_fieldset_src(use_semicolon_if_unnamed),
             Fieldset::Named(fieldset) => self.get_named_fieldset_src(fieldset),
-            Fieldset::Tuple(fieldset) => self.get_tuple_fieldset_src(fieldset),
+            Fieldset::Tuple(fieldset) => {
+                self.get_tuple_fieldset_src(fieldset, use_semicolon_if_unnamed)
+            }
         }
+    }
+
+    fn get_empty_fieldset_src(&self, use_semicolon: bool) -> String {
+        if use_semicolon { ";" } else { "" }.to_owned()
     }
 
     fn get_named_fieldset_src(&self, fieldset: &NamedFieldset) -> String {
@@ -699,7 +713,7 @@ impl {node_enum_name} {{
         format!("{{\n{fields_indent_1}\n}}")
     }
 
-    fn get_tuple_fieldset_src(&self, fieldset: &TupleFieldset) -> String {
+    fn get_tuple_fieldset_src(&self, fieldset: &TupleFieldset, use_semicolon: bool) -> String {
         let fields_indent_1 = fieldset
             .fields
             .iter()
@@ -721,7 +735,8 @@ impl {node_enum_name} {{
             .collect::<Vec<_>>()
             .join("\n")
             .indent(1);
-        format!("(\n{fields_indent_1}\n);")
+        let possible_semicolon = if use_semicolon { ";" } else { "" };
+        format!("(\n{fields_indent_1}\n){possible_semicolon}")
     }
 }
 
