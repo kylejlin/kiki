@@ -31,7 +31,7 @@ struct SrcBuilder<'a> {
     action_table_name: String,
     goto_table_name: String,
 
-    node_to_terminal_method_names: HashMap<String, String>,
+    node_to_terminal_method_names: HashMap<DollarlessTerminalName, String>,
 }
 
 impl SrcBuilder<'_> {
@@ -52,16 +52,16 @@ impl SrcBuilder<'_> {
         let action_table_name = create_unique_identifier("ACTION_TABLE", used_identifiers);
         let goto_table_name = create_unique_identifier("GOTO_TABLE", used_identifiers);
 
-        let node_to_terminal_method_names: HashMap<String, String> = file
+        let node_to_terminal_method_names: HashMap<DollarlessTerminalName, String> = file
             .terminal_enum
             .variants
             .iter()
             .enumerate()
             .map(|(variant_index, variant)| {
-                let variant_name_snake_case = pascal_to_snake_case(&variant.dollarless_name);
-                let variant_name_original_case = &variant.dollarless_name;
+                let variant_name_snake_case = pascal_to_snake_case(variant.dollarless_name.raw());
+                let variant_name_original_case = variant.dollarless_name.clone();
                 let method_name = format!("try_into_{variant_name_snake_case}_{variant_index}");
-                (variant_name_original_case.to_owned(), method_name)
+                (variant_name_original_case, method_name)
             })
             .collect();
 
@@ -284,7 +284,7 @@ impl {node_enum_name} {{
             .iter()
             .enumerate()
             .map(|(variant_index, variant)| {
-                let name = &variant.dollarless_name;
+                let name = variant.dollarless_name.raw();
                 format!("{name} = {variant_index},")
             })
             .collect::<Vec<_>>()
@@ -316,7 +316,7 @@ impl {node_enum_name} {{
             .iter()
             .map(|nonterminal| format!("{name}({name}),", name = nonterminal.name()))
             .chain(self.file.terminal_enum.variants.iter().map(|variant| {
-                let name = &variant.dollarless_name;
+                let name = variant.dollarless_name.raw();
                 let type_ = &variant.type_;
                 format!("{name}({type_}),")
             }))
@@ -421,7 +421,7 @@ impl {node_enum_name} {{
                 },
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Terminal(field_type)) => {
                     let field_name = &field_name.name;
-                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
+                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.dollarless_name()).unwrap();
                     format!("let {field_name}_{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
                 }
             })
@@ -462,7 +462,7 @@ impl {node_enum_name} {{
                     format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
                 },
                 TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
+                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.dollarless_name()).unwrap();
                     format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
                 },
             })
@@ -489,7 +489,7 @@ impl {node_enum_name} {{
             .variants
             .iter()
             .map(|variant| {
-                let name = &variant.dollarless_name;
+                let name = variant.dollarless_name.raw();
                 format!("{token_enum_name}::{name}(_) => Self::{name},")
             })
             .collect::<Vec<_>>()
@@ -503,7 +503,7 @@ impl {node_enum_name} {{
             .variants
             .iter()
             .map(|variant| {
-                let name = &variant.dollarless_name;
+                let name = variant.dollarless_name.raw();
                 format!("{token_enum_name}::{name}(t) => Self::{name}(t),")
             })
             .collect::<Vec<_>>()
@@ -559,10 +559,10 @@ impl {node_enum_name} {{
     fn get_goto_table_row_src(&self, state: usize) -> String {
         let row_items_indent_1 = self
             .table
-            .dollarless_terminals
+            .nonterminals
             .iter()
-            .map(|terminal| {
-                let goto = self.table.goto(state, terminal);
+            .map(|nonterminal| {
+                let goto = self.table.goto(state, nonterminal);
                 let qualified_variant = self.get_goto_variant_qualified_src(goto);
                 format!("{qualified_variant},")
             })
@@ -612,10 +612,10 @@ impl {node_enum_name} {{
             .variants
             .iter()
             .map(|variant| {
-                let variant_name_original_case = &variant.dollarless_name;
+                let variant_name_original_case = variant.dollarless_name.raw();
                 let method_name = self
                     .node_to_terminal_method_names
-                    .get(variant_name_original_case)
+                    .get(&variant.dollarless_name)
                     .unwrap();
                 let type_ = &variant.type_;
                 format!(
@@ -683,8 +683,11 @@ impl {node_enum_name} {{
                     IdentOrTerminalIdent::Terminal(field_type),
                 ) => {
                     let field_name = &field_name.name;
-                    let field_type_name =
-                        self.file.terminal_enum.get_type(&field_type.name).unwrap();
+                    let field_type_name = self
+                        .file
+                        .terminal_enum
+                        .get_type(&field_type.dollarless_name())
+                        .unwrap();
                     Some(format!("{field_name}: {field_type_name},"))
                 }
             })
@@ -705,8 +708,11 @@ impl {node_enum_name} {{
                     Some(format!("{field_type_name},"))
                 }
                 TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                    let field_type_name =
-                        self.file.terminal_enum.get_type(&field_type.name).unwrap();
+                    let field_type_name = self
+                        .file
+                        .terminal_enum
+                        .get_type(&field_type.dollarless_name())
+                        .unwrap();
                     Some(format!("{field_type_name},"))
                 }
             })
@@ -801,7 +807,10 @@ mod tests {
     #[test]
     fn balanced_parens() {
         let table = Table {
-            dollarless_terminals: vec!["LParen".to_string(), "RParen".to_string()],
+            dollarless_terminals: vec![
+                DollarlessTerminalName::remove_dollars("LParen"),
+                DollarlessTerminalName::remove_dollars("RParen"),
+            ],
             nonterminals: vec!["Expr".to_string()],
             // TODO
             actions: vec![],
@@ -812,7 +821,7 @@ mod tests {
             terminal_enum: TerminalEnum {
                 name: "Token".to_string(),
                 variants: vec![TerminalVariant {
-                    dollarless_name: "LParen".to_string(),
+                    dollarless_name: DollarlessTerminalName::remove_dollars("LParen"),
                     type_: "()".to_string(),
                 }],
             },

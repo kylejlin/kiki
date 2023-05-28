@@ -1,6 +1,8 @@
+use crate::data::validated_file::DollarlessTerminalName;
+
 #[derive(Debug, Clone)]
 pub struct Table {
-    pub dollarless_terminals: Vec<String>,
+    pub dollarless_terminals: Vec<DollarlessTerminalName>,
     pub nonterminals: Vec<String>,
     pub actions: Vec<Action>,
     pub gotos: Vec<Goto>,
@@ -28,7 +30,7 @@ impl Table {
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn action(&self, state: usize, terminal: &str) -> Action {
+    pub fn action(&self, state: usize, terminal: &DollarlessTerminalName) -> Action {
         let i = self.action_index(state, terminal);
         self.actions[i]
     }
@@ -36,7 +38,7 @@ impl Table {
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn set_action(&mut self, state: usize, terminal: &str, val: Action) {
+    pub fn set_action(&mut self, state: usize, terminal: &DollarlessTerminalName, val: Action) {
         let i = self.action_index(state, terminal);
         self.actions[i] = val;
     }
@@ -44,7 +46,7 @@ impl Table {
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    fn action_index(&self, state: usize, terminal: &str) -> usize {
+    fn action_index(&self, state: usize, terminal: &DollarlessTerminalName) -> usize {
         let terminal_index = self
             .dollarless_terminals
             .iter()

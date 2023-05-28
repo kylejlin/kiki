@@ -16,18 +16,31 @@ pub struct TerminalEnum {
 }
 
 impl TerminalEnum {
-    pub fn get_type(&self, dollarless_variant_name: &str) -> Option<&str> {
+    pub fn get_type(&self, variant_name: &DollarlessTerminalName) -> Option<&str> {
         self.variants
             .iter()
-            .find(|variant| variant.dollarless_name == dollarless_variant_name)
+            .find(|variant| variant.dollarless_name == *variant_name)
             .map(|variant| -> &str { &variant.type_ })
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct TerminalVariant {
-    pub dollarless_name: String,
+    pub dollarless_name: DollarlessTerminalName,
     pub type_: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct DollarlessTerminalName(String);
+
+impl DollarlessTerminalName {
+    pub fn remove_dollars(name: &str) -> Self {
+        Self(name.chars().filter(|c| *c != '$').collect())
+    }
+
+    pub fn raw(&self) -> &str {
+        &self.0
+    }
 }
 
 #[derive(Debug, Clone)]

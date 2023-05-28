@@ -1,4 +1,4 @@
-use crate::data::ByteIndex;
+use crate::data::{validated_file::DollarlessTerminalName, ByteIndex};
 
 #[derive(Clone, Debug)]
 pub struct File {
@@ -170,6 +170,12 @@ pub struct Ident {
 
 #[derive(Clone, Debug)]
 pub struct TerminalIdent {
-    pub name: String,
+    pub dollared_name: String,
     pub position: ByteIndex,
+}
+
+impl TerminalIdent {
+    pub fn dollarless_name(&self) -> DollarlessTerminalName {
+        DollarlessTerminalName::remove_dollars(&self.dollared_name)
+    }
 }
