@@ -298,9 +298,10 @@ impl {node_enum_name} {{
             .enumerate()
             .map(|(nonterminal_index, nonterminal)| {
                 let nonterminal_name = nonterminal.name();
-                format!("{nonterminal_name} = {nonterminal_index},\n")
+                format!("{nonterminal_name} = {nonterminal_index},")
             })
-            .collect::<String>()
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 
     fn get_state_enum_variants_src(&self) -> String {
