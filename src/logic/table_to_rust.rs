@@ -654,7 +654,7 @@ impl {node_enum_name} {{
                         .collect::<Vec<_>>()
                         .join("\n")
                         .indent(1);
-                    format!("{NONTERMINAL_DERIVE_CLAUSE}\npub enum {nonterminal_name}{{\n{variants_indent_1}\n}}")
+                    format!("{NONTERMINAL_DERIVE_CLAUSE}\npub enum {nonterminal_name} {{\n{variants_indent_1}\n}}")
                 },
             })
             .collect::<Vec<_>>()
@@ -710,7 +710,7 @@ impl {node_enum_name} {{
             .collect::<Vec<_>>()
             .join("\n")
             .indent(1);
-        format!("{{\n{fields_indent_1}\n}}")
+        format!(" {{\n{fields_indent_1}\n}}")
     }
 
     fn get_tuple_fieldset_src(&self, fieldset: &TupleFieldset, use_semicolon: bool) -> String {
