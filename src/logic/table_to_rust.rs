@@ -415,6 +415,9 @@ impl {node_enum_name} {{
         constructor_name: ConstructorName,
         fields: &[NamedField],
     ) -> String {
+        let node_enum_name = &self.node_enum_name;
+        let nonterminal_kind_enum_name = &self.nonterminal_kind_enum_name;
+        let parent_type_name = constructor_name.type_name();
         let constructor_name = constructor_name.to_string();
         let child_vars: String = fields
             .iter()
@@ -449,7 +452,14 @@ impl {node_enum_name} {{
             .join("\n")
             .indent(1);
 
-        format!("{child_vars}{constructor_name}(\n{parent_fields_indent_1}\n)")
+        format!(
+            r#"(
+    {node_enum_name}::{parent_type_name}({child_vars}{constructor_name}(
+{parent_fields_indent_1}
+    )),
+    {nonterminal_kind_enum_name}::{parent_type_name}
+)"#
+        )
     }
 
     fn get_tuple_fieldset_rule_reduction_src(
@@ -765,6 +775,13 @@ impl ConstructorName<'_> {
                 enum_name,
                 variant_name,
             } => format!("{enum_name}::{variant_name}"),
+        }
+    }
+
+    fn type_name(&self) -> &str {
+        match self {
+            ConstructorName::Struct(name) => name,
+            ConstructorName::EnumVariant { enum_name, .. } => enum_name,
         }
     }
 }
