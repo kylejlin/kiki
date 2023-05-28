@@ -223,8 +223,8 @@ fn pop_and_reduce(states: &mut Vec<{state_enum_name}>, nodes: &mut Vec<{node_enu
 impl {quasitoken_kind_enum_name} {{
     fn from_quasitoken(quasitoken: &{quasitoken_enum_name}) -> Self {{
         match quasitoken {{
-            Self::Token(token) => Self::from_token(token),
-            Self::{eof_variant_name} => Self::{eof_variant_name},
+            {quasitoken_enum_name}::Token(token) => Self::from_token(token),
+            {quasitoken_enum_name}::{eof_variant_name} => Self::{eof_variant_name},
         }}
     }}
 
