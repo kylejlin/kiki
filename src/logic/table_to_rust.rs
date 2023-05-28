@@ -173,7 +173,9 @@ enum {rule_kind_enum_name} {{
 {rule_kind_enum_variants_indent_1}
 }}
 
-pub fn parse<S>(src: S) -> Result<{start_type_name}, {token_enum_name}>
+/// If the parser encounters an unexpected token `t`, it will return `Err(Some(t))`.
+/// If the parser encounters an unexpected end of input, it will return `Err(None)`.
+pub fn parse<S>(src: S) -> Result<{start_type_name}, Option<{token_enum_name}>>
 where S: IntoIterator<Item = {token_enum_name}> {{
     let mut tokens = src.into_iter()
         .map({quasitoken_enum_name}::Token)
@@ -195,7 +197,7 @@ where S: IntoIterator<Item = {token_enum_name}> {{
                 nodes.push(new_node);
                 let temp_top_state = *states.last().unwrap();
                 let Some(new_state) = get_goto(temp_top_state, new_node_kind) else {{
-                    return Err(tokens.next().unwrap());
+                    return Err(tokens.next().unwrap().try_into_token().ok());
                 }};
                 states.push(new_state);
             }}
@@ -205,7 +207,7 @@ where S: IntoIterator<Item = {token_enum_name}> {{
             }}
 
             {action_enum_name}::{ACTION_ERR_VARIANT_NAME} => {{
-                return Err(tokens.next().unwrap());
+                return Err(tokens.next().unwrap().try_into_token().ok());
             }}
         }}
     }}
