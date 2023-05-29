@@ -152,6 +152,13 @@ mod should_fail {
         assert!(matches!(err, KikiErr::NoStartSymbol));
     }
 
+    #[test]
+    fn no_terminal_enum() {
+        let src = include_str!("examples/should_fail/no_terminal_enum.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::NoTerminalEnum));
+    }
+
     fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
         let cst = parser::FileParser::new()
             .parse(src)
