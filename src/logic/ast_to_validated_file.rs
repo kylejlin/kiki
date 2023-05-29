@@ -83,11 +83,31 @@ fn validate_terminal_variants(
     for variant in &def.variants {
         let validated_name = validate_terminal_ident_symbol_capitalization(&variant.name)?;
         let dollarless_name = DollarlessTerminalName::remove_dollars(validated_name);
-        let type_ = type_to_string(variant.type_);
+        let type_ = type_to_string::type_to_string(&variant.type_);
         variants.push(validated::TerminalVariant {
             dollarless_name,
             type_,
         });
     }
     Ok(variants)
+}
+
+mod type_to_string {
+    use super::*;
+
+    pub fn type_to_string(type_: &Type) -> String {
+        match type_ {
+            Type::Unit => format!("()"),
+            Type::Path(path) => path_to_string(path),
+            Type::Complex(complex) => complex_to_string(complex),
+        }
+    }
+
+    pub fn path_to_string(path: &Path) -> String {
+        todo!()
+    }
+
+    pub fn complex_to_string(complex: &ComplexType) -> String {
+        todo!()
+    }
 }
