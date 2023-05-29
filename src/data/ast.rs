@@ -79,7 +79,7 @@ pub enum Type {
 
 #[derive(Clone, Debug)]
 pub struct ComplexType {
-    pub callee: Type,
+    pub callee: Vec<Ident>,
     pub types: Vec<Type>,
 }
 

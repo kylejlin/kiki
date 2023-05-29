@@ -102,7 +102,7 @@ pub Path: Path = {
 };
 
 pub ComplexType: ComplexType = {
-    <callee:Type> <_drop:LAngle> <types:CommaSeparatedTypes> <_drop2:RAngle> => ComplexType {
+    <callee:Path> <_drop:LAngle> <types:CommaSeparatedTypes> <_drop2:RAngle> => ComplexType {
         callee,
         types,
     },

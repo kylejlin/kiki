@@ -117,7 +117,7 @@ pub enum Path {
 
 #[derive(Clone, Debug)]
 pub struct ComplexType {
-    pub callee: Type,
+    pub callee: Path,
     pub types: CommaSeparatedTypes,
 }
 
