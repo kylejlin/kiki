@@ -119,7 +119,7 @@ fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, KikiErr>
 
     assert_no_duplicate_nonterminals(&unvalidated)?;
 
-    let names = get_unvalidated_defined_nonterminal_names(unvalidated);
+    let names = get_unvalidated_defined_nonterminal_names(&unvalidated);
     let nonterminals = unvalidated
         .iter()
         .map(|nonterminal| validate_nonterminal(*nonterminal, &names))
