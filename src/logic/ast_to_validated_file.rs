@@ -3,12 +3,19 @@ use crate::data::{
     validated_file::{self as validated, DollarlessTerminalName},
     ByteIndex, KikiErr,
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub fn ast_to_validated_file(file: File) -> Result<validated::File, KikiErr> {
     let start = get_start_symbol_name(&file)?;
     let terminal_enum = get_terminal_enum(&file)?;
-    todo!()
+    let defined_identifiers = get_unvalidated_defined_identifiers(&file, &terminal_enum);
+    let nonterminals = get_nonterminals(&file, &defined_identifiers)?;
+    Ok(validated::File {
+        start,
+        terminal_enum,
+        nonterminals,
+        defined_identifiers,
+    })
 }
 
 fn get_start_symbol_name(file: &File) -> Result<String, KikiErr> {
@@ -118,6 +125,42 @@ fn validate_variant_capitalization(
         dollarless_name,
         type_,
     })
+}
+
+fn get_unvalidated_defined_identifiers(
+    file: &File,
+    terminal_enum: &validated::TerminalEnum,
+) -> HashSet<String> {
+    let item_identifiers = get_item_identifiers(file);
+    let terminal_variant_identifiers = get_terminal_variant_identifiers(terminal_enum);
+    item_identifiers
+        .chain(terminal_variant_identifiers)
+        .collect()
+}
+
+fn get_item_identifiers(file: &File) -> impl Iterator<Item = String> + '_ {
+    file.items.iter().map(|item| match item {
+        Item::Start(start_ident) => start_ident.name.clone(),
+        Item::Struct(struct_def) => struct_def.name.name.clone(),
+        Item::Enum(enum_def) => enum_def.name.name.clone(),
+        Item::Terminal(terminal_def) => terminal_def.name.name.clone(),
+    })
+}
+
+fn get_terminal_variant_identifiers(
+    terminal_enum: &validated::TerminalEnum,
+) -> impl Iterator<Item = String> + '_ {
+    terminal_enum
+        .variants
+        .iter()
+        .map(|variant| variant.dollarless_name.raw().to_owned())
+}
+
+fn get_nonterminals(
+    file: &File,
+    defined_identifiers: &HashSet<String>,
+) -> Result<Vec<validated::Nonterminal>, KikiErr> {
+    todo!()
 }
 
 mod type_to_string {
