@@ -103,7 +103,7 @@ mod type_to_string {
         }
     }
 
-    pub fn path_to_string(path: &Path) -> String {
+    pub fn path_to_string(path: &[Ident]) -> String {
         todo!()
     }
 

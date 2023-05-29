@@ -73,14 +73,8 @@ pub struct TerminalVariant {
 #[derive(Clone, Debug)]
 pub enum Type {
     Unit,
-    Path(Path),
+    Path(Vec<Ident>),
     Complex(Box<ComplexType>),
-}
-
-#[derive(Clone, Debug)]
-pub enum Path {
-    One(Ident),
-    Cons(Box<Path>, Ident),
 }
 
 #[derive(Clone, Debug)]

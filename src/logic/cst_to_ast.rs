@@ -185,11 +185,15 @@ impl From<cst::Type> for ast::Type {
     }
 }
 
-impl From<cst::Path> for ast::Path {
+impl From<cst::Path> for Vec<ast::Ident> {
     fn from(cst: cst::Path) -> Self {
         match cst {
-            cst::Path::One(ident) => ast::Path::One(ident.into()),
-            cst::Path::Cons(left, right) => ast::Path::Cons(Box::new((*left).into()), right.into()),
+            cst::Path::One(ident) => vec![ident.into()],
+            cst::Path::Cons(left, right) => {
+                let mut left: Vec<ast::Ident> = (*left).into();
+                left.push(right.into());
+                left
+            }
         }
     }
 }
