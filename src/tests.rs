@@ -23,3 +23,11 @@ fn balanced_parens() {
         .parse(src)
         .expect("should parse correctly");
 }
+
+#[test]
+fn balanced_parens_esoteric() {
+    let src = include_str!("examples/balanced_parens_esoteric.kiki");
+    parser::FileParser::new()
+        .parse(src)
+        .expect("should parse correctly");
+}

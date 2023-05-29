@@ -1,0 +1,15 @@
+start Expr
+
+enum Expr {
+    Empty
+    Wrap {
+        _: $LParen
+        inner: Expr
+        right: $RParen
+    }
+}
+
+terminal Token {
+    $LParen: ()
+    $RParen: ()
+}
