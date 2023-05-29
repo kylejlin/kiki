@@ -1,7 +1,16 @@
 use super::*;
 
+/// This set contains:
+/// 1. Nonterminal names
+/// 2. Terminal variant names
+/// 3. The terminal enum name
 pub struct DefinedIdentifiers(pub HashSet<String>);
 
+/// This function validates that:
+/// 1. There are no duplicate nonterminal names.
+/// 2. There are no duplicate terminal variant names.
+/// 3. The nonterminal names, terminal variant names,
+///    _and the terminal enum name_ are pairwise disjoint.
 pub fn get_defined_identifiers(file: &File) -> Result<DefinedIdentifiers, KikiErr> {
     let mut seen = get_defined_symbol_positions(file)?;
 
@@ -12,8 +21,18 @@ pub fn get_defined_identifiers(file: &File) -> Result<DefinedIdentifiers, KikiEr
     ))
 }
 
+/// This set contains:
+/// 1. Nonterminal names
+/// 2. Terminal variant names
+///
+/// It does **not** contain the terminal enum name.
 pub struct DefinedSymbols(pub HashSet<String>);
 
+/// This function validates that:
+/// 1. There are no duplicate nonterminal names.
+/// 2. There are no duplicate terminal variant names.
+/// 3. The nonterminal names and terminal variant names
+///    are pairwise disjoint.
 pub fn get_defined_symbols(file: &File) -> Result<DefinedSymbols, KikiErr> {
     let seen = get_defined_symbol_positions(file)?;
     Ok(DefinedSymbols(
