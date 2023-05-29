@@ -6,6 +6,14 @@ use super::*;
 /// 3. Every field name is properly capitalized.
 ///
 /// This function does **not** check for name clashes.
+///
+/// ## Capitalization rules:
+/// 1. If a nonterminal name contains one or more letters,
+///    the first letter must be uppercase.
+/// 2. If a nonterminal enum variant name contains one or more letters,
+///    the first letter must be uppercase.
+/// 3. If a field name contains one or more letters,
+///    the first letter must be lowercase.
 pub fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, KikiErr> {
     let unvalidated: Vec<UnvalidatedNonterminal> = file
         .items

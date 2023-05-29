@@ -14,6 +14,8 @@ pub struct DefinedIdentifiers(pub HashSet<String>);
 ///
 /// This function does **not** check for name clashes with
 /// builtins, such as `Option`.
+///
+/// This function does **not** validate capitalization.
 pub fn get_defined_identifiers(file: &File) -> Result<DefinedIdentifiers, KikiErr> {
     let mut seen = get_defined_symbol_positions(file)?;
 
@@ -39,6 +41,8 @@ pub struct DefinedSymbols(pub HashSet<String>);
 ///
 /// This function does **not** check for name clashes with
 /// builtins, such as `Option`.
+///
+/// This function does **not** validate capitalization.
 pub fn get_defined_symbols(file: &File) -> Result<DefinedSymbols, KikiErr> {
     let seen = get_defined_symbol_positions(file)?;
     Ok(DefinedSymbols(

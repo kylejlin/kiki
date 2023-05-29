@@ -5,6 +5,10 @@ use super::*;
 /// 2. Each variant name has proper capitalization.
 ///
 /// This function does **not** check for name clashes.
+///
+/// ## Capitalization rule:
+/// If a terminal variant name contains one or more letters,
+/// the first letter must be uppercase.
 pub fn get_terminal_enum(file: &File) -> Result<validated::TerminalEnum, KikiErr> {
     let unvalidated = get_unvalidated_terminal_enum(file)?;
     validate_terminal_def(unvalidated)
