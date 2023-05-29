@@ -3,6 +3,7 @@ use crate::data::{
     validated_file::{self as validated, DollarlessTerminalName},
     ByteIndex, KikiErr,
 };
+use std::collections::HashMap;
 
 pub fn ast_to_validated_file(file: File) -> Result<validated::File, KikiErr> {
     let start = get_start_symbol_name(&file)?;
@@ -79,17 +80,44 @@ fn validate_symbol_capitalization(name: &str, position: ByteIndex) -> Result<&st
 fn validate_terminal_variants(
     def: &TerminalDef,
 ) -> Result<Vec<validated::TerminalVariant>, KikiErr> {
-    let mut variants = Vec::new();
-    for variant in &def.variants {
-        let validated_name = validate_terminal_ident_symbol_capitalization(&variant.name)?;
-        let dollarless_name = DollarlessTerminalName::remove_dollars(validated_name);
-        let type_ = type_to_string::type_to_string(&variant.type_);
-        variants.push(validated::TerminalVariant {
-            dollarless_name,
-            type_,
-        });
-    }
+    assert_no_duplicate_variants(def)?;
+
+    let variants = def
+        .variants
+        .iter()
+        .map(validate_variant_capitalization)
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(variants)
+}
+
+fn assert_no_duplicate_variants(def: &TerminalDef) -> Result<(), KikiErr> {
+    let mut seen: HashMap<&str, &TerminalVariant> = HashMap::new();
+    for variant in &def.variants {
+        let name: &str = &variant.name.dollared_name;
+
+        if let Some(conflicting_variant) = seen.get(name) {
+            return Err(KikiErr::DuplicateTerminalVariants(
+                name.to_owned(),
+                conflicting_variant.name.position,
+                variant.name.position,
+            ));
+        }
+
+        seen.insert(name, variant);
+    }
+    Ok(())
+}
+
+fn validate_variant_capitalization(
+    variant: &TerminalVariant,
+) -> Result<validated::TerminalVariant, KikiErr> {
+    let validated_name = validate_terminal_ident_symbol_capitalization(&variant.name)?;
+    let dollarless_name = DollarlessTerminalName::remove_dollars(validated_name);
+    let type_ = type_to_string::type_to_string(&variant.type_);
+    Ok(validated::TerminalVariant {
+        dollarless_name,
+        type_,
+    })
 }
 
 mod type_to_string {

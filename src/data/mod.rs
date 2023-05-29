@@ -12,6 +12,7 @@ pub enum KikiErr {
     NoTerminalEnum,
     MultipleTerminalEnums(Vec<ByteIndex>),
     SymbolsFirstLetteNotCapitalized(ByteIndex),
+    DuplicateTerminalVariants(String, ByteIndex, ByteIndex),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
