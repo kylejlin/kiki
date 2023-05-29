@@ -1,0 +1,7 @@
+start Blah
+
+struct Blah
+
+terminal Token {
+    $Blah: String
+}
