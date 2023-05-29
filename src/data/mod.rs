@@ -7,6 +7,8 @@ pub mod validated_file;
 #[derive(Debug)]
 pub enum KikiErr {
     Parse(ByteIndex, String, ByteIndex),
+    NoStartSymbol,
+    MultipleStartSymbols(Vec<ByteIndex>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
