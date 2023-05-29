@@ -106,6 +106,7 @@ impl SrcBuilder<'_> {
         } = self;
 
         let token_enum_variants_indent_1 = self.get_token_enum_variants_src().indent(1);
+        let nonterminal_type_defs = self.get_nonterminal_type_defs_src();
         let token_kind_enum_variants_indent_1 = self.get_token_kind_enum_variants_src().indent(1);
         let num_of_token_variants = file.terminal_enum.variants.len();
         let nonterminal_kind_enum_variants_indent_1 =
@@ -126,7 +127,6 @@ impl SrcBuilder<'_> {
         let node_try_into_terminal_variant_name_variant_index_fns_indent_1 = self
             .get_node_try_into_terminal_variant_name_variant_index_fns_src()
             .indent(1);
-        let nonterminal_type_defs = self.get_nonterminal_type_defs_src();
 
         let num_of_quasitoken_kind_variants = file.terminal_enum.variants.len() + 1;
         let num_of_nonterminal_kind_variants = file.nonterminals.len();
@@ -139,6 +139,8 @@ impl SrcBuilder<'_> {
 pub enum {token_enum_name} {{
 {token_enum_variants_indent_1}
 }}
+
+{nonterminal_type_defs}
 
 #[derive(Debug)]
 enum {quasitoken_enum_name} {{
@@ -279,8 +281,6 @@ fn get_goto(top_state: {state_enum_name}, new_node_kind: {nonterminal_kind_enum_
 impl {node_enum_name} {{
 {node_try_into_terminal_variant_name_variant_index_fns_indent_1}
 }}
-
-{nonterminal_type_defs}
 "#
         )))
     }
@@ -297,6 +297,112 @@ impl {node_enum_name} {{
             })
             .collect::<Vec<_>>()
             .join("\n")
+    }
+
+    fn get_nonterminal_type_defs_src(&self) -> String {
+        self.file.nonterminals
+            .iter()
+            .map(|nonterminal| match nonterminal {
+                Nonterminal::Struct(s) => {
+                    let nonterminal_name = &s.name.name;
+                    let fieldset = self.get_fieldset_src_with_semicolon_if_unnamed(&s.fieldset);
+                    format!("{NONTERMINAL_DERIVE_CLAUSE}\npub struct {nonterminal_name}{fieldset}")
+                },
+                Nonterminal::Enum(e) => {
+                    let nonterminal_name = &e.name.name;
+                    let variants_indent_1 = e.variants
+                        .iter()
+                        .map(|variant| {
+                            let variant_name = &variant.name.name;
+                            let variant_fieldset = self.get_fieldset_src_without_semicolon(&variant.fieldset);
+                            format!("{variant_name}{variant_fieldset},")
+                        })
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                        .indent(1);
+                    format!("{NONTERMINAL_DERIVE_CLAUSE}\npub enum {nonterminal_name} {{\n{variants_indent_1}\n}}")
+                },
+            })
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    }
+
+    fn get_fieldset_src_with_semicolon_if_unnamed(&self, fieldset: &Fieldset) -> String {
+        self.get_fieldset_src(fieldset, true)
+    }
+
+    fn get_fieldset_src_without_semicolon(&self, fieldset: &Fieldset) -> String {
+        self.get_fieldset_src(fieldset, false)
+    }
+
+    fn get_fieldset_src(&self, fieldset: &Fieldset, use_semicolon_if_unnamed: bool) -> String {
+        match fieldset {
+            Fieldset::Empty => self.get_empty_fieldset_src(use_semicolon_if_unnamed),
+            Fieldset::Named(fieldset) => self.get_named_fieldset_src(fieldset),
+            Fieldset::Tuple(fieldset) => {
+                self.get_tuple_fieldset_src(fieldset, use_semicolon_if_unnamed)
+            }
+        }
+    }
+
+    fn get_empty_fieldset_src(&self, use_semicolon: bool) -> String {
+        if use_semicolon { ";" } else { "" }.to_owned()
+    }
+
+    fn get_named_fieldset_src(&self, fieldset: &NamedFieldset) -> String {
+        let fields_indent_1 = fieldset
+            .fields
+            .iter()
+            .filter_map(|field| match (&field.name, &field.symbol) {
+                (IdentOrUnderscore::Underscore, _) => None,
+                (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
+                    let field_name = &field_name.name;
+                    let field_type_name = &field_type.name;
+                    Some(format!("{field_name}: Box<{field_type_name}>,"))
+                }
+                (
+                    IdentOrUnderscore::Ident(field_name),
+                    IdentOrTerminalIdent::Terminal(field_type),
+                ) => {
+                    let field_name = &field_name.name;
+                    let field_type_name = self
+                        .file
+                        .terminal_enum
+                        .get_type(&field_type.dollarless_name())
+                        .unwrap();
+                    Some(format!("{field_name}: {field_type_name},"))
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+            .indent(1);
+        format!(" {{\n{fields_indent_1}\n}}")
+    }
+
+    fn get_tuple_fieldset_src(&self, fieldset: &TupleFieldset, use_semicolon: bool) -> String {
+        let fields_indent_1 = fieldset
+            .fields
+            .iter()
+            .filter_map(|field| match field {
+                TupleField::Skipped(_) => None,
+                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
+                    let field_type_name = &field_type.name;
+                    Some(format!("Box<{field_type_name}>,"))
+                }
+                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
+                    let field_type_name = self
+                        .file
+                        .terminal_enum
+                        .get_type(&field_type.dollarless_name())
+                        .unwrap();
+                    Some(format!("{field_type_name},"))
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+            .indent(1);
+        let possible_semicolon = if use_semicolon { ";" } else { "" };
+        format!("(\n{fields_indent_1}\n){possible_semicolon}")
     }
 
     fn get_token_kind_enum_variants_src(&self) -> String {
@@ -690,112 +796,6 @@ impl {node_enum_name} {{
             })
             .collect::<Vec<_>>()
             .join("\n\n")
-    }
-
-    fn get_nonterminal_type_defs_src(&self) -> String {
-        self.file.nonterminals
-            .iter()
-            .map(|nonterminal| match nonterminal {
-                Nonterminal::Struct(s) => {
-                    let nonterminal_name = &s.name.name;
-                    let fieldset = self.get_fieldset_src_with_semicolon_if_unnamed(&s.fieldset);
-                    format!("{NONTERMINAL_DERIVE_CLAUSE}\npub struct {nonterminal_name}{fieldset}")
-                },
-                Nonterminal::Enum(e) => {
-                    let nonterminal_name = &e.name.name;
-                    let variants_indent_1 = e.variants
-                        .iter()
-                        .map(|variant| {
-                            let variant_name = &variant.name.name;
-                            let variant_fieldset = self.get_fieldset_src_without_semicolon(&variant.fieldset);
-                            format!("{variant_name}{variant_fieldset},")
-                        })
-                        .collect::<Vec<_>>()
-                        .join("\n")
-                        .indent(1);
-                    format!("{NONTERMINAL_DERIVE_CLAUSE}\npub enum {nonterminal_name} {{\n{variants_indent_1}\n}}")
-                },
-            })
-            .collect::<Vec<_>>()
-            .join("\n\n")
-    }
-
-    fn get_fieldset_src_with_semicolon_if_unnamed(&self, fieldset: &Fieldset) -> String {
-        self.get_fieldset_src(fieldset, true)
-    }
-
-    fn get_fieldset_src_without_semicolon(&self, fieldset: &Fieldset) -> String {
-        self.get_fieldset_src(fieldset, false)
-    }
-
-    fn get_fieldset_src(&self, fieldset: &Fieldset, use_semicolon_if_unnamed: bool) -> String {
-        match fieldset {
-            Fieldset::Empty => self.get_empty_fieldset_src(use_semicolon_if_unnamed),
-            Fieldset::Named(fieldset) => self.get_named_fieldset_src(fieldset),
-            Fieldset::Tuple(fieldset) => {
-                self.get_tuple_fieldset_src(fieldset, use_semicolon_if_unnamed)
-            }
-        }
-    }
-
-    fn get_empty_fieldset_src(&self, use_semicolon: bool) -> String {
-        if use_semicolon { ";" } else { "" }.to_owned()
-    }
-
-    fn get_named_fieldset_src(&self, fieldset: &NamedFieldset) -> String {
-        let fields_indent_1 = fieldset
-            .fields
-            .iter()
-            .filter_map(|field| match (&field.name, &field.symbol) {
-                (IdentOrUnderscore::Underscore, _) => None,
-                (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
-                    let field_name = &field_name.name;
-                    let field_type_name = &field_type.name;
-                    Some(format!("{field_name}: Box<{field_type_name}>,"))
-                }
-                (
-                    IdentOrUnderscore::Ident(field_name),
-                    IdentOrTerminalIdent::Terminal(field_type),
-                ) => {
-                    let field_name = &field_name.name;
-                    let field_type_name = self
-                        .file
-                        .terminal_enum
-                        .get_type(&field_type.dollarless_name())
-                        .unwrap();
-                    Some(format!("{field_name}: {field_type_name},"))
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-            .indent(1);
-        format!(" {{\n{fields_indent_1}\n}}")
-    }
-
-    fn get_tuple_fieldset_src(&self, fieldset: &TupleFieldset, use_semicolon: bool) -> String {
-        let fields_indent_1 = fieldset
-            .fields
-            .iter()
-            .filter_map(|field| match field {
-                TupleField::Skipped(_) => None,
-                TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
-                    let field_type_name = &field_type.name;
-                    Some(format!("Box<{field_type_name}>,"))
-                }
-                TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                    let field_type_name = self
-                        .file
-                        .terminal_enum
-                        .get_type(&field_type.dollarless_name())
-                        .unwrap();
-                    Some(format!("{field_type_name},"))
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-            .indent(1);
-        let possible_semicolon = if use_semicolon { ";" } else { "" };
-        format!("(\n{fields_indent_1}\n){possible_semicolon}")
     }
 }
 
