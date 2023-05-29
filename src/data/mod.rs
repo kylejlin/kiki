@@ -11,7 +11,7 @@ pub enum KikiErr {
     MultipleStartSymbols(Vec<ByteIndex>),
     NoTerminalEnum,
     MultipleTerminalEnums(Vec<ByteIndex>),
-    SymbolFirstLetterNotUppercase(ByteIndex),
+    SymbolOrTerminalEnumNameFirstLetterNotUppercase(ByteIndex),
     FieldFirstLetterNotLowercase(ByteIndex),
     NameClash(String, ByteIndex, ByteIndex),
     UndefinedNonterminal(String, ByteIndex),

@@ -49,7 +49,9 @@ fn validate_uppercase_start(name: &str, position: ByteIndex) -> Result<&str, Kik
             if first_letter.is_ascii_uppercase() {
                 Ok(name)
             } else {
-                Err(KikiErr::SymbolFirstLetterNotUppercase(position))
+                Err(KikiErr::SymbolOrTerminalEnumNameFirstLetterNotUppercase(
+                    position,
+                ))
             }
         }
     }
