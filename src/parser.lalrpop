@@ -30,20 +30,20 @@ pub Start: Ident = {
     <_drop:StartKw> <name:Ident> => name,
 };
 
-pub Struct: Struct = {
-    <_drop:StructKw> <name:Ident> <fieldset:Fieldset> => Struct { name, fieldset },
+pub Struct: StructDef = {
+    <_drop:StructKw> <name:Ident> <fieldset:Fieldset> => StructDef { name, fieldset },
 };
 
-pub Enum: Enum = {
-    <_drop:EnumKw> <name:Ident> <_drop2:LCurly> <variants:OptEnumVariants> <_drop3:RCurly> => Enum {
+pub Enum: EnumDef = {
+    <_drop:EnumKw> <name:Ident> <_drop2:LCurly> <variants:OptEnumVariants> <_drop3:RCurly> => EnumDef {
         name,
         variants,
     },
 };
 
-pub Terminal: Terminal = {
+pub Terminal: TerminalDef = {
     <_drop:TerminalKw> <name:Ident> <_drop2:LCurly> <variants:OptTerminalVariants> <_drop3:RCurly> => {
-        Terminal { name, variants }
+        TerminalDef { name, variants }
     },
 };
 

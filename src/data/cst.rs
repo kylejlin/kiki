@@ -14,25 +14,25 @@ pub enum OptItems {
 #[derive(Clone, Debug)]
 pub enum Item {
     Start(Ident),
-    Struct(Struct),
-    Enum(Enum),
-    Terminal(Terminal),
+    Struct(StructDef),
+    Enum(EnumDef),
+    Terminal(TerminalDef),
 }
 
 #[derive(Clone, Debug)]
-pub struct Struct {
+pub struct StructDef {
     pub name: Ident,
     pub fieldset: Fieldset,
 }
 
 #[derive(Clone, Debug)]
-pub struct Enum {
+pub struct EnumDef {
     pub name: Ident,
     pub variants: OptEnumVariants,
 }
 
 #[derive(Clone, Debug)]
-pub struct Terminal {
+pub struct TerminalDef {
     pub name: Ident,
     pub variants: OptTerminalVariants,
 }

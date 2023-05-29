@@ -32,27 +32,27 @@ impl From<cst::Item> for ast::Item {
     }
 }
 
-impl From<cst::Struct> for ast::Struct {
-    fn from(cst: cst::Struct) -> Self {
-        ast::Struct {
+impl From<cst::StructDef> for ast::StructDef {
+    fn from(cst: cst::StructDef) -> Self {
+        ast::StructDef {
             name: cst.name.into(),
             fieldset: cst.fieldset.into(),
         }
     }
 }
 
-impl From<cst::Enum> for ast::Enum {
-    fn from(cst: cst::Enum) -> Self {
-        ast::Enum {
+impl From<cst::EnumDef> for ast::EnumDef {
+    fn from(cst: cst::EnumDef) -> Self {
+        ast::EnumDef {
             name: cst.name.into(),
             variants: cst.variants.into(),
         }
     }
 }
 
-impl From<cst::Terminal> for ast::Terminal {
-    fn from(cst: cst::Terminal) -> Self {
-        ast::Terminal {
+impl From<cst::TerminalDef> for ast::TerminalDef {
+    fn from(cst: cst::TerminalDef) -> Self {
+        ast::TerminalDef {
             name: cst.name.into(),
             variants: cst.variants.into(),
         }

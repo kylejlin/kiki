@@ -9,6 +9,8 @@ pub enum KikiErr {
     Parse(ByteIndex, String, ByteIndex),
     NoStartSymbol,
     MultipleStartSymbols(Vec<ByteIndex>),
+    NoTerminalEnum,
+    MultipleTerminalEnums(Vec<ByteIndex>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]

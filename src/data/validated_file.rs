@@ -2,7 +2,7 @@ use crate::data::ast::*;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
-pub struct ValidatedFile {
+pub struct File {
     pub start: String,
     pub terminal_enum: TerminalEnum,
     pub nonterminals: Vec<Nonterminal>,
@@ -45,8 +45,8 @@ impl DollarlessTerminalName {
 
 #[derive(Debug, Clone)]
 pub enum Nonterminal {
-    Struct(Struct),
-    Enum(Enum),
+    Struct(StructDef),
+    Enum(EnumDef),
 }
 
 impl Nonterminal {
