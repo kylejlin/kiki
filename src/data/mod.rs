@@ -11,6 +11,7 @@ pub enum KikiErr {
     MultipleStartSymbols(Vec<ByteIndex>),
     NoTerminalEnum,
     MultipleTerminalEnums(Vec<ByteIndex>),
+    SymbolsFirstLetteNotCapitalized(ByteIndex),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]

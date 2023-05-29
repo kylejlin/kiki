@@ -45,7 +45,21 @@ fn get_terminal_enum(file: &File) -> Result<validated::TerminalEnum, KikiErr> {
 }
 
 fn validate_terminal_def(def: &TerminalDef) -> Result<validated::TerminalEnum, KikiErr> {
-    let name = validate_symbol_capitalization(&def.name);
+    let name = validate_symbol_capitalization(&def.name)?;
     let variants = validate_terminal_variants(def)?;
     Ok(validated::TerminalEnum { name, variants })
+}
+
+fn validate_symbol_capitalization(name: &Ident) -> Result<String, KikiErr> {
+    let first_letter = name.name.chars().find(|c| c.is_ascii_alphabetic());
+    match first_letter {
+        None => Ok(name.name.clone()),
+        Some(first_letter) => {
+            if first_letter.is_ascii_uppercase() {
+                Ok(name.name.clone())
+            } else {
+                Err(KikiErr::SymbolsFirstLetteNotCapitalized(name.position))
+            }
+        }
+    }
 }
