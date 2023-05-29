@@ -58,6 +58,15 @@ pub enum TupleField {
     Skipped(IdentOrTerminalIdent),
 }
 
+impl TupleField {
+    pub fn symbol(&self) -> &IdentOrTerminalIdent {
+        match self {
+            TupleField::Used(symbol) => symbol,
+            TupleField::Skipped(symbol) => symbol,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct EnumVariant {
     pub name: Ident,

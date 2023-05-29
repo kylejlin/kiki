@@ -7,7 +7,7 @@ use std::collections::{HashMap, HashSet};
 
 pub fn ast_to_validated_file(file: File) -> Result<validated::File, KikiErr> {
     let terminal_enum = get_terminal_enum(&file)?;
-    let nonterminals = get_nonterminals(&file)?;
+    let nonterminals = get_nonterminals(&file, &terminal_enum)?;
     let start = get_start_symbol_name(&file, &nonterminals)?;
     let DefinedIdentifiers(defined_identifiers) =
         get_unvalidated_defined_identifiers(&file, &terminal_enum);
@@ -40,20 +40,22 @@ fn get_terminal_enum(file: &File) -> Result<validated::TerminalEnum, KikiErr> {
 }
 
 fn validate_terminal_def(def: &TerminalDef) -> Result<validated::TerminalEnum, KikiErr> {
-    let name = validate_ident_symbol_capitalization(&def.name)?.to_string();
+    let name = validate_symbol_ident_name_capitalization(&def.name)?.to_string();
     let variants = validate_terminal_variants(def)?;
     Ok(validated::TerminalEnum { name, variants })
 }
 
-fn validate_ident_symbol_capitalization(ident: &Ident) -> Result<&str, KikiErr> {
-    validate_symbol_capitalization(&ident.name, ident.position)
+fn validate_symbol_ident_name_capitalization(ident: &Ident) -> Result<&str, KikiErr> {
+    validate_symbol_name_capitalization(&ident.name, ident.position)
 }
 
-fn validate_terminal_ident_symbol_capitalization(ident: &TerminalIdent) -> Result<&str, KikiErr> {
-    validate_symbol_capitalization(&ident.dollared_name, ident.position)
+fn validate_symbol_terminal_ident_name_capitalization(
+    ident: &TerminalIdent,
+) -> Result<&str, KikiErr> {
+    validate_symbol_name_capitalization(&ident.dollared_name, ident.position)
 }
 
-fn validate_symbol_capitalization(name: &str, position: ByteIndex) -> Result<&str, KikiErr> {
+fn validate_symbol_name_capitalization(name: &str, position: ByteIndex) -> Result<&str, KikiErr> {
     let first_letter = name.chars().find(|c| c.is_ascii_alphabetic());
     match first_letter {
         None => Ok(name),
@@ -101,7 +103,7 @@ fn assert_no_duplicate_variants(def: &TerminalDef) -> Result<(), KikiErr> {
 fn validate_variant_capitalization(
     variant: &TerminalVariant,
 ) -> Result<validated::TerminalVariant, KikiErr> {
-    let validated_name = validate_terminal_ident_symbol_capitalization(&variant.name)?;
+    let validated_name = validate_symbol_terminal_ident_name_capitalization(&variant.name)?;
     let dollarless_name = DollarlessTerminalName::remove_dollars(validated_name);
     let type_ = type_to_string::type_to_string(&variant.type_);
     Ok(validated::TerminalVariant {
@@ -110,7 +112,10 @@ fn validate_variant_capitalization(
     })
 }
 
-fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, KikiErr> {
+fn get_nonterminals(
+    file: &File,
+    terminal_enum: &validated::TerminalEnum,
+) -> Result<Vec<validated::Nonterminal>, KikiErr> {
     let unvalidated: Vec<UnvalidatedNonterminal> = file
         .items
         .iter()
@@ -119,7 +124,7 @@ fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, KikiErr>
 
     assert_no_duplicate_nonterminals(&unvalidated)?;
 
-    let names = get_unvalidated_defined_nonterminal_names(&unvalidated);
+    let names = get_unvalidated_defined_symbol_names(&unvalidated, terminal_enum);
     let nonterminals = unvalidated
         .iter()
         .map(|nonterminal| validate_nonterminal(*nonterminal, &names))
@@ -170,41 +175,162 @@ fn assert_no_duplicate_nonterminals(
     Ok(())
 }
 
-struct DefinedNonterminalNames(HashSet<String>);
+struct DefinedSymbolNames(HashSet<String>);
 
-fn get_unvalidated_defined_nonterminal_names(
+fn get_unvalidated_defined_symbol_names(
     nonterminals: &[UnvalidatedNonterminal],
-) -> DefinedNonterminalNames {
-    DefinedNonterminalNames(
-        nonterminals
-            .iter()
-            .map(|nonterminal| UnvalidatedNonterminal::name(*nonterminal).name.to_owned())
-            .collect(),
-    )
+    terminal_enum: &validated::TerminalEnum,
+) -> DefinedSymbolNames {
+    let nonterminal_symbols = nonterminals
+        .iter()
+        .map(|nonterminal| UnvalidatedNonterminal::name(*nonterminal).name.to_owned());
+
+    let terminal_symbols = terminal_enum
+        .variants
+        .iter()
+        .map(|variant| variant.dollarless_name.raw().to_owned());
+
+    DefinedSymbolNames(nonterminal_symbols.chain(terminal_symbols).collect())
 }
 
 fn validate_nonterminal(
     nonterminal: UnvalidatedNonterminal,
-    defined_nonterminal_names: &DefinedNonterminalNames,
+    defined_symbol_names: &DefinedSymbolNames,
 ) -> Result<validated::Nonterminal, KikiErr> {
     match nonterminal {
-        UnvalidatedNonterminal::Enum(e) => validate_enum(e, defined_nonterminal_names),
-        UnvalidatedNonterminal::Struct(s) => validate_struct(s, defined_nonterminal_names),
+        UnvalidatedNonterminal::Enum(e) => validate_enum(e, defined_symbol_names),
+        UnvalidatedNonterminal::Struct(s) => validate_struct(s, defined_symbol_names),
     }
 }
 
 fn validate_enum(
     enum_def: &EnumDef,
-    defined_nonterminal_names: &DefinedNonterminalNames,
+    defined_symbol_names: &DefinedSymbolNames,
 ) -> Result<validated::Nonterminal, KikiErr> {
-    todo!()
+    validate_symbol_ident_name_capitalization(&enum_def.name)?;
+    assert_variants_are_valid(&enum_def.variants, defined_symbol_names)?;
+    Ok(validated::Nonterminal::Enum(enum_def.clone()))
+}
+
+fn assert_variants_are_valid(
+    variants: &[EnumVariant],
+    defined_symbol_names: &DefinedSymbolNames,
+) -> Result<(), KikiErr> {
+    for variant in variants {
+        validate_symbol_ident_name_capitalization(&variant.name)?;
+        assert_fieldset_is_valid(&variant.fieldset, defined_symbol_names)?;
+    }
+    Ok(())
 }
 
 fn validate_struct(
     struct_def: &StructDef,
-    defined_nonterminal_names: &DefinedNonterminalNames,
+    defined_symbol_names: &DefinedSymbolNames,
 ) -> Result<validated::Nonterminal, KikiErr> {
-    todo!()
+    validate_symbol_ident_name_capitalization(&struct_def.name)?;
+    assert_fieldset_is_valid(&struct_def.fieldset, defined_symbol_names)?;
+    Ok(validated::Nonterminal::Struct(struct_def.clone()))
+}
+
+fn assert_fieldset_is_valid(
+    fieldset: &Fieldset,
+    defined_symbol_names: &DefinedSymbolNames,
+) -> Result<(), KikiErr> {
+    match fieldset {
+        Fieldset::Empty => Ok(()),
+        Fieldset::Named(named) => assert_named_fieldset_is_valid(named, defined_symbol_names),
+        Fieldset::Tuple(tuple) => assert_tuple_fieldset_is_valid(tuple, defined_symbol_names),
+    }
+}
+
+fn assert_named_fieldset_is_valid(
+    fieldset: &NamedFieldset,
+    defined_symbol_names: &DefinedSymbolNames,
+) -> Result<(), KikiErr> {
+    for field in &fieldset.fields {
+        assert_field_ident_or_underscore_name_is_valid(&field.name)?;
+        assert_symbol_is_defined(&field.symbol, defined_symbol_names)?;
+    }
+    Ok(())
+}
+
+fn assert_tuple_fieldset_is_valid(
+    fieldset: &TupleFieldset,
+    defined_symbol_names: &DefinedSymbolNames,
+) -> Result<(), KikiErr> {
+    for field in &fieldset.fields {
+        assert_symbol_is_defined(field.symbol(), defined_symbol_names)?;
+    }
+    Ok(())
+}
+
+fn assert_field_ident_or_underscore_name_is_valid(
+    field: &IdentOrUnderscore,
+) -> Result<(), KikiErr> {
+    match field {
+        IdentOrUnderscore::Underscore => Ok(()),
+        IdentOrUnderscore::Ident(ident) => assert_field_ident_name_is_valid(ident),
+    }
+}
+
+fn assert_field_ident_name_is_valid(ident: &Ident) -> Result<(), KikiErr> {
+    assert_field_name_is_valid(&ident.name, ident.position)
+}
+
+fn assert_field_name_is_valid(name: &str, position: ByteIndex) -> Result<(), KikiErr> {
+    let first_letter = name.chars().find(|c| c.is_ascii_alphabetic());
+    match first_letter {
+        None => Ok(()),
+        Some(first_letter) => {
+            if first_letter.is_ascii_lowercase() {
+                Ok(())
+            } else {
+                Err(KikiErr::SymbolsFirstLetteNotCapitalized(position))
+            }
+        }
+    }
+}
+
+fn assert_symbol_is_defined(
+    symbol: &IdentOrTerminalIdent,
+    defined_symbol_names: &DefinedSymbolNames,
+) -> Result<(), KikiErr> {
+    match symbol {
+        IdentOrTerminalIdent::Ident(ident) => {
+            assert_nonterminal_is_defined(ident, defined_symbol_names)
+        }
+        IdentOrTerminalIdent::Terminal(terminal_ident) => {
+            assert_terminal_is_defined(terminal_ident, defined_symbol_names)
+        }
+    }
+}
+
+fn assert_nonterminal_is_defined(
+    ident: &Ident,
+    defined_symbol_names: &DefinedSymbolNames,
+) -> Result<(), KikiErr> {
+    if defined_symbol_names.0.contains(&ident.name) {
+        Ok(())
+    } else {
+        Err(KikiErr::UndefinedSymbol(ident.name.clone(), ident.position))
+    }
+}
+
+fn assert_terminal_is_defined(
+    terminal_ident: &TerminalIdent,
+    defined_symbol_names: &DefinedSymbolNames,
+) -> Result<(), KikiErr> {
+    if defined_symbol_names
+        .0
+        .contains(terminal_ident.dollarless_name().raw())
+    {
+        Ok(())
+    } else {
+        Err(KikiErr::UndefinedSymbol(
+            terminal_ident.dollared_name.clone(),
+            terminal_ident.position,
+        ))
+    }
 }
 
 fn get_start_symbol_name(
