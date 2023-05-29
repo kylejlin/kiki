@@ -1,5 +1,8 @@
 use super::*;
 
+/// This function validates that:
+/// 1. There is exactly one `start` statement.
+/// 2. The start symbol is defined.
 pub fn get_start_symbol_name(
     file: &File,
     nonterminals: &[validated::Nonterminal],
