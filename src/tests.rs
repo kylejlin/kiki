@@ -56,6 +56,13 @@ mod should_fail {
         assert!(matches!(err, KikiErr::FieldFirstLetterNotLowercase(_)));
     }
 
+    #[test]
+    fn undefined_start() {
+        let src = include_str!("examples/should_fail/undefined_start.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::UndefinedNonterminal(name, _) if name == "Fo"));
+    }
+
     fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
         let cst = parser::FileParser::new()
             .parse(src)
