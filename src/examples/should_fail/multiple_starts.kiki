@@ -1,0 +1,11 @@
+start Foo
+
+start Bar
+
+struct Foo(Bar)
+
+struct Bar
+
+terminal Token {
+    $StrLit: String
+}
