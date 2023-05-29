@@ -574,6 +574,8 @@ impl {node_enum_name} {{
             })
             .collect();
 
+        let num_fields = fields.len();
+
         let parent_fields_indent_2 = fields
             .iter()
             .enumerate()
@@ -590,6 +592,8 @@ impl {node_enum_name} {{
 
         format!(
             r#"{child_vars}
+states.truncate(states.len() - {num_fields});
+
 (
     {node_enum_name}::{parent_type_name}({constructor_name} {{
 {parent_fields_indent_2}
@@ -626,6 +630,8 @@ impl {node_enum_name} {{
             })
             .collect();
 
+        let num_fields = fields.len();
+
         let parent_fields_indent_2 = fields
             .iter()
             .enumerate()
@@ -639,6 +645,8 @@ impl {node_enum_name} {{
 
         format!(
             r#"{child_vars}
+states.truncate(states.len() - {num_fields});
+
 (
     {node_enum_name}::{parent_type_name}({constructor_name}(
 {parent_fields_indent_2}
