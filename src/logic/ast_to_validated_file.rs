@@ -104,7 +104,10 @@ mod type_to_string {
     }
 
     pub fn path_to_string(path: &[Ident]) -> String {
-        todo!()
+        path.iter()
+            .map(|part| -> &str { &part.name })
+            .collect::<Vec<&str>>()
+            .join("::")
     }
 
     pub fn complex_to_string(complex: &ComplexType) -> String {
