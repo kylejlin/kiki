@@ -202,7 +202,7 @@ impl From<cst::ComplexType> for ast::ComplexType {
     fn from(cst: cst::ComplexType) -> Self {
         ast::ComplexType {
             callee: cst.callee.into(),
-            types: cst.types.into(),
+            args: cst.args.into(),
         }
     }
 }

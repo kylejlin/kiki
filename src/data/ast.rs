@@ -80,7 +80,7 @@ pub enum Type {
 #[derive(Clone, Debug)]
 pub struct ComplexType {
     pub callee: Vec<Ident>,
-    pub types: Vec<Type>,
+    pub args: Vec<Type>,
 }
 
 pub use crate::data::cst::{Ident, IdentOrTerminalIdent, IdentOrUnderscore, TerminalIdent, Token};

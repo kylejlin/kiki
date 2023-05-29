@@ -111,6 +111,13 @@ mod type_to_string {
     }
 
     pub fn complex_to_string(complex: &ComplexType) -> String {
-        todo!()
+        let callee = path_to_string(&complex.callee);
+        let comma_separated_args = complex
+            .args
+            .iter()
+            .map(type_to_string)
+            .collect::<Vec<String>>()
+            .join(", ");
+        format!("{callee}<{comma_separated_args}>")
     }
 }
