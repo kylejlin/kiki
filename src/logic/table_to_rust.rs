@@ -437,7 +437,7 @@ impl {node_enum_name} {{
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_name = &field_name.name;
                     let field_type_name = &field_type.name;
-                    format!("let {field_name}_{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
+                    format!("let {field_name}_{field_index} = Box::new({field_type_name}::try_from(nodes.pop().unwrap()).unwrap());\n")
                 },
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Terminal(field_type)) => {
                     let field_name = &field_name.name;
@@ -490,7 +490,7 @@ impl {node_enum_name} {{
                 TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
                 TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_type_name = &field_type.name;
-                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = {field_type_name}::try_from(nodes.pop().unwrap()).unwrap();\n")
+                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = Box::new({field_type_name}::try_from(nodes.pop().unwrap()).unwrap());\n")
                 },
                 TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
                     let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.dollarless_name()).unwrap();
