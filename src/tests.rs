@@ -105,6 +105,13 @@ mod should_fail {
         assert!(matches!(err, KikiErr::NameClash(name, _, _) if name == "Lorem"));
     }
 
+    #[test]
+    fn clash_terminal_terminal() {
+        let src = include_str!("examples/should_fail/clash_terminal_terminal.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::NameClash(name, _, _) if name == "Num"));
+    }
+
     fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
         let cst = parser::FileParser::new()
             .parse(src)

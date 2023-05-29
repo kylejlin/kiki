@@ -1,0 +1,10 @@
+start Epsilon
+
+enum Epsilon {
+    Nil
+}
+
+terminal Token {
+    $Num: isize
+    $Num: isize
+}
