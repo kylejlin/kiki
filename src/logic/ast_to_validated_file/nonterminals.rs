@@ -135,7 +135,7 @@ fn assert_field_name_is_valid(name: &str, position: ByteIndex) -> Result<(), Kik
             if first_letter.is_ascii_lowercase() {
                 Ok(())
             } else {
-                Err(KikiErr::SymbolFirstLetterNotCapitalized(position))
+                Err(KikiErr::FieldFirstLetterNotLowercase(position))
             }
         }
     }

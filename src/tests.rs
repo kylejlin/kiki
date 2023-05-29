@@ -45,16 +45,23 @@ mod should_fail {
     #[test]
     fn lowercase_nonterminal() {
         let src = include_str!("examples/should_fail/lowercase_nonterminal.kiki");
-        assert_src_fails_pre_machine_validation(src);
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::SymbolFirstLetterNotUppercase(_)));
     }
 
-    fn assert_src_fails_pre_machine_validation(src: &str) {
+    #[test]
+    fn uppercase_field() {
+        let src = include_str!("examples/should_fail/uppercase_field.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::FieldFirstLetterNotLowercase(_)));
+    }
+
+    fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
         let cst = parser::FileParser::new()
             .parse(src)
             .expect("should parse correctly");
         let ast: crate::data::ast::File = cst.into();
-        let err = crate::logic::ast_to_validated_file::ast_to_validated_file(ast)
-            .expect_err("should fail pre-machine validation");
-        assert!(matches!(err, KikiErr::SymbolFirstLetterNotCapitalized(_)))
+        crate::logic::ast_to_validated_file::ast_to_validated_file(ast)
+            .expect_err("should fail pre-machine validation")
     }
 }

@@ -51,7 +51,7 @@ fn validate_symbol_name_capitalization(name: &str, position: ByteIndex) -> Resul
             if first_letter.is_ascii_uppercase() {
                 Ok(name)
             } else {
-                Err(KikiErr::SymbolFirstLetterNotCapitalized(position))
+                Err(KikiErr::SymbolFirstLetterNotUppercase(position))
             }
         }
     }
