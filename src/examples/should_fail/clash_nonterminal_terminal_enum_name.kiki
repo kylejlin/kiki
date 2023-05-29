@@ -1,0 +1,7 @@
+start Qux
+
+struct Qux
+
+terminal Qux {
+    $Num: isize
+}

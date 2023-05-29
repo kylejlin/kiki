@@ -91,6 +91,13 @@ mod should_fail {
         assert!(matches!(err, KikiErr::UndefinedTerminal(name, _) if name.raw() == "Baz"));
     }
 
+    #[test]
+    fn clash_nonterminal_terminal_enum_name() {
+        let src = include_str!("examples/should_fail/clash_nonterminal_terminal_enum_name.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::NameClash(name, _, _) if name == "Qux"));
+    }
+
     fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
         let cst = parser::FileParser::new()
             .parse(src)
