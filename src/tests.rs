@@ -145,6 +145,13 @@ mod should_fail {
         assert!(matches!(err, KikiErr::NameClash(name, _, _) if name == "Tok"));
     }
 
+    #[test]
+    fn no_start() {
+        let src = include_str!("examples/should_fail/no_start.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::NoStartSymbol));
+    }
+
     fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
         let cst = parser::FileParser::new()
             .parse(src)
