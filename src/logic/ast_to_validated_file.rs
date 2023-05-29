@@ -119,7 +119,7 @@ fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, KikiErr>
 
     assert_no_duplicate_nonterminals(&unvalidated)?;
 
-    let names = get_unvalidated_defined_nonterminal_names(file);
+    let names = get_unvalidated_defined_nonterminal_names(unvalidated);
     let nonterminals = unvalidated
         .iter()
         .map(|nonterminal| validate_nonterminal(*nonterminal, &names))
@@ -172,8 +172,15 @@ fn assert_no_duplicate_nonterminals(
 
 struct DefinedNonterminalNames(HashSet<String>);
 
-fn get_unvalidated_defined_nonterminal_names(file: &File) -> DefinedNonterminalNames {
-    todo!()
+fn get_unvalidated_defined_nonterminal_names(
+    nonterminals: &[UnvalidatedNonterminal],
+) -> DefinedNonterminalNames {
+    DefinedNonterminalNames(
+        nonterminals
+            .iter()
+            .map(|nonterminal| UnvalidatedNonterminal::name(*nonterminal).name.to_owned())
+            .collect(),
+    )
 }
 
 fn validate_nonterminal(
