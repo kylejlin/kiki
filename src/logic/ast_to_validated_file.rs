@@ -187,6 +187,23 @@ fn validate_nonterminal(
     nonterminal: UnvalidatedNonterminal,
     defined_nonterminal_names: &DefinedNonterminalNames,
 ) -> Result<validated::Nonterminal, KikiErr> {
+    match nonterminal {
+        UnvalidatedNonterminal::Enum(e) => validate_enum(e, defined_nonterminal_names),
+        UnvalidatedNonterminal::Struct(s) => validate_struct(s, defined_nonterminal_names),
+    }
+}
+
+fn validate_enum(
+    enum_def: &EnumDef,
+    defined_nonterminal_names: &DefinedNonterminalNames,
+) -> Result<validated::Nonterminal, KikiErr> {
+    todo!()
+}
+
+fn validate_struct(
+    struct_def: &StructDef,
+    defined_nonterminal_names: &DefinedNonterminalNames,
+) -> Result<validated::Nonterminal, KikiErr> {
     todo!()
 }
 
