@@ -4,10 +4,7 @@ use super::*;
 /// 1. There is exactly one `terminal` statement.
 /// 2. Each variant name has proper capitalization.
 ///
-/// This function does **not** validate that:
-/// 1. Each variant name is unique.
-/// 2. Each variant name does not conflict with a nonterminal name.
-/// 3. Each variant name does not conflict with a builtin name (e.g. `Option`).
+/// This function does **not** check for name clashes.
 pub fn get_terminal_enum(file: &File) -> Result<validated::TerminalEnum, KikiErr> {
     let unvalidated = get_unvalidated_terminal_enum(file)?;
     validate_terminal_def(unvalidated)

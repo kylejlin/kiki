@@ -4,6 +4,8 @@ use super::*;
 /// 1. Every nonterminal name is properly capitalized.
 /// 2. Every nonterminal enum variant name is properly capitalized.
 /// 3. Every field name is properly capitalized.
+///
+/// This function does **not** check for name clashes.
 pub fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, KikiErr> {
     let unvalidated: Vec<UnvalidatedNonterminal> = file
         .items
