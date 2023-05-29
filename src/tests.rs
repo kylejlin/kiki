@@ -84,6 +84,13 @@ mod should_fail {
         assert!(matches!(err, KikiErr::UndefinedNonterminal(name, _) if name == "Bar"));
     }
 
+    #[test]
+    fn undefined_child_terminal() {
+        let src = include_str!("examples/should_fail/undefined_child_terminal.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::UndefinedTerminal(name, _) if name.raw() == "Baz"));
+    }
+
     fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
         let cst = parser::FileParser::new()
             .parse(src)

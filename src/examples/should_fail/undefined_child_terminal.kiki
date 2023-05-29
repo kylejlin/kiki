@@ -1,0 +1,7 @@
+start Foo
+
+struct Foo($Baz)
+
+terminal Token {
+    $Ident: String
+}
