@@ -33,17 +33,15 @@ use defined_identifiers::*;
 
 mod type_to_string;
 
-fn validate_symbol_ident_name_capitalization(ident: &Ident) -> Result<&str, KikiErr> {
-    validate_symbol_name_capitalization(&ident.name, ident.position)
+fn validate_ident_uppercase_start(ident: &Ident) -> Result<&str, KikiErr> {
+    validate_uppercase_start(&ident.name, ident.position)
 }
 
-fn validate_symbol_terminal_ident_name_capitalization(
-    ident: &TerminalIdent,
-) -> Result<&str, KikiErr> {
-    validate_symbol_name_capitalization(&ident.dollared_name, ident.position)
+fn validate_terminal_ident_uppercase_start(ident: &TerminalIdent) -> Result<&str, KikiErr> {
+    validate_uppercase_start(&ident.dollared_name, ident.position)
 }
 
-fn validate_symbol_name_capitalization(name: &str, position: ByteIndex) -> Result<&str, KikiErr> {
+fn validate_uppercase_start(name: &str, position: ByteIndex) -> Result<&str, KikiErr> {
     let first_letter = name.chars().find(|c| c.is_ascii_alphabetic());
     match first_letter {
         None => Ok(name),

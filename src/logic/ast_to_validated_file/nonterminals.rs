@@ -57,7 +57,7 @@ fn validate_enum(
     enum_def: &EnumDef,
     defined_symbols: &DefinedSymbols,
 ) -> Result<validated::Nonterminal, KikiErr> {
-    validate_symbol_ident_name_capitalization(&enum_def.name)?;
+    validate_ident_uppercase_start(&enum_def.name)?;
     assert_variants_are_valid(&enum_def.variants, defined_symbols)?;
     Ok(validated::Nonterminal::Enum(enum_def.clone()))
 }
@@ -67,7 +67,7 @@ fn assert_variants_are_valid(
     defined_symbols: &DefinedSymbols,
 ) -> Result<(), KikiErr> {
     for variant in variants {
-        validate_symbol_ident_name_capitalization(&variant.name)?;
+        validate_ident_uppercase_start(&variant.name)?;
         assert_fieldset_is_valid(&variant.fieldset, defined_symbols)?;
     }
     Ok(())
@@ -77,7 +77,7 @@ fn validate_struct(
     struct_def: &StructDef,
     defined_symbols: &DefinedSymbols,
 ) -> Result<validated::Nonterminal, KikiErr> {
-    validate_symbol_ident_name_capitalization(&struct_def.name)?;
+    validate_ident_uppercase_start(&struct_def.name)?;
     assert_fieldset_is_valid(&struct_def.fieldset, defined_symbols)?;
     Ok(validated::Nonterminal::Struct(struct_def.clone()))
 }
@@ -119,15 +119,15 @@ fn assert_field_ident_or_underscore_name_is_valid(
 ) -> Result<(), KikiErr> {
     match field {
         IdentOrUnderscore::Underscore => Ok(()),
-        IdentOrUnderscore::Ident(ident) => assert_field_ident_name_is_valid(ident),
+        IdentOrUnderscore::Ident(ident) => assert_ident_lowercase_start(ident),
     }
 }
 
-fn assert_field_ident_name_is_valid(ident: &Ident) -> Result<(), KikiErr> {
-    assert_field_name_is_valid(&ident.name, ident.position)
+fn assert_ident_lowercase_start(ident: &Ident) -> Result<(), KikiErr> {
+    assert_lowercase_start(&ident.name, ident.position)
 }
 
-fn assert_field_name_is_valid(name: &str, position: ByteIndex) -> Result<(), KikiErr> {
+fn assert_lowercase_start(name: &str, position: ByteIndex) -> Result<(), KikiErr> {
     let first_letter = name.chars().find(|c| c.is_ascii_alphabetic());
     match first_letter {
         None => Ok(()),

@@ -42,7 +42,7 @@ pub fn get_unvalidated_terminal_enum(file: &File) -> Result<&TerminalDef, KikiEr
 }
 
 fn validate_terminal_def(def: &TerminalDef) -> Result<validated::TerminalEnum, KikiErr> {
-    let name = validate_symbol_ident_name_capitalization(&def.name)?.to_string();
+    let name = validate_ident_uppercase_start(&def.name)?.to_string();
     let variants = validate_terminal_variants(def)?;
     Ok(validated::TerminalEnum { name, variants })
 }
@@ -61,7 +61,7 @@ fn validate_terminal_variants(
 fn validate_variant_capitalization(
     variant: &TerminalVariant,
 ) -> Result<validated::TerminalVariant, KikiErr> {
-    let validated_name = validate_symbol_terminal_ident_name_capitalization(&variant.name)?;
+    let validated_name = validate_terminal_ident_uppercase_start(&variant.name)?;
     let dollarless_name = DollarlessTerminalName::remove_dollars(validated_name);
     let type_ = type_to_string::type_to_string(&variant.type_);
     Ok(validated::TerminalVariant {
