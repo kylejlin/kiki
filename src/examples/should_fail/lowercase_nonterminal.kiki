@@ -1,0 +1,7 @@
+start epsilon
+
+struct epsilon
+
+terminal Token {
+    $Num: isize
+}
