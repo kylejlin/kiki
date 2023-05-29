@@ -120,11 +120,11 @@ fn get_unvalidated_defined_identifiers(
 }
 
 fn get_item_identifiers(file: &File) -> impl Iterator<Item = String> + '_ {
-    file.items.iter().map(|item| match item {
-        Item::Start(start_ident) => start_ident.name.clone(),
-        Item::Struct(struct_def) => struct_def.name.name.clone(),
-        Item::Enum(enum_def) => enum_def.name.name.clone(),
-        Item::Terminal(terminal_def) => terminal_def.name.name.clone(),
+    file.items.iter().filter_map(|item| match item {
+        Item::Start(_) => None,
+        Item::Struct(struct_def) => Some(struct_def.name.name.clone()),
+        Item::Enum(enum_def) => Some(enum_def.name.name.clone()),
+        Item::Terminal(terminal_def) => Some(terminal_def.name.name.clone()),
     })
 }
 
