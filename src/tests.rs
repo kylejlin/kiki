@@ -57,6 +57,13 @@ mod should_fail {
     }
 
     #[test]
+    fn lowercase_terminal_enum_name() {
+        let src = include_str!("examples/should_fail/lowercase_terminal_enum_name.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::SymbolFirstLetterNotUppercase(_)));
+    }
+
+    #[test]
     fn uppercase_field() {
         let src = include_str!("examples/should_fail/uppercase_field.kiki");
         let err = assert_src_fails_pre_machine_validation(src);
