@@ -970,6 +970,95 @@ mod tests {
         insta::assert_debug_snapshot!(rust_src);
     }
 
+    #[test]
+    fn balanced_parens_esoteric() {
+        let actions = {
+            use Action::*;
+            [
+                [Shift(2), Err, Reduce(0)],
+                [Err, Err, Accept],
+                [Shift(2), Reduce(0), Err],
+                [Err, Shift(4), Err],
+                [Err, Reduce(1), Reduce(1)],
+            ]
+            .into_iter()
+            .flatten()
+            .collect()
+        };
+        let gotos = {
+            use Goto::*;
+            vec![State(1), Err, State(3), Err, Err]
+        };
+        let table = Table {
+            dollarless_terminals: vec![
+                DollarlessTerminalName::remove_dollars("LParen"),
+                DollarlessTerminalName::remove_dollars("RParen"),
+            ],
+            nonterminals: vec!["Expr".to_string()],
+            actions,
+            gotos,
+        };
+        let file = ValidatedFile {
+            start: "Expr".to_owned(),
+            terminal_enum: TerminalEnum {
+                name: "Token".to_string(),
+                variants: vec![
+                    TerminalVariant {
+                        dollarless_name: DollarlessTerminalName::remove_dollars("LParen"),
+                        type_: "()".to_string(),
+                    },
+                    TerminalVariant {
+                        dollarless_name: DollarlessTerminalName::remove_dollars("RParen"),
+                        type_: "()".to_string(),
+                    },
+                ],
+            },
+            nonterminals: vec![Nonterminal::Enum(Enum {
+                name: positionless_ident("Expr"),
+                variants: vec![
+                    EnumVariant {
+                        name: positionless_ident("Empty"),
+                        fieldset: Fieldset::Empty,
+                    },
+                    EnumVariant {
+                        name: positionless_ident("Wrap"),
+                        fieldset: Fieldset::Named(NamedFieldset {
+                            fields: vec![
+                                NamedField {
+                                    name: IdentOrUnderscore::Underscore,
+                                    symbol: IdentOrTerminalIdent::Terminal(
+                                        positionless_terminal_ident(
+                                            &DollarlessTerminalName::remove_dollars("LParen"),
+                                        ),
+                                    ),
+                                },
+                                NamedField {
+                                    name: IdentOrUnderscore::Ident(positionless_ident("inner")),
+                                    symbol: IdentOrTerminalIdent::Ident(positionless_ident("Expr")),
+                                },
+                                NamedField {
+                                    name: IdentOrUnderscore::Ident(positionless_ident("right")),
+                                    symbol: IdentOrTerminalIdent::Terminal(
+                                        positionless_terminal_ident(
+                                            &DollarlessTerminalName::remove_dollars("RParen"),
+                                        ),
+                                    ),
+                                },
+                            ],
+                        }),
+                    },
+                ],
+            })],
+            defined_identifiers: vec!["Expr", "Token", "LParen", "RParen"]
+                .into_iter()
+                .map(ToOwned::to_owned)
+                .collect(),
+        };
+
+        let RustSrc(rust_src) = table_to_rust(&table, file).unwrap();
+        insta::assert_debug_snapshot!(rust_src);
+    }
+
     fn positionless_ident(s: &str) -> Ident {
         Ident {
             name: s.to_owned(),
