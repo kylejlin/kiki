@@ -6,35 +6,16 @@ use crate::data::{
 use std::collections::{HashMap, HashSet};
 
 pub fn ast_to_validated_file(file: File) -> Result<validated::File, KikiErr> {
-    let start = get_start_symbol_name(&file)?;
     let terminal_enum = get_terminal_enum(&file)?;
     let defined_identifiers = get_unvalidated_defined_identifiers(&file, &terminal_enum);
     let nonterminals = get_nonterminals(&file, &defined_identifiers)?;
+    let start = get_start_symbol_name(&file, &nonterminals)?;
     Ok(validated::File {
         start,
         terminal_enum,
         nonterminals,
         defined_identifiers,
     })
-}
-
-fn get_start_symbol_name(file: &File) -> Result<String, KikiErr> {
-    let starts: Vec<&Ident> = file
-        .items
-        .iter()
-        .filter_map(|item| match item {
-            Item::Start(start) => Some(start),
-            _ => None,
-        })
-        .collect();
-    if starts.len() == 0 {
-        Err(KikiErr::NoStartSymbol)
-    } else if starts.len() > 1 {
-        let positions = starts.iter().map(|start| start.position).collect();
-        Err(KikiErr::MultipleStartSymbols(positions))
-    } else {
-        Ok(starts[0].name.clone())
-    }
 }
 
 fn get_terminal_enum(file: &File) -> Result<validated::TerminalEnum, KikiErr> {
@@ -223,6 +204,49 @@ fn validate_nonterminal(
     defined_identifiers: &HashSet<String>,
 ) -> Result<validated::Nonterminal, KikiErr> {
     todo!()
+}
+
+fn get_start_symbol_name(
+    file: &File,
+    nonterminals: &[validated::Nonterminal],
+) -> Result<String, KikiErr> {
+    let starts: Vec<&Ident> = file
+        .items
+        .iter()
+        .filter_map(|item| match item {
+            Item::Start(start) => Some(start),
+            _ => None,
+        })
+        .collect();
+
+    if starts.len() == 0 {
+        return Err(KikiErr::NoStartSymbol);
+    }
+
+    if starts.len() > 1 {
+        let positions = starts.iter().map(|start| start.position).collect();
+        return Err(KikiErr::MultipleStartSymbols(positions));
+    }
+
+    validate_start_symbol_name_is_defined(&starts[0], nonterminals)
+}
+
+fn validate_start_symbol_name_is_defined(
+    start_symbol: &Ident,
+    nonterminals: &[validated::Nonterminal],
+) -> Result<String, KikiErr> {
+    let is_defined = nonterminals
+        .iter()
+        .any(|nonterminal| nonterminal.name() == start_symbol.name);
+
+    if !is_defined {
+        return Err(KikiErr::UndefinedSymbol(
+            start_symbol.name.to_owned(),
+            start_symbol.position,
+        ));
+    }
+
+    Ok(start_symbol.name.to_owned())
 }
 
 mod type_to_string {

@@ -14,6 +14,7 @@ pub enum KikiErr {
     SymbolsFirstLetteNotCapitalized(ByteIndex),
     DuplicateTerminalVariants(String, ByteIndex, ByteIndex),
     DuplicateNonterminals(String, ByteIndex, ByteIndex),
+    UndefinedSymbol(String, ByteIndex),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
