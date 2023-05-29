@@ -872,11 +872,11 @@ mod tests {
         let actions = {
             use Action::*;
             [
-                [Shift(2), Err, Reduce(1)],
+                [Shift(2), Err, Reduce(0)],
                 [Err, Err, Accept],
-                [Shift(2), Reduce(1), Err],
+                [Shift(2), Reduce(0), Err],
                 [Err, Shift(4), Err],
-                [Err, Reduce(2), Reduce(2)],
+                [Err, Reduce(1), Reduce(1)],
             ]
             .into_iter()
             .flatten()
