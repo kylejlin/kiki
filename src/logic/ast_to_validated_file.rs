@@ -44,6 +44,8 @@ fn get_terminal_enum(file: &File) -> Result<validated::TerminalEnum, KikiErr> {
     }
 }
 
-fn validate_terminal_def(terminals: &TerminalDef) -> Result<validated::TerminalEnum, KikiErr> {
-    todo!()
+fn validate_terminal_def(def: &TerminalDef) -> Result<validated::TerminalEnum, KikiErr> {
+    let name = validate_symbol_capitalization(&def.name);
+    let variants = validate_terminal_variants(def)?;
+    Ok(validated::TerminalEnum { name, variants })
 }
