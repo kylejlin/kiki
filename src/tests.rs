@@ -166,6 +166,15 @@ mod should_fail {
         assert!(matches!(err, KikiErr::MultipleStartSymbols(starts) if starts.len() == 2));
     }
 
+    #[test]
+    fn multiple_terminal_enums() {
+        let src = include_str!("examples/should_fail/multiple_terminal_enums.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(
+            matches!(err, KikiErr::MultipleTerminalEnums(terminal_enums) if terminal_enums.len() == 2)
+        );
+    }
+
     fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
         let cst = parser::FileParser::new()
             .parse(src)

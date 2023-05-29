@@ -1,0 +1,11 @@
+start Foo
+
+struct Foo
+
+terminal Token1 {
+    $Num: isize
+}
+
+terminal Token2 {
+    $Num: isize
+}
