@@ -43,6 +43,12 @@ impl DollarlessTerminalName {
     }
 }
 
+impl ToString for DollarlessTerminalName {
+    fn to_string(&self) -> String {
+        self.raw().to_string()
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Nonterminal {
     Struct(StructDef),

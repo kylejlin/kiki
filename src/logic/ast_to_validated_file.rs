@@ -188,7 +188,7 @@ fn get_unvalidated_defined_symbol_names(
     let terminal_symbols = terminal_enum
         .variants
         .iter()
-        .map(|variant| variant.dollarless_name.raw().to_owned());
+        .map(|variant| variant.dollarless_name.to_string());
 
     DefinedSymbolNames(nonterminal_symbols.chain(terminal_symbols).collect())
 }
@@ -406,7 +406,7 @@ fn get_terminal_variant_identifiers(
     terminal_enum
         .variants
         .iter()
-        .map(|variant| variant.dollarless_name.raw().to_owned())
+        .map(|variant| variant.dollarless_name.to_string())
 }
 
 mod type_to_string {
