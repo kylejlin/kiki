@@ -1,0 +1,7 @@
+start Foo
+
+struct Foo
+
+terminal Tok {
+    $Tok: bool
+}
