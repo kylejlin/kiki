@@ -142,46 +142,6 @@ pub enum {token_enum_name} {{
 
 {nonterminal_type_defs}
 
-#[derive(Debug)]
-enum {quasitoken_enum_name} {{
-    Token({token_enum_name}),
-    {eof_variant_name},
-}}
-
-#[derive(Clone, Copy, Debug)]
-enum {quasitoken_kind_enum_name} {{
-{token_kind_enum_variants_indent_1}
-    {eof_variant_name} = {num_of_token_variants},
-}}
-
-#[derive(Clone, Copy, Debug)]
-enum {nonterminal_kind_enum_name} {{
-{nonterminal_kind_enum_variants_indent_1}
-}}
-
-#[derive(Clone, Copy, Debug)]
-enum {state_enum_name} {{
-{state_enum_variants_indent_1}
-}}
-
-#[derive(Debug)]
-enum {node_enum_name} {{
-{node_enum_variants_indent_1}
-}}
-
-#[derive(Clone, Copy, Debug)]
-enum {action_enum_name} {{
-    {ACTION_SHIFT_VARIANT_NAME}({state_enum_name}),
-    {ACTION_REDUCE_VARIANT_NAME}({rule_kind_enum_name}),
-    {ACTION_ACCEPT_VARIANT_NAME},
-    {ACTION_ERR_VARIANT_NAME},
-}}
-
-#[derive(Clone, Copy, Debug)]
-enum {rule_kind_enum_name} {{
-{rule_kind_enum_variants_indent_1}
-}}
-
 /// If the parser encounters an unexpected token `t`, it will return `Err(Some(t))`.
 /// If the parser encounters an unexpected end of input, it will return `Err(None)`.
 pub fn parse<S>(src: S) -> Result<{start_type_name}, Option<{token_enum_name}>>
@@ -220,6 +180,46 @@ where S: IntoIterator<Item = {token_enum_name}> {{
             }}
         }}
     }}
+}}
+
+#[derive(Debug)]
+enum {quasitoken_enum_name} {{
+    Token({token_enum_name}),
+    {eof_variant_name},
+}}
+
+#[derive(Clone, Copy, Debug)]
+enum {quasitoken_kind_enum_name} {{
+{token_kind_enum_variants_indent_1}
+    {eof_variant_name} = {num_of_token_variants},
+}}
+
+#[derive(Clone, Copy, Debug)]
+enum {nonterminal_kind_enum_name} {{
+{nonterminal_kind_enum_variants_indent_1}
+}}
+
+#[derive(Clone, Copy, Debug)]
+enum {state_enum_name} {{
+{state_enum_variants_indent_1}
+}}
+
+#[derive(Debug)]
+enum {node_enum_name} {{
+{node_enum_variants_indent_1}
+}}
+
+#[derive(Clone, Copy, Debug)]
+enum {action_enum_name} {{
+    {ACTION_SHIFT_VARIANT_NAME}({state_enum_name}),
+    {ACTION_REDUCE_VARIANT_NAME}({rule_kind_enum_name}),
+    {ACTION_ACCEPT_VARIANT_NAME},
+    {ACTION_ERR_VARIANT_NAME},
+}}
+
+#[derive(Clone, Copy, Debug)]
+enum {rule_kind_enum_name} {{
+{rule_kind_enum_variants_indent_1}
 }}
 
 fn pop_and_reduce(states: &mut Vec<{state_enum_name}>, nodes: &mut Vec<{node_enum_name}>, rule_kind: {rule_kind_enum_name}) -> ({node_enum_name}, {nonterminal_kind_enum_name}) {{
