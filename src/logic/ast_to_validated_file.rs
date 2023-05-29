@@ -7,9 +7,11 @@ use std::collections::{HashMap, HashSet};
 
 pub fn ast_to_validated_file(file: File) -> Result<validated::File, KikiErr> {
     let terminal_enum = get_terminal_enum(&file)?;
-    let defined_identifiers = get_unvalidated_defined_identifiers(&file, &terminal_enum);
-    let nonterminals = get_nonterminals(&file, &defined_identifiers)?;
+    let nonterminals = get_nonterminals(&file)?;
     let start = get_start_symbol_name(&file, &nonterminals)?;
+    let DefinedIdentifiers(defined_identifiers) =
+        get_unvalidated_defined_identifiers(&file, &terminal_enum);
+
     Ok(validated::File {
         start,
         terminal_enum,
@@ -108,39 +110,7 @@ fn validate_variant_capitalization(
     })
 }
 
-fn get_unvalidated_defined_identifiers(
-    file: &File,
-    terminal_enum: &validated::TerminalEnum,
-) -> HashSet<String> {
-    let item_identifiers = get_item_identifiers(file);
-    let terminal_variant_identifiers = get_terminal_variant_identifiers(terminal_enum);
-    item_identifiers
-        .chain(terminal_variant_identifiers)
-        .collect()
-}
-
-fn get_item_identifiers(file: &File) -> impl Iterator<Item = String> + '_ {
-    file.items.iter().filter_map(|item| match item {
-        Item::Start(_) => None,
-        Item::Struct(struct_def) => Some(struct_def.name.name.clone()),
-        Item::Enum(enum_def) => Some(enum_def.name.name.clone()),
-        Item::Terminal(terminal_def) => Some(terminal_def.name.name.clone()),
-    })
-}
-
-fn get_terminal_variant_identifiers(
-    terminal_enum: &validated::TerminalEnum,
-) -> impl Iterator<Item = String> + '_ {
-    terminal_enum
-        .variants
-        .iter()
-        .map(|variant| variant.dollarless_name.raw().to_owned())
-}
-
-fn get_nonterminals(
-    file: &File,
-    defined_identifiers: &HashSet<String>,
-) -> Result<Vec<validated::Nonterminal>, KikiErr> {
+fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, KikiErr> {
     let unvalidated: Vec<UnvalidatedNonterminal> = file
         .items
         .iter()
@@ -149,9 +119,10 @@ fn get_nonterminals(
 
     assert_no_duplicate_nonterminals(&unvalidated)?;
 
+    let names = get_unvalidated_defined_nonterminal_names(file);
     let nonterminals = unvalidated
         .iter()
-        .map(|nonterminal| validate_nonterminal(*nonterminal, defined_identifiers))
+        .map(|nonterminal| validate_nonterminal(*nonterminal, &names))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(nonterminals)
 }
@@ -199,9 +170,15 @@ fn assert_no_duplicate_nonterminals(
     Ok(())
 }
 
+struct DefinedNonterminalNames(HashSet<String>);
+
+fn get_unvalidated_defined_nonterminal_names(file: &File) -> DefinedNonterminalNames {
+    todo!()
+}
+
 fn validate_nonterminal(
     nonterminal: UnvalidatedNonterminal,
-    defined_identifiers: &HashSet<String>,
+    defined_nonterminal_names: &DefinedNonterminalNames,
 ) -> Result<validated::Nonterminal, KikiErr> {
     todo!()
 }
@@ -247,6 +224,39 @@ fn validate_start_symbol_name_is_defined(
     }
 
     Ok(start_symbol.name.to_owned())
+}
+
+struct DefinedIdentifiers(HashSet<String>);
+
+fn get_unvalidated_defined_identifiers(
+    file: &File,
+    terminal_enum: &validated::TerminalEnum,
+) -> DefinedIdentifiers {
+    let item_identifiers = get_item_identifiers(file);
+    let terminal_variant_identifiers = get_terminal_variant_identifiers(terminal_enum);
+    DefinedIdentifiers(
+        item_identifiers
+            .chain(terminal_variant_identifiers)
+            .collect(),
+    )
+}
+
+fn get_item_identifiers(file: &File) -> impl Iterator<Item = String> + '_ {
+    file.items.iter().filter_map(|item| match item {
+        Item::Start(_) => None,
+        Item::Struct(struct_def) => Some(struct_def.name.name.clone()),
+        Item::Enum(enum_def) => Some(enum_def.name.name.clone()),
+        Item::Terminal(terminal_def) => Some(terminal_def.name.name.clone()),
+    })
+}
+
+fn get_terminal_variant_identifiers(
+    terminal_enum: &validated::TerminalEnum,
+) -> impl Iterator<Item = String> + '_ {
+    terminal_enum
+        .variants
+        .iter()
+        .map(|variant| variant.dollarless_name.raw().to_owned())
 }
 
 mod type_to_string {
