@@ -312,7 +312,10 @@ fn assert_nonterminal_is_defined(
     if defined_symbol_names.0.contains(&ident.name) {
         Ok(())
     } else {
-        Err(KikiErr::UndefinedSymbol(ident.name.clone(), ident.position))
+        Err(KikiErr::UndefinedNonterminal(
+            ident.name.clone(),
+            ident.position,
+        ))
     }
 }
 
@@ -326,9 +329,9 @@ fn assert_terminal_is_defined(
     {
         Ok(())
     } else {
-        Err(KikiErr::UndefinedSymbol(
-            terminal_ident.dollared_name.clone(),
-            terminal_ident.position,
+        Err(KikiErr::UndefinedTerminal(
+            terminal_ident.dollarless_name(),
+            ByteIndex(terminal_ident.position.0 + 1),
         ))
     }
 }
@@ -367,7 +370,7 @@ fn validate_start_symbol_name_is_defined(
         .any(|nonterminal| nonterminal.name() == start_symbol.name);
 
     if !is_defined {
-        return Err(KikiErr::UndefinedSymbol(
+        return Err(KikiErr::UndefinedNonterminal(
             start_symbol.name.to_owned(),
             start_symbol.position,
         ));

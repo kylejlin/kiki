@@ -14,7 +14,8 @@ pub enum KikiErr {
     SymbolsFirstLetteNotCapitalized(ByteIndex),
     DuplicateTerminalVariants(String, ByteIndex, ByteIndex),
     DuplicateNonterminals(String, ByteIndex, ByteIndex),
-    UndefinedSymbol(String, ByteIndex),
+    UndefinedNonterminal(String, ByteIndex),
+    UndefinedTerminal(DollarlessTerminalName, ByteIndex),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
@@ -24,3 +25,5 @@ pub struct RustSrc(pub String);
 pub struct ByteIndex(pub usize);
 
 pub use crate::logic::oset::Oset;
+
+use validated_file::DollarlessTerminalName;
