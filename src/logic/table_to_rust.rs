@@ -591,9 +591,9 @@ impl {node_enum_name} {{
         format!(
             r#"{child_vars}
 (
-    {node_enum_name}::{parent_type_name}({constructor_name}(
+    {node_enum_name}::{parent_type_name}({constructor_name} {{
 {parent_fields_indent_2}
-    )),
+    }}),
     {nonterminal_kind_enum_name}::{parent_type_name}
 )"#
         )
