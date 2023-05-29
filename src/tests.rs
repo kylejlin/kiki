@@ -50,6 +50,13 @@ mod should_fail {
     }
 
     #[test]
+    fn lowercase_nonterminal_variant_name() {
+        let src = include_str!("examples/should_fail/lowercase_nonterminal_variant_name.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(matches!(err, KikiErr::SymbolFirstLetterNotUppercase(_)));
+    }
+
+    #[test]
     fn lowercase_terminal() {
         let src = include_str!("examples/should_fail/lowercase_terminal.kiki");
         let err = assert_src_fails_pre_machine_validation(src);

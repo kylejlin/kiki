@@ -1,0 +1,9 @@
+start Epsilon
+
+enum Epsilon {
+    empty
+}
+
+terminal Token {
+    $BoolLit: bool
+}
