@@ -13,6 +13,7 @@ pub enum KikiErr {
     MultipleTerminalEnums(Vec<ByteIndex>),
     SymbolsFirstLetteNotCapitalized(ByteIndex),
     DuplicateTerminalVariants(String, ByteIndex, ByteIndex),
+    DuplicateNonterminals(String, ByteIndex, ByteIndex),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]

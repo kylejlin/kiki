@@ -181,6 +181,15 @@ enum UnvalidatedNonterminal<'a> {
     Enum(&'a EnumDef),
 }
 
+impl<'a> UnvalidatedNonterminal<'a> {
+    fn name(self) -> &'a Ident {
+        match self {
+            UnvalidatedNonterminal::Struct(struct_def) => &struct_def.name,
+            UnvalidatedNonterminal::Enum(enum_def) => &enum_def.name,
+        }
+    }
+}
+
 fn get_unvalidated_nonterminal(item: &Item) -> Option<UnvalidatedNonterminal<'_>> {
     match item {
         Item::Struct(struct_def) => Some(UnvalidatedNonterminal::Struct(struct_def)),
@@ -192,7 +201,21 @@ fn get_unvalidated_nonterminal(item: &Item) -> Option<UnvalidatedNonterminal<'_>
 fn assert_no_duplicate_nonterminals(
     nonterminals: &[UnvalidatedNonterminal],
 ) -> Result<(), KikiErr> {
-    todo!()
+    let mut seen: HashMap<&str, &UnvalidatedNonterminal> = HashMap::new();
+    for nonterminal in nonterminals {
+        let name: &str = &nonterminal.name().name;
+
+        if let Some(conflicting_nonterminal) = seen.get(name) {
+            return Err(KikiErr::DuplicateNonterminals(
+                name.to_owned(),
+                conflicting_nonterminal.name().position,
+                nonterminal.name().position,
+            ));
+        }
+
+        seen.insert(name, nonterminal);
+    }
+    Ok(())
 }
 
 fn validate_nonterminal(
