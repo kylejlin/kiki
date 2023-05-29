@@ -731,7 +731,7 @@ impl {node_enum_name} {{
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_name = &field_name.name;
                     let field_type_name = &field_type.name;
-                    Some(format!("{field_name}: {field_type_name},"))
+                    Some(format!("{field_name}: Box<{field_type_name}>,"))
                 }
                 (
                     IdentOrUnderscore::Ident(field_name),
@@ -760,7 +760,7 @@ impl {node_enum_name} {{
                 TupleField::Skipped(_) => None,
                 TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_type_name = &field_type.name;
-                    Some(format!("{field_type_name},"))
+                    Some(format!("Box<{field_type_name}>,"))
                 }
                 TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
                     let field_type_name = self
