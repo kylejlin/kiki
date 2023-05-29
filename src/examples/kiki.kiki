@@ -141,7 +141,7 @@ enum Path {
 struct ComplexType {
     callee: Type
     _: $LAngle
-    types_: Types
+    types_: CommaSeparatedTypes
     _: $RAngle
 }
 
