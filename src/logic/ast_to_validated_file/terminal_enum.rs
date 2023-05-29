@@ -2,13 +2,16 @@ use super::*;
 
 /// This function validates that:
 /// 1. There is exactly one `terminal` statement.
-/// 2. Each variant name has proper capitalization.
+/// 2. The terminal enum name has proper capitalization.
+/// 3. Each variant name has proper capitalization.
 ///
 /// This function does **not** check for name clashes.
 ///
-/// ## Capitalization rule:
-/// If a terminal variant name contains one or more letters,
-/// the first letter must be uppercase.
+/// ## Capitalization rules:
+/// 1. If a terminal enum name contains one or more letters,
+///    the first letter must be uppercase.
+/// 2. If a terminal variant name contains one or more letters,
+///    the first letter must be uppercase.
 pub fn get_terminal_enum(file: &File) -> Result<validated::TerminalEnum, KikiErr> {
     let unvalidated = get_unvalidated_terminal_enum(file)?;
     validate_terminal_def(unvalidated)
