@@ -160,6 +160,45 @@ fn get_nonterminals(
     file: &File,
     defined_identifiers: &HashSet<String>,
 ) -> Result<Vec<validated::Nonterminal>, KikiErr> {
+    let unvalidated: Vec<UnvalidatedNonterminal> = file
+        .items
+        .iter()
+        .filter_map(get_unvalidated_nonterminal)
+        .collect();
+
+    assert_no_duplicate_nonterminals(&unvalidated)?;
+
+    let nonterminals = unvalidated
+        .iter()
+        .map(|nonterminal| validate_nonterminal(*nonterminal, defined_identifiers))
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(nonterminals)
+}
+
+#[derive(Debug, Clone, Copy)]
+enum UnvalidatedNonterminal<'a> {
+    Struct(&'a StructDef),
+    Enum(&'a EnumDef),
+}
+
+fn get_unvalidated_nonterminal(item: &Item) -> Option<UnvalidatedNonterminal<'_>> {
+    match item {
+        Item::Struct(struct_def) => Some(UnvalidatedNonterminal::Struct(struct_def)),
+        Item::Enum(enum_def) => Some(UnvalidatedNonterminal::Enum(enum_def)),
+        _ => None,
+    }
+}
+
+fn assert_no_duplicate_nonterminals(
+    nonterminals: &[UnvalidatedNonterminal],
+) -> Result<(), KikiErr> {
+    todo!()
+}
+
+fn validate_nonterminal(
+    nonterminal: UnvalidatedNonterminal,
+    defined_identifiers: &HashSet<String>,
+) -> Result<validated::Nonterminal, KikiErr> {
     todo!()
 }
 
