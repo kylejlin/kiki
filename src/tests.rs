@@ -146,6 +146,15 @@ mod should_fail {
     }
 
     #[test]
+    fn clash_nonterminal_enum_variants() {
+        let src = include_str!("examples/should_fail/clash_nonterminal_enum_variants.kiki");
+        let err = assert_src_fails_pre_machine_validation(src);
+        assert!(
+            matches!(err, KikiErr::NonterminalEnumVariantNameClash(name, _, _) if name == "Ipsum")
+        );
+    }
+
+    #[test]
     fn no_start() {
         let src = include_str!("examples/should_fail/no_start.kiki");
         let err = assert_src_fails_pre_machine_validation(src);

@@ -1,0 +1,11 @@
+start Foo
+
+enum Foo {
+    Ipsum($Ident)
+    Ipsum($Bool)
+}
+
+terminal Token {
+    $Ident: String
+    $Bool: bool
+}
