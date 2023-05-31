@@ -38,8 +38,17 @@ impl MachineBuilder<'_> {
         get_closure(items, self.file)
     }
 
-    fn add_state(&mut self, _state: State) -> StateIndex {
-        todo!()
+    fn get_index(&mut self, state: State) -> StateIndex {
+        for (i, existing_state) in self.machine.states.iter().enumerate() {
+            if are_cores_equal(&state, existing_state) {
+                return StateIndex(i);
+            }
+        }
+
+        let index = StateIndex(self.machine.states.len());
+        self.machine.states.push(state);
+        self.queue.push_back(index);
+        index
     }
 
     fn enqueue_transition_states(&mut self, _state_index: StateIndex) {
@@ -59,5 +68,9 @@ fn get_start_state(file: &File) -> State {
 }
 
 fn get_closure(_items: &[Item], _file: &File) -> State {
+    todo!()
+}
+
+fn are_cores_equal(_a: &State, _b: &State) -> bool {
     todo!()
 }
