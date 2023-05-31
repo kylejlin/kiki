@@ -86,6 +86,16 @@ impl MachineBuilder<'_> {
     }
 
     fn enqueue_transition_target(&mut self, state_index: StateIndex, symbol: Symbol) {
+        let target = self.get_transition_target(state_index, symbol);
+        self.enqueue_state(target);
+    }
+
+    fn get_transition_target(&self, state_index: StateIndex, symbol: Symbol) -> State {
+        let items = self.get_transition_items(state_index, symbol);
+        self.get_closure(&items)
+    }
+
+    fn get_transition_items(&self, state_index: StateIndex, symbol: Symbol) -> Vec<Item> {
         todo!()
     }
 }
