@@ -2,7 +2,7 @@ use crate::data::{
     ast::*,
     table::*,
     validated_file::{self as validated, DollarlessTerminalName},
-    KikiErr, RustSrc,
+    RustSrc,
 };
 use std::collections::{HashMap, HashSet};
 
