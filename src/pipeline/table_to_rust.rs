@@ -1,7 +1,7 @@
 use crate::data::{
     ast::*,
     table::*,
-    validated_file::{self as validated, DollarlessTerminalName},
+    validated_file::{self as validated, ConstructorName, DollarlessTerminalName},
     RustSrc,
 };
 use std::collections::{HashMap, HashSet};
@@ -478,39 +478,22 @@ impl {node_enum_name} {{
     }
 
     fn get_pop_and_reduce_match_arms_src(&self) -> String {
-        self.get_rules()
+        self.file
+            .get_rules()
             .enumerate()
-            .map(|(rule_index, (constructor_name, fieldset))| {
-                self.get_rule_reduction_src(rule_index, constructor_name, fieldset)
-            })
+            .map(
+                |(
+                    rule_index,
+                    validated::Rule {
+                        constructor_name,
+                        fieldset,
+                    },
+                )| {
+                    self.get_rule_reduction_src(rule_index, constructor_name, fieldset)
+                },
+            )
             .collect::<Vec<_>>()
             .join("\n")
-    }
-
-    fn get_rules(&self) -> impl Iterator<Item = (ConstructorName<'_>, &Fieldset)> {
-        self.file
-            .nonterminals
-            .iter()
-            .flat_map(|nonterminal| match nonterminal {
-                validated::Nonterminal::Struct(s) => {
-                    vec![(ConstructorName::Struct(&s.name.name), &s.fieldset)]
-                }
-                validated::Nonterminal::Enum(e) => e
-                    .variants
-                    .iter()
-                    .map(|v| {
-                        let enum_name = &e.name.name;
-                        let variant_name = &v.name.name;
-                        (
-                            ConstructorName::EnumVariant {
-                                enum_name,
-                                variant_name,
-                            },
-                            &v.fieldset,
-                        )
-                    })
-                    .collect(),
-            })
     }
 
     fn get_rule_reduction_src(
@@ -810,34 +793,6 @@ states.truncate(states.len() - {num_fields});
             })
             .collect::<Vec<_>>()
             .join("\n\n")
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-enum ConstructorName<'a> {
-    Struct(&'a str),
-    EnumVariant {
-        enum_name: &'a str,
-        variant_name: &'a str,
-    },
-}
-
-impl ConstructorName<'_> {
-    fn to_string(&self) -> String {
-        match self {
-            ConstructorName::Struct(name) => name.to_string(),
-            ConstructorName::EnumVariant {
-                enum_name,
-                variant_name,
-            } => format!("{enum_name}::{variant_name}"),
-        }
-    }
-
-    fn type_name(&self) -> &str {
-        match self {
-            ConstructorName::Struct(name) => name,
-            ConstructorName::EnumVariant { enum_name, .. } => enum_name,
-        }
     }
 }
 
