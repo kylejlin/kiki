@@ -1,0 +1,5 @@
+use crate::data::{machine::*, validated_file as validated, KikiErr};
+
+pub fn validated_ast_to_machine(_file: &validated::File) -> Result<Machine, KikiErr> {
+    todo!()
+}

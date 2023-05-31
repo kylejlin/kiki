@@ -5,7 +5,7 @@ use crate::data::{
 };
 use std::collections::{HashMap, HashSet};
 
-pub fn ast_to_validated_file(file: File) -> Result<validated::File, KikiErr> {
+pub fn validate_ast(file: File) -> Result<validated::File, KikiErr> {
     let terminal_enum = get_terminal_enum(&file)?;
     let nonterminals = get_nonterminals(&file)?;
     let start = get_start_symbol_name(&file, &nonterminals)?;

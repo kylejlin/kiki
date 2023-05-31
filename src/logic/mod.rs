@@ -1,19 +1,17 @@
-pub mod ast_to_machine;
-pub mod ast_to_rust;
-pub mod ast_to_validated_file;
-pub mod build_kiki_err;
 pub mod cst_to_ast;
+pub mod lalr_parse_err_to_kiki_err;
 pub mod machine_to_table;
 pub mod oset;
 pub mod table_to_rust;
+pub mod validate_ast;
+pub mod validated_ast_to_machine;
 
 pub use crate::parser;
 
 pub mod prelude {
-    pub use super::ast_to_machine::*;
-    pub use super::ast_to_rust::*;
-    pub use super::build_kiki_err::*;
     pub use super::cst_to_ast::*;
+    pub use super::lalr_parse_err_to_kiki_err::*;
     pub use super::machine_to_table::*;
     pub use super::table_to_rust::*;
+    pub use super::validated_ast_to_machine::*;
 }
