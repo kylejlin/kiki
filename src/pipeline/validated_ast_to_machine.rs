@@ -41,8 +41,8 @@ impl MachineBuilder<'_> {
         Ok(self.machine)
     }
 
-    fn get_closure(&self, _items: &[Item]) -> State {
-        todo!()
+    fn get_closure(&self, items: &[Item]) -> State {
+        get_closure(items, self.file)
     }
 
     fn add_state(&mut self, _state: State) -> StateIndex {
@@ -52,4 +52,8 @@ impl MachineBuilder<'_> {
     fn enqueue_transition_states(&mut self, _state_index: StateIndex) {
         todo!()
     }
+}
+
+fn get_closure(_items: &[Item], _file: &File) -> State {
+    todo!()
 }
