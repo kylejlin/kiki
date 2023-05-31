@@ -42,7 +42,7 @@ impl MachineBuilder<'_> {
         if let Some(index) = self.get_existing_index(&state) {
             index
         } else {
-            self.add_state(state)
+            self.enqueue_new_state(state)
         }
     }
 
@@ -60,7 +60,7 @@ impl MachineBuilder<'_> {
             })
     }
 
-    fn add_state(&mut self, state: State) -> StateIndex {
+    fn enqueue_new_state(&mut self, state: State) -> StateIndex {
         let index = StateIndex(self.machine.states.len());
         self.machine.states.push(state);
         self.queue.push_back(index);
