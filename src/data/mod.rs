@@ -14,6 +14,7 @@ pub enum KikiErr {
     SymbolOrTerminalEnumNameFirstLetterNotUppercase(ByteIndex),
     FieldFirstLetterNotLowercase(ByteIndex),
     NameClash(String, ByteIndex, ByteIndex),
+    NonterminalEnumVariantNameClash(String, ByteIndex, ByteIndex),
     UndefinedNonterminal(String, ByteIndex),
     UndefinedTerminal(DollarlessTerminalName, ByteIndex),
 }

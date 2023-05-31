@@ -4,8 +4,10 @@ use super::*;
 /// 1. Every nonterminal name is properly capitalized.
 /// 2. Every nonterminal enum variant name is properly capitalized.
 /// 3. Every field name is properly capitalized.
+/// 4. Every nonterminal enum has zero or more unique variants.
 ///
-/// This function does **not** check for name clashes.
+/// This function does **not** check for name clashes,
+/// except for those between nonterminal enum variants.
 ///
 /// ## Capitalization rules:
 /// 1. If a nonterminal name contains one or more letters,
@@ -66,10 +68,32 @@ fn assert_variants_are_valid(
     variants: &[EnumVariant],
     defined_symbols: &DefinedSymbols,
 ) -> Result<(), KikiErr> {
+    assert_variants_are_unique(variants)?;
+
     for variant in variants {
         validate_ident_uppercase_start(&variant.name)?;
         assert_fieldset_is_valid(&variant.fieldset, defined_symbols)?;
     }
+
+    Ok(())
+}
+
+fn assert_variants_are_unique(variants: &[EnumVariant]) -> Result<(), KikiErr> {
+    let mut seen: HashMap<&str, ByteIndex> = HashMap::new();
+
+    for variant in variants {
+        let name: &str = &variant.name.name;
+        let position = variant.name.position;
+        if let Some(conflicting_variant_name_position) = seen.get(name) {
+            return Err(KikiErr::NonterminalEnumVariantNameClash(
+                name.to_owned(),
+                *conflicting_variant_name_position,
+                position,
+            ));
+        }
+        seen.insert(name, position);
+    }
+
     Ok(())
 }
 
