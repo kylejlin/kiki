@@ -18,23 +18,16 @@ impl MachineBuilder<'_> {
         MachineBuilder {
             file,
             machine: Machine {
-                states: vec![],
+                states: vec![get_start_state(file)],
                 transitions: vec![],
             },
-            queue: VecDeque::new(),
+            queue: [StateIndex(0)].into_iter().collect(),
         }
     }
 }
 
 impl MachineBuilder<'_> {
     fn build(mut self) -> Result<Machine, KikiErr> {
-        let start_state = self.get_closure(&[Item {
-            rule: RuleIndex::Augmented,
-            lookahead: Lookahead::Eof,
-            dot: 0,
-        }]);
-        let start_state_index = self.add_state(start_state);
-        self.queue.push_back(start_state_index);
         while let Some(state_index) = self.queue.pop_front() {
             self.enqueue_transition_states(state_index);
         }
@@ -52,6 +45,17 @@ impl MachineBuilder<'_> {
     fn enqueue_transition_states(&mut self, _state_index: StateIndex) {
         todo!()
     }
+}
+
+fn get_start_state(file: &File) -> State {
+    get_closure(
+        &[Item {
+            rule: RuleIndex::Augmented,
+            lookahead: Lookahead::Eof,
+            dot: 0,
+        }],
+        file,
+    )
 }
 
 fn get_closure(_items: &[Item], _file: &File) -> State {
