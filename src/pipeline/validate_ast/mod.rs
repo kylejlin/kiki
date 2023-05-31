@@ -9,13 +9,12 @@ pub fn validate_ast(file: File) -> Result<validated::File, KikiErr> {
     let terminal_enum = get_terminal_enum(&file)?;
     let nonterminals = get_nonterminals(&file)?;
     let start = get_start_symbol_name(&file, &nonterminals)?;
-    let DefinedIdentifiers(defined_identifiers) = get_defined_identifiers(&file)?;
+    assert_there_are_no_top_level_name_clashes(&file)?;
 
     Ok(validated::File {
         start,
         terminal_enum,
         nonterminals,
-        defined_identifiers,
     })
 }
 

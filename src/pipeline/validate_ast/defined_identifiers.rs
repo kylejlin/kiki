@@ -1,29 +1,23 @@
 use super::*;
 
-/// This set contains:
-/// 1. Nonterminal names
-/// 2. Terminal variant names
-/// 3. The terminal enum name
-pub struct DefinedIdentifiers(pub HashSet<String>);
-
 /// This function validates that:
 /// 1. There are no duplicate nonterminal names.
 /// 2. There are no duplicate terminal variant names.
 /// 3. The nonterminal names, terminal variant names,
 ///    _and the terminal enum name_ are pairwise disjoint.
 ///
-/// This function does **not** check for name clashes with
-/// builtins, such as `Option`.
-///
-/// This function does **not** validate capitalization.
-pub fn get_defined_identifiers(file: &File) -> Result<DefinedIdentifiers, KikiErr> {
+/// Things this function does **not** validate:
+/// 1. This function does **not** check for name clashes with
+///    builtins, such as `Option`.
+/// 2. This function does **not** check that every nonterminal enum
+///    has uniquely named variants.
+/// 3. This function does **not** validate capitalization.
+pub fn assert_there_are_no_top_level_name_clashes(file: &File) -> Result<(), KikiErr> {
     let mut seen = get_defined_symbol_positions(file)?;
 
     define_terminal_enum_name(&mut seen, file)?;
 
-    Ok(DefinedIdentifiers(
-        seen.into_iter().map(|(name, _)| name.to_owned()).collect(),
-    ))
+    Ok(())
 }
 
 /// This set contains:

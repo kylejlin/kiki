@@ -6,7 +6,6 @@ pub struct File {
     pub start: String,
     pub terminal_enum: TerminalEnum,
     pub nonterminals: Vec<Nonterminal>,
-    pub defined_identifiers: HashSet<String>,
 }
 
 impl File {
@@ -70,6 +69,32 @@ impl ConstructorName<'_> {
             ConstructorName::Struct(name) => name,
             ConstructorName::EnumVariant { enum_name, .. } => enum_name,
         }
+    }
+}
+
+impl File {
+    pub fn get_defined_identifiers(&self) -> HashSet<String> {
+        self.get_nonterminal_names()
+            .chain(self.get_terminal_enum_variant_names())
+            .chain(std::iter::once(self.terminal_enum.name.clone()))
+            .collect()
+    }
+
+    fn get_nonterminal_names(&self) -> impl Iterator<Item = String> + '_ {
+        self.nonterminals
+            .iter()
+            .map(|nonterminal| match nonterminal {
+                Nonterminal::Struct(s) => &s.name.name,
+                Nonterminal::Enum(e) => &e.name.name,
+            })
+            .cloned()
+    }
+
+    fn get_terminal_enum_variant_names(&self) -> impl Iterator<Item = String> + '_ {
+        self.terminal_enum
+            .variants
+            .iter()
+            .map(|variant| variant.dollarless_name.to_string())
     }
 }
 

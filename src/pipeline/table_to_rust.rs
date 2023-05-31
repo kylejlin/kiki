@@ -14,7 +14,7 @@ const ACTION_REDUCE_VARIANT_NAME: &str = "Reduce";
 const ACTION_ACCEPT_VARIANT_NAME: &str = "Accept";
 const ACTION_ERR_VARIANT_NAME: &str = "Err";
 
-pub fn table_to_rust(table: &Table, file: validated::File) -> RustSrc {
+pub fn table_to_rust(table: &Table, file: &validated::File) -> RustSrc {
     let builder = SrcBuilder::new(table, file);
     builder.file_src()
 }
@@ -22,7 +22,7 @@ pub fn table_to_rust(table: &Table, file: validated::File) -> RustSrc {
 #[derive(Debug)]
 struct SrcBuilder<'a> {
     table: &'a Table,
-    file: validated::File,
+    file: &'a validated::File,
     start_type_name: String,
     terminal_enum_name: String,
     eof_variant_name: String,
@@ -40,8 +40,8 @@ struct SrcBuilder<'a> {
 }
 
 impl SrcBuilder<'_> {
-    fn new(table: &Table, mut file: validated::File) -> SrcBuilder {
-        let used_identifiers = &mut file.defined_identifiers;
+    fn new<'a>(table: &'a Table, file: &'a validated::File) -> SrcBuilder<'a> {
+        let used_identifiers = &mut file.get_defined_identifiers();
         let start_type_name = file.start.to_owned();
         let terminal_enum_name = file.terminal_enum.name.to_owned();
         let eof_variant_name = create_unique_identifier("Eof", used_identifiers);
@@ -928,13 +928,9 @@ mod tests {
                     },
                 ],
             })],
-            defined_identifiers: vec!["Expr", "Token", "LParen", "RParen"]
-                .into_iter()
-                .map(ToOwned::to_owned)
-                .collect(),
         };
 
-        let RustSrc(rust_src) = table_to_rust(&table, file);
+        let RustSrc(rust_src) = table_to_rust(&table, &file);
         insta::assert_debug_snapshot!(rust_src);
     }
 
@@ -1017,13 +1013,9 @@ mod tests {
                     },
                 ],
             })],
-            defined_identifiers: vec!["Expr", "Token", "LParen", "RParen"]
-                .into_iter()
-                .map(ToOwned::to_owned)
-                .collect(),
         };
 
-        let RustSrc(rust_src) = table_to_rust(&table, file);
+        let RustSrc(rust_src) = table_to_rust(&table, &file);
         insta::assert_debug_snapshot!(rust_src);
     }
 
