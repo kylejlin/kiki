@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 /// An ordered set.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Oset<T> {
@@ -47,5 +49,22 @@ impl<T> IntoIterator for Oset<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.raw.into_iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a Oset<T> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.raw.iter()
+    }
+}
+
+impl<'a, T> Deref for Oset<T> {
+    type Target = [T];
+
+    fn deref(&self) -> &Self::Target {
+        &self.raw
     }
 }
