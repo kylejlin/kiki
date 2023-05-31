@@ -39,12 +39,28 @@ impl MachineBuilder<'_> {
     }
 
     fn get_index(&mut self, state: State) -> StateIndex {
-        for (i, existing_state) in self.machine.states.iter().enumerate() {
-            if are_cores_equal(&state, existing_state) {
-                return StateIndex(i);
-            }
+        if let Some(index) = self.get_existing_index(&state) {
+            index
+        } else {
+            self.add_state(state)
         }
+    }
 
+    fn get_existing_index(&self, state: &State) -> Option<StateIndex> {
+        self.machine
+            .states
+            .iter()
+            .enumerate()
+            .find_map(|(i, existing_state)| {
+                if are_cores_equal(state, existing_state) {
+                    Some(StateIndex(i))
+                } else {
+                    None
+                }
+            })
+    }
+
+    fn add_state(&mut self, state: State) -> StateIndex {
         let index = StateIndex(self.machine.states.len());
         self.machine.states.push(state);
         self.queue.push_back(index);
