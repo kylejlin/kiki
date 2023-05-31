@@ -38,15 +38,17 @@ impl MachineBuilder<'_> {
         get_closure(items, self.file)
     }
 
-    fn get_index(&mut self, state: State) -> StateIndex {
-        if let Some(index) = self.get_existing_index(&state) {
-            index
-        } else {
-            self.enqueue_new_state(state)
+    fn enqueue_state(&mut self, state: State) -> StateIndex {
+        if let Some(index) = self.get_index_of_mergable(&state) {
+            self.merge(index, state.items);
+            self.queue.push_back(index);
+            return index;
         }
+
+        self.enqueue_new_state(state)
     }
 
-    fn get_existing_index(&self, state: &State) -> Option<StateIndex> {
+    fn get_index_of_mergable(&self, state: &State) -> Option<StateIndex> {
         self.machine
             .states
             .iter()
@@ -58,6 +60,10 @@ impl MachineBuilder<'_> {
                     None
                 }
             })
+    }
+
+    fn merge(&mut self, index: StateIndex, items: Oset<Item>) {
+        todo!()
     }
 
     fn enqueue_new_state(&mut self, state: State) -> StateIndex {
