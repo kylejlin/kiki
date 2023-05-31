@@ -14,12 +14,17 @@ pub struct State {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Item {
-    pub left: String,
-    pub right: Vec<String>,
+    pub rule: RuleIndex,
     pub lookahead: String,
     /// The `dot` is the index of the symbol to the right of the dot.
     /// If the dot is at the end of the RHS, then `dot == right.len()`.
     pub dot: usize,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum RuleIndex {
+    Original(usize),
+    Augmented,
 }
 
 #[derive(Debug, Clone)]
