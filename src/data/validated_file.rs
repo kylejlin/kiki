@@ -1,4 +1,4 @@
-use crate::data::ast::*;
+use crate::data::ast::{EnumDef, Fieldset, StructDef};
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]

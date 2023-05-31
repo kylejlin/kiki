@@ -1,4 +1,4 @@
-use crate::data::Oset;
+use crate::data::{validated_file::DollarlessTerminalName, Oset};
 
 #[derive(Debug, Clone)]
 pub struct Machine {
@@ -15,7 +15,7 @@ pub struct State {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Item {
     pub rule: RuleIndex,
-    pub lookahead: String,
+    pub lookahead: Lookahead,
     /// The `dot` is the index of the symbol to the right of the dot.
     /// If the dot is at the end of the RHS, then `dot == right.len()`.
     pub dot: usize,
@@ -27,9 +27,18 @@ pub enum RuleIndex {
     Augmented,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Lookahead {
+    Terminal(DollarlessTerminalName),
+    Eof,
+}
+
 #[derive(Debug, Clone)]
 pub struct Transition {
-    pub from: usize,
-    pub to: usize,
+    pub from: StateIndex,
+    pub to: StateIndex,
     pub symbol: String,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct StateIndex(pub usize);
