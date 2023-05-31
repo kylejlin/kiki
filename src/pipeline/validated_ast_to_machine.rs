@@ -1,6 +1,7 @@
 use crate::data::{machine::*, validated_file::*, KikiErr, Oset};
 use std::collections::VecDeque;
 
+/// Converts the AST to a finite state machine (FSM).
 pub fn validated_ast_to_machine(file: &File) -> Result<Machine, KikiErr> {
     let builder = MachineBuilder::new(file);
     builder.build()
