@@ -1,6 +1,7 @@
 pub mod ast;
 pub mod cst;
 pub mod machine;
+pub mod oset;
 pub mod table;
 pub mod validated_file;
 
@@ -25,6 +26,6 @@ pub struct RustSrc(pub String);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ByteIndex(pub usize);
 
-pub use crate::logic::oset::Oset;
+pub use oset::Oset;
 
 use validated_file::DollarlessTerminalName;

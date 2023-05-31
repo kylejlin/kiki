@@ -32,7 +32,8 @@ mod should_succeed {
             .parse(src)
             .expect("should parse correctly");
         let ast: crate::data::ast::File = cst.into();
-        crate::logic::validate_ast::validate_ast(ast).expect("should pass pre-machine validation");
+        crate::pipeline::validate_ast::validate_ast(ast)
+            .expect("should pass pre-machine validation");
     }
 }
 
@@ -188,7 +189,7 @@ mod should_fail {
             .parse(src)
             .expect("should parse correctly");
         let ast: crate::data::ast::File = cst.into();
-        crate::logic::validate_ast::validate_ast(ast)
+        crate::pipeline::validate_ast::validate_ast(ast)
             .expect_err("should fail pre-machine validation")
     }
 }
