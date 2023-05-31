@@ -1,3 +1,4 @@
+/// An ordered set.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Oset<T> {
     raw: Vec<T>,
