@@ -1,4 +1,4 @@
-use crate::data::{machine::*, validated_file::*, KikiErr};
+use crate::data::{machine::*, validated_file::*, KikiErr, Oset};
 use std::collections::VecDeque;
 
 pub fn validated_ast_to_machine(file: &File) -> Result<Machine, KikiErr> {
@@ -29,7 +29,7 @@ impl MachineBuilder<'_> {
 impl MachineBuilder<'_> {
     fn build(mut self) -> Result<Machine, KikiErr> {
         while let Some(state_index) = self.queue.pop_front() {
-            self.enqueue_transition_states(state_index);
+            self.enqueue_transition_targets(state_index);
         }
         Ok(self.machine)
     }
@@ -67,7 +67,18 @@ impl MachineBuilder<'_> {
         index
     }
 
-    fn enqueue_transition_states(&mut self, _state_index: StateIndex) {
+    fn enqueue_transition_targets(&mut self, state_index: StateIndex) {
+        let next_symbols = self.get_symbols_right_of_dot(state_index);
+        for symbol in next_symbols {
+            self.enqueue_transition_target(state_index, symbol);
+        }
+    }
+
+    fn get_symbols_right_of_dot(&self, state_index: StateIndex) -> Oset<Symbol> {
+        todo!()
+    }
+
+    fn enqueue_transition_target(&mut self, state_index: StateIndex, symbol: Symbol) {
         todo!()
     }
 }

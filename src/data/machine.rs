@@ -42,3 +42,9 @@ pub struct Transition {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct StateIndex(pub usize);
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Symbol {
+    Terminal(DollarlessTerminalName),
+    Nonterminal(String),
+}
