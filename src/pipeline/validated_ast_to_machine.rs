@@ -484,10 +484,7 @@ mod first_set_map {
             let mut out = self.get_a_map_of_each_nonterminal_to_the_empty_set();
 
             loop {
-                let mut changed = false;
-
-                todo!();
-
+                let changed = self.expand(&mut out);
                 if !changed {
                     return out;
                 }
@@ -513,6 +510,18 @@ mod first_set_map {
                 .iter()
                 .map(|rule| rule.constructor_name.type_name())
                 .collect()
+        }
+
+        fn expand(&self, out: &mut HashMap<String, FirstSet>) -> bool {
+            let mut changed = false;
+            for rule in self.rules {
+                changed |= self.expand_rule(rule, out);
+            }
+            changed
+        }
+
+        fn expand_rule(&self, rule: &Rule, out: &mut HashMap<String, FirstSet>) -> bool {
+            todo!()
         }
     }
 }
