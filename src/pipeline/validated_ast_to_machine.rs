@@ -4,6 +4,7 @@ use crate::data::{
     validated_file::*,
     KikiErr, Oset,
 };
+use std::collections::HashMap;
 use std::collections::VecDeque;
 
 /// Converts the AST to a finite state machine (FSM).
@@ -23,14 +24,12 @@ struct MachineBuilder<'a> {
 struct ImmutContext<'a> {
     start_nonterminal: String,
     rules: Vec<Rule<'a>>,
+    first_sets: HashMap<String, Oset<DollarlessTerminalName>>,
 }
 
 impl MachineBuilder<'_> {
     fn new(file: &File) -> MachineBuilder {
-        let context = ImmutContext {
-            start_nonterminal: file.start.clone(),
-            rules: file.get_rules().collect(),
-        };
+        let context = ImmutContext::new(file);
         let start_state = context.get_start_state();
         MachineBuilder {
             context,
@@ -39,6 +38,18 @@ impl MachineBuilder<'_> {
                 transitions: Oset::new(),
             },
             queue: VecDeque::from([StateIndex(0)]),
+        }
+    }
+}
+
+impl ImmutContext<'_> {
+    fn new(file: &File) -> ImmutContext {
+        let rules: Vec<Rule> = file.get_rules().collect();
+        let first_sets = get_first_sets(&rules);
+        ImmutContext {
+            start_nonterminal: file.start.clone(),
+            rules,
+            first_sets,
         }
     }
 }
@@ -299,6 +310,10 @@ impl ImmutContext<'_> {
         let rule = &self.rules[rule_index];
         get_nth_field_symbol(dot, rule.fieldset)
     }
+}
+
+fn get_first_sets(rules: &[Rule]) -> HashMap<String, Oset<DollarlessTerminalName>> {
+    todo!()
 }
 
 fn are_cores_equal(_a: &State, _b: &State) -> bool {
