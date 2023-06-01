@@ -147,7 +147,12 @@ impl MachineBuilder<'_> {
     fn enqueue_transition_target(&mut self, state_index: StateIndex, symbol: &Symbol) {
         let target = self.get_transition_target(state_index, symbol);
         let target_index = self.enqueue_state_if_needed(target);
-        // TODO: Add transition (if needed?)
+        let transition = Transition {
+            from: state_index,
+            to: target_index,
+            symbol: symbol.clone(),
+        };
+        self.machine.transitions.insert(transition);
     }
 
     fn get_transition_target(&self, state_index: StateIndex, symbol: &Symbol) -> State {
