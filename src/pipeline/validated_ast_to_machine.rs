@@ -22,7 +22,7 @@ struct MachineBuilder<'a> {
 
 #[derive(Debug, Clone)]
 struct ImmutContext<'a> {
-    start_nonterminal: String,
+    start_nonterminal_name: String,
     rules: Vec<Rule<'a>>,
     first_sets: HashMap<String, FirstSet>,
 }
@@ -56,7 +56,7 @@ impl ImmutContext<'_> {
         let rules: Vec<Rule> = file.get_rules().collect();
         let first_sets = get_first_sets(&rules);
         ImmutContext {
-            start_nonterminal: file.start.clone(),
+            start_nonterminal_name: file.start.clone(),
             rules,
             first_sets,
         }
@@ -249,8 +249,29 @@ impl ImmutContext<'_> {
         add_lookahead_if_needed(first, &item.lookahead)
     }
 
-    fn get_symbol_sequence_after_dot(&self, item: &Item) -> impl IntoIterator<Item = Symbol> {
+    fn get_symbol_sequence_after_dot<'a>(&'a self, item: &Item) -> Vec<Symbol> {
+        match item.rule_index {
+            RuleIndex::Original(rule_index) => {
+                self.get_symbol_sequence_after_dot_for_original_rule(rule_index, item.dot)
+            }
+            RuleIndex::Augmented => self.get_symbol_sequence_after_dot_for_augmented_rule(item.dot),
+        }
+    }
+
+    fn get_symbol_sequence_after_dot_for_original_rule(
+        &self,
+        rule_index: usize,
+        dot: usize,
+    ) -> Vec<Symbol> {
         todo!()
+    }
+
+    fn get_symbol_sequence_after_dot_for_augmented_rule(&self, dot: usize) -> Vec<Symbol> {
+        if dot == 0 {
+            vec![Symbol::Nonterminal(self.start_nonterminal_name.clone())]
+        } else {
+            vec![]
+        }
     }
 
     fn get_first_of_symbol_sequence(&self, symbols: impl IntoIterator<Item = Symbol>) -> FirstSet {
@@ -316,7 +337,7 @@ impl ImmutContext<'_> {
 
     fn get_symbol_right_of_dot_for_augmented_rule(&self, dot: usize) -> Option<Symbol> {
         if dot == 0 {
-            Some(Symbol::Nonterminal(self.start_nonterminal.clone()))
+            Some(Symbol::Nonterminal(self.start_nonterminal_name.clone()))
         } else {
             None
         }
