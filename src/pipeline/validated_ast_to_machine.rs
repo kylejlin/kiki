@@ -9,6 +9,7 @@ pub fn validated_ast_to_machine(file: &File) -> Result<Machine, KikiErr> {
 
 #[derive(Debug, Clone)]
 struct MachineBuilder<'a> {
+    start_nonterminal: String,
     rules: Vec<Rule<'a>>,
     machine: Machine,
     queue: VecDeque<StateIndex>,
@@ -19,6 +20,7 @@ impl MachineBuilder<'_> {
         let rules: Vec<Rule> = file.get_rules().collect();
         let start_state = get_start_state(&rules);
         MachineBuilder {
+            start_nonterminal: file.start.clone(),
             rules,
             machine: Machine {
                 states: vec![start_state],
@@ -75,7 +77,7 @@ impl MachineBuilder<'_> {
 
     /// Returns true if items were added.
     fn add_items_if_needed(&mut self, index: StateIndex, items: Oset<Item>) -> bool {
-        let state = &mut self.machine.states[index.0];
+        let state = self.state_mut(index);
         let mut was_item_added = false;
 
         for item in items {
@@ -103,6 +105,36 @@ impl MachineBuilder<'_> {
     }
 
     fn get_symbols_right_of_dot(&self, state_index: StateIndex) -> Oset<Symbol> {
+        let state = self.state(state_index);
+        state
+            .items
+            .iter()
+            .filter_map(|item| self.get_symbol_right_of_dot(item))
+            .collect()
+    }
+
+    fn get_symbol_right_of_dot(&self, item: &Item) -> Option<Symbol> {
+        match item.rule_index {
+            RuleIndex::Original(rule_index) => {
+                self.get_symbol_right_of_dot_for_original_rule(item.dot, rule_index)
+            }
+            RuleIndex::Augmented => self.get_symbol_right_of_dot_for_augmented_rule(item.dot),
+        }
+    }
+
+    fn get_symbol_right_of_dot_for_augmented_rule(&self, dot: usize) -> Option<Symbol> {
+        if dot == 0 {
+            Some(Symbol::Nonterminal(self.start_nonterminal.clone()))
+        } else {
+            None
+        }
+    }
+
+    fn get_symbol_right_of_dot_for_original_rule(
+        &self,
+        dot: usize,
+        rule_index: usize,
+    ) -> Option<Symbol> {
         todo!()
     }
 
@@ -118,7 +150,7 @@ impl MachineBuilder<'_> {
     }
 
     fn get_transition_items(&self, state_index: StateIndex, symbol: &Symbol) -> Vec<Item> {
-        let state = &self.machine.states[state_index.0];
+        let state = self.state(state_index);
         state
             .items
             .iter()
@@ -133,10 +165,20 @@ impl MachineBuilder<'_> {
     }
 }
 
+impl MachineBuilder<'_> {
+    fn state(&self, index: StateIndex) -> &State {
+        &self.machine.states[index.0]
+    }
+
+    fn state_mut(&mut self, index: StateIndex) -> &mut State {
+        &mut self.machine.states[index.0]
+    }
+}
+
 fn get_start_state(rules: &[Rule]) -> State {
     get_closure(
         &[Item {
-            rule: RuleIndex::Augmented,
+            rule_index: RuleIndex::Augmented,
             lookahead: Lookahead::Eof,
             dot: 0,
         }],
