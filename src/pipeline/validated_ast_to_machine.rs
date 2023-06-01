@@ -380,10 +380,29 @@ impl ImmutContext<'_> {
 }
 
 fn get_first_sets(rules: &[Rule]) -> HashMap<String, FirstSet> {
+    let mut out = get_a_map_of_each_nonterminal_to_the_empty_set(rules);
+
+    loop {
+        let mut changed = false;
+
+        todo!()
+        
+        if !changed {
+            return out;
+        }
+    }
+}
+
+fn get_a_map_of_each_nonterminal_to_the_empty_set(rules: &[Rule]) -> HashMap<String, FirstSet> {
     let mut out = HashMap::new();
     for name in get_nonterminal_names(rules) {
-        let set = get_first_set_for_nonterminal(name, rules);
-        out.insert(name.to_owned(), set);
+        out.insert(
+            name.to_owned(),
+            FirstSet {
+                terminals: Oset::new(),
+                contains_epsilon: false,
+            },
+        );
     }
     out
 }
@@ -393,10 +412,6 @@ fn get_nonterminal_names<'a>(rules: &'a [Rule<'a>]) -> Oset<&'a str> {
         .iter()
         .map(|rule| rule.constructor_name.type_name())
         .collect()
-}
-
-fn get_first_set_for_nonterminal(nonterminal_name: &str, rules: &[Rule]) -> FirstSet {
-    todo!()
 }
 
 fn add_lookahead_if_needed(first: FirstSet, lookahead: &Lookahead) -> AugmentedFirstSet {
