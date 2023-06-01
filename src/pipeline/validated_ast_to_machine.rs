@@ -263,7 +263,8 @@ impl ImmutContext<'_> {
         rule_index: usize,
         dot: usize,
     ) -> Vec<Symbol> {
-        todo!()
+        let rule = &self.rules[rule_index];
+        get_field_symbols_from_n_onwards(&rule.fieldset, dot)
     }
 
     fn get_symbol_sequence_after_dot_for_augmented_rule(&self, dot: usize) -> Vec<Symbol> {
@@ -416,4 +417,30 @@ fn get_nth_field_symbol_from_tuple(n: usize, tuple: &TupleFieldset) -> Option<Sy
         .fields
         .get(n)
         .map(|field| field.symbol().clone().into())
+}
+
+fn get_field_symbols_from_n_onwards(fieldset: &Fieldset, n: usize) -> Vec<Symbol> {
+    match fieldset {
+        Fieldset::Empty => vec![],
+        Fieldset::Named(named) => get_field_symbols_from_n_onwards_for_named(named, n),
+        Fieldset::Tuple(tuple) => get_field_symbols_from_n_onwards_for_tuple(tuple, n),
+    }
+}
+
+fn get_field_symbols_from_n_onwards_for_named(named: &NamedFieldset, n: usize) -> Vec<Symbol> {
+    named
+        .fields
+        .iter()
+        .skip(n)
+        .map(|field| field.symbol.clone().into())
+        .collect()
+}
+
+fn get_field_symbols_from_n_onwards_for_tuple(tuple: &TupleFieldset, n: usize) -> Vec<Symbol> {
+    tuple
+        .fields
+        .iter()
+        .skip(n)
+        .map(|field| field.symbol().clone().into())
+        .collect()
 }
