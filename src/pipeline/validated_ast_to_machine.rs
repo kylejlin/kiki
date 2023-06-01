@@ -1,4 +1,9 @@
-use crate::data::{machine::*, validated_file::*, KikiErr, Oset};
+use crate::data::{
+    ast::{Fieldset, NamedFieldset, TupleFieldset},
+    machine::*,
+    validated_file::*,
+    KikiErr, Oset,
+};
 use std::collections::VecDeque;
 
 /// Converts the AST to a finite state machine (FSM).
@@ -24,7 +29,7 @@ impl MachineBuilder<'_> {
             rules,
             machine: Machine {
                 states: vec![start_state],
-                transitions: vec![],
+                transitions: Oset::new(),
             },
             queue: [StateIndex(0)].into_iter().collect(),
         }
@@ -135,7 +140,8 @@ impl MachineBuilder<'_> {
         dot: usize,
         rule_index: usize,
     ) -> Option<Symbol> {
-        todo!()
+        let rule = &self.rules[rule_index];
+        get_nth_field_symbol(dot, rule.fieldset)
     }
 
     fn enqueue_transition_target(&mut self, state_index: StateIndex, symbol: &Symbol) {
@@ -192,4 +198,23 @@ fn get_closure(_items: &[Item], _rules: &[Rule]) -> State {
 
 fn are_cores_equal(_a: &State, _b: &State) -> bool {
     todo!()
+}
+
+fn get_nth_field_symbol(n: usize, fieldset: &Fieldset) -> Option<Symbol> {
+    match fieldset {
+        Fieldset::Empty => None,
+        Fieldset::Named(named) => get_nth_field_symbol_from_named(n, named),
+        Fieldset::Tuple(tuple) => get_nth_field_symbol_from_tuple(n, tuple),
+    }
+}
+
+fn get_nth_field_symbol_from_named(n: usize, named: &NamedFieldset) -> Option<Symbol> {
+    named.fields.get(n).map(|field| field.symbol.clone().into())
+}
+
+fn get_nth_field_symbol_from_tuple(n: usize, tuple: &TupleFieldset) -> Option<Symbol> {
+    tuple
+        .fields
+        .get(n)
+        .map(|field| field.symbol().clone().into())
 }

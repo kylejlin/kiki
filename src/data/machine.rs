@@ -1,10 +1,10 @@
-use crate::data::{validated_file::DollarlessTerminalName, Oset};
+use crate::data::{ast::IdentOrTerminalIdent, validated_file::DollarlessTerminalName, Oset};
 
 #[derive(Debug, Clone)]
 pub struct Machine {
     /// The first state is the start state.
     pub states: Vec<State>,
-    pub transitions: Vec<Transition>,
+    pub transitions: Oset<Transition>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -37,7 +37,7 @@ pub enum Lookahead {
 pub struct Transition {
     pub from: StateIndex,
     pub to: StateIndex,
-    pub symbol: String,
+    pub symbol: Symbol,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -47,4 +47,13 @@ pub struct StateIndex(pub usize);
 pub enum Symbol {
     Terminal(DollarlessTerminalName),
     Nonterminal(String),
+}
+
+impl From<IdentOrTerminalIdent> for Symbol {
+    fn from(ident: IdentOrTerminalIdent) -> Self {
+        match ident {
+            IdentOrTerminalIdent::Ident(ident) => Symbol::Nonterminal(ident.name),
+            IdentOrTerminalIdent::Terminal(ident) => Symbol::Terminal(ident.dollarless_name()),
+        }
+    }
 }
