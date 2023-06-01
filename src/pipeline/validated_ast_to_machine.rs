@@ -172,7 +172,16 @@ impl MachineBuilder<'_> {
     /// If `item` is `A -> alpha . B beta` and `symbol` is `B`,
     /// then this returns `Some(A -> alpha B . beta)`.
     fn advance(&self, item: &Item, symbol: &Symbol) -> Option<Item> {
-        todo!()
+        let right_of_dot = self.get_symbol_right_of_dot(item);
+        if right_of_dot.as_ref() == Some(symbol) {
+            Some(Item {
+                rule_index: item.rule_index,
+                lookahead: item.lookahead.clone(),
+                dot: item.dot + 1,
+            })
+        } else {
+            None
+        }
     }
 }
 
