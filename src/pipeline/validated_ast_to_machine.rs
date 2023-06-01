@@ -214,18 +214,64 @@ impl ImmutContext<'_> {
     fn get_closure_implied_items(&self, item: &Item) -> Vec<Item> {
         match self.get_symbol_right_of_dot(item) {
             Some(Symbol::Nonterminal(name)) => {
-                self.get_closured_implied_items_from_nonterminal_name(name, &item.lookahead)
+                let lookaheads = self.get_first_after_dot(item);
+                self.get_closure_implied_items_for_nonterminal(name, lookaheads)
             }
-            Some(Symbol::Terminal(_)) | None => vec![],
+            Some(Symbol::Terminal(_)) | None => {
+                vec![]
+            }
         }
     }
 
-    fn get_closured_implied_items_from_nonterminal_name(
-        &self,
-        name: String,
-        original_lookahead: &Lookahead,
-    ) -> Vec<Item> {
+    fn get_first_after_dot(&self, item: &Item) -> Oset<Lookahead> {
         todo!()
+    }
+
+    fn get_closure_implied_items_for_nonterminal(
+        &self,
+        nonterminal_name: String,
+        lookaheads: Oset<Lookahead>,
+    ) -> Vec<Item> {
+        lookaheads
+            .into_iter()
+            .flat_map(|lookahead| {
+                self.get_closure_implied_items_for_nonterminal_with_lookahead(
+                    nonterminal_name.clone(),
+                    lookahead,
+                )
+            })
+            .collect()
+    }
+
+    fn get_closure_implied_items_for_nonterminal_with_lookahead(
+        &self,
+        nonterminal_name: String,
+        lookahead: Lookahead,
+    ) -> Vec<Item> {
+        self.get_rule_indices_for_nonterminal(&nonterminal_name)
+            .into_iter()
+            .map(|rule_index| Item {
+                rule_index: RuleIndex::Original(rule_index),
+                lookahead: lookahead.clone(),
+                dot: 0,
+            })
+            .collect()
+    }
+
+    fn get_rule_indices_for_nonterminal<'a>(
+        &'a self,
+        nonterminal_name: &'a str,
+    ) -> impl Iterator<Item = usize> + 'a {
+        self.rules
+            .iter()
+            .enumerate()
+            .filter_map(move |(index, rule)| {
+                if rule.constructor_name.type_name() == nonterminal_name {
+                    Some(index)
+                } else {
+                    None
+                }
+            })
     }
 
     fn get_symbol_right_of_dot(&self, item: &Item) -> Option<Symbol> {
