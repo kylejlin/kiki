@@ -380,6 +380,22 @@ impl ImmutContext<'_> {
 }
 
 fn get_first_sets(rules: &[Rule]) -> HashMap<String, FirstSet> {
+    let mut out = HashMap::new();
+    for name in get_nonterminal_names(rules) {
+        let set = get_first_set_for_nonterminal(name, rules);
+        out.insert(name.to_owned(), set);
+    }
+    out
+}
+
+fn get_nonterminal_names<'a>(rules: &'a [Rule<'a>]) -> Oset<&'a str> {
+    rules
+        .iter()
+        .map(|rule| rule.constructor_name.type_name())
+        .collect()
+}
+
+fn get_first_set_for_nonterminal(nonterminal_name: &str, rules: &[Rule]) -> FirstSet {
     todo!()
 }
 
