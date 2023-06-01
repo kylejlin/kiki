@@ -1,5 +1,5 @@
 use crate::data::{
-    ast::{Fieldset, NamedFieldset, TupleFieldset},
+    ast::{Fieldset, IdentOrTerminalIdent, NamedFieldset, TupleFieldset},
     machine::*,
     validated_file::*,
     KikiErr, Oset,
@@ -566,7 +566,7 @@ mod first_set_map {
         };
 
         for field in &tuple.fields {
-            let first = get_current_first_set_for_symbol(field.symbol().clone().into(), map);
+            let first = get_current_first_set_for_symbol(field.symbol(), map);
             out.terminals.extend(first.terminals);
 
             if !first.contains_epsilon {
@@ -579,10 +579,16 @@ mod first_set_map {
     }
 
     fn get_current_first_set_for_symbol(
-        symbol: Symbol,
+        symbol: &IdentOrTerminalIdent,
         map: &HashMap<String, FirstSet>,
     ) -> FirstSet {
-        todo!()
+        match symbol {
+            IdentOrTerminalIdent::Ident(name) => map.get(&name.name).unwrap().clone(),
+            IdentOrTerminalIdent::Terminal(name) => FirstSet {
+                terminals: [name.dollarless_name()].into_iter().collect(),
+                contains_epsilon: false,
+            },
+        }
     }
 
     fn get_current_first_set_for_empty_fieldset() -> FirstSet {
