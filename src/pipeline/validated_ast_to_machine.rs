@@ -618,3 +618,78 @@ mod first_set_map {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        data::ast::{EnumDef, EnumVariant, Ident, TerminalIdent, TupleField},
+        ByteIndex,
+    };
+
+    #[test]
+    fn balanced_parens() {
+        let file = File {
+            start: "Expr".to_owned(),
+            terminal_enum: TerminalEnum {
+                name: "Token".to_string(),
+                variants: vec![
+                    TerminalVariant {
+                        dollarless_name: DollarlessTerminalName::remove_dollars("LParen"),
+                        type_: "()".to_string(),
+                    },
+                    TerminalVariant {
+                        dollarless_name: DollarlessTerminalName::remove_dollars("RParen"),
+                        type_: "()".to_string(),
+                    },
+                ],
+            },
+            nonterminals: vec![Nonterminal::Enum(EnumDef {
+                name: positionless_ident("Expr"),
+                variants: vec![
+                    EnumVariant {
+                        name: positionless_ident("Empty"),
+                        fieldset: Fieldset::Empty,
+                    },
+                    EnumVariant {
+                        name: positionless_ident("Wrap"),
+                        fieldset: Fieldset::Tuple(TupleFieldset {
+                            fields: vec![
+                                TupleField::Used(IdentOrTerminalIdent::Terminal(
+                                    positionless_terminal_ident(
+                                        &DollarlessTerminalName::remove_dollars("LParen"),
+                                    ),
+                                )),
+                                TupleField::Used(IdentOrTerminalIdent::Ident(positionless_ident(
+                                    "Expr",
+                                ))),
+                                TupleField::Used(IdentOrTerminalIdent::Terminal(
+                                    positionless_terminal_ident(
+                                        &DollarlessTerminalName::remove_dollars("RParen"),
+                                    ),
+                                )),
+                            ],
+                        }),
+                    },
+                ],
+            })],
+        };
+
+        let machine = validated_ast_to_machine(&file).unwrap();
+        insta::assert_debug_snapshot!(machine);
+    }
+
+    fn positionless_ident(s: &str) -> Ident {
+        Ident {
+            name: s.to_owned(),
+            position: ByteIndex(0),
+        }
+    }
+
+    fn positionless_terminal_ident(s: &DollarlessTerminalName) -> TerminalIdent {
+        TerminalIdent {
+            dollared_name: format!("${}", s.raw()),
+            position: ByteIndex(0),
+        }
+    }
+}
