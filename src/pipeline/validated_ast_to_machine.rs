@@ -234,7 +234,12 @@ impl ImmutContext<'_> {
     fn get_closure_implied_items(&self, item: &Item) -> Vec<Item> {
         match self.get_symbol_right_of_dot(item) {
             Some(Symbol::Nonterminal(name)) => {
-                let lookaheads = self.get_augmented_first_after_dot(item);
+                let item_with_dot_advanced = Item {
+                    rule_index: item.rule_index,
+                    lookahead: item.lookahead.clone(),
+                    dot: item.dot + 1,
+                };
+                let lookaheads = self.get_augmented_first_after_dot(&item_with_dot_advanced);
                 self.get_closure_implied_items_for_nonterminal(name, lookaheads)
             }
             Some(Symbol::Terminal(_)) | None => {
