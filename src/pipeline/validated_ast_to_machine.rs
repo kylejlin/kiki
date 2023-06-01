@@ -39,14 +39,12 @@ impl MachineBuilder<'_> {
         get_closure(items, self.file)
     }
 
-    fn enqueue_state(&mut self, state: State) -> StateIndex {
+    fn enqueue_state_if_needed(&mut self, state: State) -> StateIndex {
         if let Some(index) = self.get_index_of_mergable(&state) {
-            self.merge(index, state.items);
-            self.queue.push_back(index);
-            return index;
+            self.merge(index, state.items)
+        } else {
+            self.enqueue_new_state(state)
         }
-
-        self.enqueue_new_state(state)
     }
 
     fn get_index_of_mergable(&self, state: &State) -> Option<StateIndex> {
@@ -63,7 +61,18 @@ impl MachineBuilder<'_> {
             })
     }
 
-    fn merge(&mut self, index: StateIndex, items: Oset<Item>) {
+    fn merge(&mut self, index: StateIndex, items: Oset<Item>) -> StateIndex {
+        let were_items_added = self.add_items_if_needed(index, items);
+
+        if were_items_added {
+            self.queue.push_back(index);
+        }
+
+        return index;
+    }
+
+    /// Returns true if items were added.
+    fn add_items_if_needed(&mut self, index: StateIndex, items: Oset<Item>) -> bool {
         todo!()
     }
 
@@ -87,7 +96,8 @@ impl MachineBuilder<'_> {
 
     fn enqueue_transition_target(&mut self, state_index: StateIndex, symbol: &Symbol) {
         let target = self.get_transition_target(state_index, symbol);
-        self.enqueue_state(target);
+        let target_index = self.enqueue_state_if_needed(target);
+        // TODO: Add transition (if needed?)
     }
 
     fn get_transition_target(&self, state_index: StateIndex, symbol: &Symbol) -> State {
