@@ -33,6 +33,9 @@ struct FirstSet {
     contains_epsilon: bool,
 }
 
+#[derive(Debug, Clone)]
+struct AugmentedFirstSet(Oset<Lookahead>);
+
 impl MachineBuilder<'_> {
     fn new(file: &File) -> MachineBuilder {
         let context = ImmutContext::new(file);
@@ -231,7 +234,7 @@ impl ImmutContext<'_> {
     fn get_closure_implied_items(&self, item: &Item) -> Vec<Item> {
         match self.get_symbol_right_of_dot(item) {
             Some(Symbol::Nonterminal(name)) => {
-                let lookaheads = self.get_first_after_dot(item);
+                let lookaheads = self.get_augmented_first_after_dot(item);
                 self.get_closure_implied_items_for_nonterminal(name, lookaheads)
             }
             Some(Symbol::Terminal(_)) | None => {
@@ -240,16 +243,27 @@ impl ImmutContext<'_> {
         }
     }
 
-    fn get_first_after_dot(&self, item: &Item) -> Oset<Lookahead> {
+    fn get_augmented_first_after_dot(&self, item: &Item) -> AugmentedFirstSet {
+        let after_dot = self.get_symbol_sequence_after_dot(item);
+        let first = self.get_first_of_symbol_sequence(after_dot);
+        add_lookahead_if_needed(first, &item.lookahead)
+    }
+
+    fn get_symbol_sequence_after_dot(&self, item: &Item) -> impl IntoIterator<Item = Symbol> {
+        todo!()
+    }
+
+    fn get_first_of_symbol_sequence(&self, symbols: impl IntoIterator<Item = Symbol>) -> FirstSet {
         todo!()
     }
 
     fn get_closure_implied_items_for_nonterminal(
         &self,
         nonterminal_name: String,
-        lookaheads: Oset<Lookahead>,
+        lookaheads: AugmentedFirstSet,
     ) -> Vec<Item> {
         lookaheads
+            .0
             .into_iter()
             .flat_map(|lookahead| {
                 self.get_closure_implied_items_for_nonterminal_with_lookahead(
@@ -320,6 +334,35 @@ impl ImmutContext<'_> {
 
 fn get_first_sets(rules: &[Rule]) -> HashMap<String, FirstSet> {
     todo!()
+}
+
+fn add_lookahead_if_needed(first: FirstSet, lookahead: &Lookahead) -> AugmentedFirstSet {
+    if first.contains_epsilon {
+        augment_with_lookahead(first, lookahead)
+    } else {
+        convert_first_set_to_augmented_as_is(first)
+    }
+}
+
+fn augment_with_lookahead(first: FirstSet, lookahead: &Lookahead) -> AugmentedFirstSet {
+    AugmentedFirstSet(
+        first
+            .terminals
+            .into_iter()
+            .map(Lookahead::Terminal)
+            .chain(std::iter::once(lookahead.clone()))
+            .collect(),
+    )
+}
+
+fn convert_first_set_to_augmented_as_is(first: FirstSet) -> AugmentedFirstSet {
+    AugmentedFirstSet(
+        first
+            .terminals
+            .into_iter()
+            .map(Lookahead::Terminal)
+            .collect(),
+    )
 }
 
 fn are_cores_equal(a: &State, b: &State) -> bool {
