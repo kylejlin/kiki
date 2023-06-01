@@ -322,8 +322,17 @@ fn get_first_sets(rules: &[Rule]) -> HashMap<String, FirstSet> {
     todo!()
 }
 
-fn are_cores_equal(_a: &State, _b: &State) -> bool {
-    todo!()
+fn are_cores_equal(a: &State, b: &State) -> bool {
+    is_core_subset(a, b) && is_core_subset(b, a)
+}
+
+fn is_core_subset(substate: &State, superstate: &State) -> bool {
+    substate.items.iter().all(|sub| {
+        superstate
+            .items
+            .iter()
+            .any(|super_| sub.rule_index == super_.rule_index && sub.dot == super_.dot)
+    })
 }
 
 fn get_nth_field_symbol(n: usize, fieldset: &Fieldset) -> Option<Symbol> {
