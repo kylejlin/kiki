@@ -38,7 +38,7 @@ impl MachineBuilder<'_> {
                 states: vec![start_state],
                 transitions: Oset::new(),
             },
-            queue: [StateIndex(0)].into_iter().collect(),
+            queue: VecDeque::from([StateIndex(0)]),
         }
     }
 }
@@ -189,7 +189,42 @@ impl ImmutContext<'_> {
         }])
     }
 
-    fn get_closure(&self, _items: &[Item]) -> State {
+    fn get_closure(&self, items: &[Item]) -> State {
+        let mut queue: VecDeque<Item> = items.iter().cloned().collect();
+        let mut items = Oset::new();
+
+        while let Some(next) = queue.pop_front() {
+            if items.contains(&next) {
+                continue;
+            }
+
+            self.enqueue_closure_implied_items(&mut queue, &next);
+            items.insert(next);
+        }
+
+        State { items }
+    }
+
+    fn enqueue_closure_implied_items(&self, queue: &mut VecDeque<Item>, implicator: &Item) {
+        for implied in self.get_closure_implied_items(implicator) {
+            queue.push_back(implied);
+        }
+    }
+
+    fn get_closure_implied_items(&self, item: &Item) -> Vec<Item> {
+        match self.get_symbol_right_of_dot(item) {
+            Some(Symbol::Nonterminal(name)) => {
+                self.get_closured_implied_items_from_nonterminal_name(name, &item.lookahead)
+            }
+            Some(Symbol::Terminal(_)) | None => vec![],
+        }
+    }
+
+    fn get_closured_implied_items_from_nonterminal_name(
+        &self,
+        name: String,
+        original_lookahead: &Lookahead,
+    ) -> Vec<Item> {
         todo!()
     }
 
