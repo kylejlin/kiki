@@ -515,20 +515,81 @@ mod first_set_map {
         fn expand(&self, out: &mut HashMap<String, FirstSet>) -> DidChange {
             let mut changed = DidChange(false);
             for rule in self.rules {
-                changed |= self.expand_rule(rule, out);
+                changed |= expand_rule(rule, out);
             }
             changed
         }
+    }
 
-        fn expand_rule(&self, rule: &Rule, out: &mut HashMap<String, FirstSet>) -> DidChange {
-            let current_first =
-                get_current_first(rule.constructor_name.type_name(), &rule.fieldset, out);
-            add_all(current_first, out)
+    fn expand_rule(rule: &Rule, out: &mut HashMap<String, FirstSet>) -> DidChange {
+        let current_first = get_current_first_set(&rule.fieldset, out);
+        add_all(current_first, out)
+    }
+
+    fn get_current_first_set(fieldset: &Fieldset, map: &HashMap<String, FirstSet>) -> FirstSet {
+        match fieldset {
+            Fieldset::Empty => get_current_first_set_for_empty_fieldset(),
+            Fieldset::Named(named) => get_current_first_set_for_named_fieldset(named, map),
+            Fieldset::Tuple(tuple) => get_current_first_set_for_tuple_fieldset(tuple, map),
         }
     }
 
-    fn get_current_first(lhs: &str, rhs: &Fieldset, map: &HashMap<String, FirstSet>) -> FirstSet {
+    fn get_current_first_set_for_named_fieldset(
+        named: &NamedFieldset,
+        map: &HashMap<String, FirstSet>,
+    ) -> FirstSet {
+        let mut out = FirstSet {
+            terminals: Oset::new(),
+            contains_epsilon: true,
+        };
+
+        for field in &named.fields {
+            let first = get_current_first_set_for_symbol(field.symbol.clone().into(), map);
+            out.terminals.extend(first.terminals);
+
+            if !first.contains_epsilon {
+                out.contains_epsilon = false;
+                break;
+            }
+        }
+
+        out
+    }
+
+    fn get_current_first_set_for_tuple_fieldset(
+        tuple: &TupleFieldset,
+        map: &HashMap<String, FirstSet>,
+    ) -> FirstSet {
+        let mut out = FirstSet {
+            terminals: Oset::new(),
+            contains_epsilon: true,
+        };
+
+        for field in &tuple.fields {
+            let first = get_current_first_set_for_symbol(field.symbol().clone().into(), map);
+            out.terminals.extend(first.terminals);
+
+            if !first.contains_epsilon {
+                out.contains_epsilon = false;
+                break;
+            }
+        }
+
+        out
+    }
+
+    fn get_current_first_set_for_symbol(
+        symbol: Symbol,
+        map: &HashMap<String, FirstSet>,
+    ) -> FirstSet {
         todo!()
+    }
+
+    fn get_current_first_set_for_empty_fieldset() -> FirstSet {
+        FirstSet {
+            terminals: Oset::new(),
+            contains_epsilon: true,
+        }
     }
 
     fn add_all(new: FirstSet, out: &mut HashMap<String, FirstSet>) -> DidChange {
