@@ -544,7 +544,7 @@ mod first_set_map {
         };
 
         for field in &named.fields {
-            let first = get_current_first_set_for_symbol(field.symbol.clone().into(), map);
+            let first = get_current_first_set_for_symbol(&field.symbol, map);
             out.terminals.extend(first.terminals);
 
             if !first.contains_epsilon {
