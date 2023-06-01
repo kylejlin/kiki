@@ -523,7 +523,8 @@ mod first_set_map {
 
     fn expand_rule(rule: &Rule, out: &mut HashMap<String, FirstSet>) -> DidChange {
         let current_first = get_current_first_set(&rule.fieldset, out);
-        add_all(current_first, out)
+        let first_set = out.get_mut(rule.constructor_name.type_name()).unwrap();
+        add_all(current_first, first_set)
     }
 
     fn get_current_first_set(fieldset: &Fieldset, map: &HashMap<String, FirstSet>) -> FirstSet {
@@ -598,8 +599,14 @@ mod first_set_map {
         }
     }
 
-    fn add_all(new: FirstSet, out: &mut HashMap<String, FirstSet>) -> DidChange {
-        todo!()
+    fn add_all(new: FirstSet, out: &mut FirstSet) -> DidChange {
+        let old_len = out.terminals.len();
+        let did_contain_epsilon = out.contains_epsilon;
+
+        out.terminals.extend(new.terminals);
+        out.contains_epsilon |= new.contains_epsilon;
+
+        DidChange(out.terminals.len() != old_len || out.contains_epsilon != did_contain_epsilon)
     }
 
     #[derive(Debug, Clone, Copy)]
