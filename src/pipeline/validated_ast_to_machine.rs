@@ -73,7 +73,17 @@ impl MachineBuilder<'_> {
 
     /// Returns true if items were added.
     fn add_items_if_needed(&mut self, index: StateIndex, items: Oset<Item>) -> bool {
-        todo!()
+        let state = &mut self.machine.states[index.0];
+        let mut was_item_added = false;
+
+        for item in items {
+            if !state.items.contains(&item) {
+                state.items.insert(item);
+                was_item_added = true;
+            }
+        }
+
+        was_item_added
     }
 
     fn enqueue_new_state(&mut self, state: State) -> StateIndex {
