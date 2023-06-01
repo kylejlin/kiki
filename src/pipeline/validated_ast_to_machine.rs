@@ -14,19 +14,26 @@ pub fn validated_ast_to_machine(file: &File) -> Result<Machine, KikiErr> {
 
 #[derive(Debug, Clone)]
 struct MachineBuilder<'a> {
-    start_nonterminal: String,
-    rules: Vec<Rule<'a>>,
+    context: ImmutContext<'a>,
     machine: Machine,
     queue: VecDeque<StateIndex>,
 }
 
+#[derive(Debug, Clone)]
+struct ImmutContext<'a> {
+    start_nonterminal: String,
+    rules: Vec<Rule<'a>>,
+}
+
 impl MachineBuilder<'_> {
     fn new(file: &File) -> MachineBuilder {
-        let rules: Vec<Rule> = file.get_rules().collect();
-        let start_state = get_start_state(&rules);
-        MachineBuilder {
+        let context = ImmutContext {
             start_nonterminal: file.start.clone(),
-            rules,
+            rules: file.get_rules().collect(),
+        };
+        let start_state = context.get_start_state();
+        MachineBuilder {
+            context,
             machine: Machine {
                 states: vec![start_state],
                 transitions: Oset::new(),
@@ -42,10 +49,6 @@ impl MachineBuilder<'_> {
             self.enqueue_transition_targets(state_index);
         }
         Ok(self.machine)
-    }
-
-    fn get_closure(&self, items: &[Item]) -> State {
-        get_closure(items, &self.rules)
     }
 
     fn enqueue_state_if_needed(&mut self, state: State) -> StateIndex {
@@ -119,29 +122,7 @@ impl MachineBuilder<'_> {
     }
 
     fn get_symbol_right_of_dot(&self, item: &Item) -> Option<Symbol> {
-        match item.rule_index {
-            RuleIndex::Original(rule_index) => {
-                self.get_symbol_right_of_dot_for_original_rule(item.dot, rule_index)
-            }
-            RuleIndex::Augmented => self.get_symbol_right_of_dot_for_augmented_rule(item.dot),
-        }
-    }
-
-    fn get_symbol_right_of_dot_for_augmented_rule(&self, dot: usize) -> Option<Symbol> {
-        if dot == 0 {
-            Some(Symbol::Nonterminal(self.start_nonterminal.clone()))
-        } else {
-            None
-        }
-    }
-
-    fn get_symbol_right_of_dot_for_original_rule(
-        &self,
-        dot: usize,
-        rule_index: usize,
-    ) -> Option<Symbol> {
-        let rule = &self.rules[rule_index];
-        get_nth_field_symbol(dot, rule.fieldset)
+        self.context.get_symbol_right_of_dot(item)
     }
 
     fn enqueue_transition_target(&mut self, state_index: StateIndex, symbol: &Symbol) {
@@ -158,6 +139,10 @@ impl MachineBuilder<'_> {
     fn get_transition_target(&self, state_index: StateIndex, symbol: &Symbol) -> State {
         let items = self.get_transition_items(state_index, symbol);
         self.get_closure(&items)
+    }
+
+    fn get_closure(&self, items: &[Item]) -> State {
+        self.context.get_closure(items)
     }
 
     fn get_transition_items(&self, state_index: StateIndex, symbol: &Symbol) -> Vec<Item> {
@@ -195,19 +180,44 @@ impl MachineBuilder<'_> {
     }
 }
 
-fn get_start_state(rules: &[Rule]) -> State {
-    get_closure(
-        &[Item {
+impl ImmutContext<'_> {
+    fn get_start_state(&self) -> State {
+        self.get_closure(&[Item {
             rule_index: RuleIndex::Augmented,
             lookahead: Lookahead::Eof,
             dot: 0,
-        }],
-        rules,
-    )
-}
+        }])
+    }
 
-fn get_closure(_items: &[Item], _rules: &[Rule]) -> State {
-    todo!()
+    fn get_closure(&self, _items: &[Item]) -> State {
+        todo!()
+    }
+
+    fn get_symbol_right_of_dot(&self, item: &Item) -> Option<Symbol> {
+        match item.rule_index {
+            RuleIndex::Original(rule_index) => {
+                self.get_symbol_right_of_dot_for_original_rule(item.dot, rule_index)
+            }
+            RuleIndex::Augmented => self.get_symbol_right_of_dot_for_augmented_rule(item.dot),
+        }
+    }
+
+    fn get_symbol_right_of_dot_for_augmented_rule(&self, dot: usize) -> Option<Symbol> {
+        if dot == 0 {
+            Some(Symbol::Nonterminal(self.start_nonterminal.clone()))
+        } else {
+            None
+        }
+    }
+
+    fn get_symbol_right_of_dot_for_original_rule(
+        &self,
+        dot: usize,
+        rule_index: usize,
+    ) -> Option<Symbol> {
+        let rule = &self.rules[rule_index];
+        get_nth_field_symbol(dot, rule.fieldset)
+    }
 }
 
 fn are_cores_equal(_a: &State, _b: &State) -> bool {
