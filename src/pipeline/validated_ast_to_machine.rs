@@ -276,7 +276,32 @@ impl ImmutContext<'_> {
     }
 
     fn get_first_of_symbol_sequence(&self, symbols: impl IntoIterator<Item = Symbol>) -> FirstSet {
-        todo!()
+        let mut terminals: Oset<DollarlessTerminalName> = Oset::new();
+        let mut contains_epsilon = true;
+
+        for symbol in symbols {
+            match symbol {
+                Symbol::Terminal(name) => {
+                    terminals.insert(name);
+                    contains_epsilon = false;
+                    break;
+                }
+                Symbol::Nonterminal(name) => {
+                    let nonterminal_first_set = self.first_sets.get(&name).unwrap();
+                    terminals.extend(nonterminal_first_set.terminals.iter().cloned());
+
+                    if !nonterminal_first_set.contains_epsilon {
+                        contains_epsilon = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        FirstSet {
+            terminals,
+            contains_epsilon,
+        }
     }
 
     fn get_closure_implied_items_for_nonterminal(

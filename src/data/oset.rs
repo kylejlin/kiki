@@ -68,3 +68,17 @@ impl<'a, T> Deref for Oset<T> {
         &self.raw
     }
 }
+
+impl<T> Extend<T> for Oset<T>
+where
+    T: Ord,
+{
+    fn extend<I>(&mut self, iter: I)
+    where
+        I: IntoIterator<Item = T>,
+    {
+        self.raw.extend(iter);
+        self.raw.sort_unstable();
+        self.raw.dedup();
+    }
+}
