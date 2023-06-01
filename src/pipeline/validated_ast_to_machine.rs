@@ -24,7 +24,13 @@ struct MachineBuilder<'a> {
 struct ImmutContext<'a> {
     start_nonterminal: String,
     rules: Vec<Rule<'a>>,
-    first_sets: HashMap<String, Oset<DollarlessTerminalName>>,
+    first_sets: HashMap<String, FirstSet>,
+}
+
+#[derive(Debug, Clone)]
+struct FirstSet {
+    terminals: Oset<DollarlessTerminalName>,
+    contains_epsilon: bool,
 }
 
 impl MachineBuilder<'_> {
@@ -312,7 +318,7 @@ impl ImmutContext<'_> {
     }
 }
 
-fn get_first_sets(rules: &[Rule]) -> HashMap<String, Oset<DollarlessTerminalName>> {
+fn get_first_sets(rules: &[Rule]) -> HashMap<String, FirstSet> {
     todo!()
 }
 
