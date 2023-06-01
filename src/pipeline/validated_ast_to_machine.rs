@@ -484,7 +484,7 @@ mod first_set_map {
             let mut out = self.get_a_map_of_each_nonterminal_to_the_empty_set();
 
             loop {
-                let changed = self.expand(&mut out);
+                let DidChange(changed) = self.expand(&mut out);
                 if !changed {
                     return out;
                 }
@@ -512,16 +512,35 @@ mod first_set_map {
                 .collect()
         }
 
-        fn expand(&self, out: &mut HashMap<String, FirstSet>) -> bool {
-            let mut changed = false;
+        fn expand(&self, out: &mut HashMap<String, FirstSet>) -> DidChange {
+            let mut changed = DidChange(false);
             for rule in self.rules {
                 changed |= self.expand_rule(rule, out);
             }
             changed
         }
 
-        fn expand_rule(&self, rule: &Rule, out: &mut HashMap<String, FirstSet>) -> bool {
-            todo!()
+        fn expand_rule(&self, rule: &Rule, out: &mut HashMap<String, FirstSet>) -> DidChange {
+            let current_first =
+                get_current_first(rule.constructor_name.type_name(), &rule.fieldset, out);
+            add_all(current_first, out)
+        }
+    }
+
+    fn get_current_first(lhs: &str, rhs: &Fieldset, map: &HashMap<String, FirstSet>) -> FirstSet {
+        todo!()
+    }
+
+    fn add_all(new: FirstSet, out: &mut HashMap<String, FirstSet>) -> DidChange {
+        todo!()
+    }
+
+    #[derive(Debug, Clone, Copy)]
+    struct DidChange(bool);
+
+    impl std::ops::BitOrAssign for DidChange {
+        fn bitor_assign(&mut self, rhs: Self) {
+            self.0 |= rhs.0;
         }
     }
 }
