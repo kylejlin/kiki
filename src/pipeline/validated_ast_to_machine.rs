@@ -9,17 +9,19 @@ pub fn validated_ast_to_machine(file: &File) -> Result<Machine, KikiErr> {
 
 #[derive(Debug, Clone)]
 struct MachineBuilder<'a> {
-    file: &'a File,
+    rules: Vec<Rule<'a>>,
     machine: Machine,
     queue: VecDeque<StateIndex>,
 }
 
 impl MachineBuilder<'_> {
     fn new(file: &File) -> MachineBuilder {
+        let rules: Vec<Rule> = file.get_rules().collect();
+        let start_state = get_start_state(&rules);
         MachineBuilder {
-            file,
+            rules,
             machine: Machine {
-                states: vec![get_start_state(file)],
+                states: vec![start_state],
                 transitions: vec![],
             },
             queue: [StateIndex(0)].into_iter().collect(),
@@ -36,7 +38,7 @@ impl MachineBuilder<'_> {
     }
 
     fn get_closure(&self, items: &[Item]) -> State {
-        get_closure(items, self.file)
+        get_closure(items, &self.rules)
     }
 
     fn enqueue_state_if_needed(&mut self, state: State) -> StateIndex {
@@ -131,18 +133,18 @@ impl MachineBuilder<'_> {
     }
 }
 
-fn get_start_state(file: &File) -> State {
+fn get_start_state(rules: &[Rule]) -> State {
     get_closure(
         &[Item {
             rule: RuleIndex::Augmented,
             lookahead: Lookahead::Eof,
             dot: 0,
         }],
-        file,
+        rules,
     )
 }
 
-fn get_closure(_items: &[Item], _file: &File) -> State {
+fn get_closure(_items: &[Item], _rules: &[Rule]) -> State {
     todo!()
 }
 
