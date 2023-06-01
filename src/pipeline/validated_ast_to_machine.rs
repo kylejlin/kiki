@@ -379,41 +379,6 @@ impl ImmutContext<'_> {
     }
 }
 
-fn get_first_sets(rules: &[Rule]) -> HashMap<String, FirstSet> {
-    let mut out = get_a_map_of_each_nonterminal_to_the_empty_set(rules);
-
-    loop {
-        let mut changed = false;
-
-        todo!()
-        
-        if !changed {
-            return out;
-        }
-    }
-}
-
-fn get_a_map_of_each_nonterminal_to_the_empty_set(rules: &[Rule]) -> HashMap<String, FirstSet> {
-    let mut out = HashMap::new();
-    for name in get_nonterminal_names(rules) {
-        out.insert(
-            name.to_owned(),
-            FirstSet {
-                terminals: Oset::new(),
-                contains_epsilon: false,
-            },
-        );
-    }
-    out
-}
-
-fn get_nonterminal_names<'a>(rules: &'a [Rule<'a>]) -> Oset<&'a str> {
-    rules
-        .iter()
-        .map(|rule| rule.constructor_name.type_name())
-        .collect()
-}
-
 fn add_lookahead_if_needed(first: FirstSet, lookahead: &Lookahead) -> AugmentedFirstSet {
     if first.contains_epsilon {
         augment_with_lookahead(first, lookahead)
@@ -499,4 +464,55 @@ fn get_field_symbols_from_n_onwards_for_tuple(tuple: &TupleFieldset, n: usize) -
         .skip(n)
         .map(|field| field.symbol().clone().into())
         .collect()
+}
+
+use first_set_map::get_first_sets;
+mod first_set_map {
+    use super::*;
+
+    pub(super) fn get_first_sets(rules: &[Rule]) -> HashMap<String, FirstSet> {
+        let builder = FirstSetMapBuilder { rules };
+        builder.get_first_sets()
+    }
+
+    struct FirstSetMapBuilder<'a> {
+        rules: &'a [Rule<'a>],
+    }
+
+    impl FirstSetMapBuilder<'_> {
+        fn get_first_sets(self) -> HashMap<String, FirstSet> {
+            let mut out = self.get_a_map_of_each_nonterminal_to_the_empty_set();
+
+            loop {
+                let mut changed = false;
+
+                todo!();
+
+                if !changed {
+                    return out;
+                }
+            }
+        }
+
+        fn get_a_map_of_each_nonterminal_to_the_empty_set(&self) -> HashMap<String, FirstSet> {
+            let mut out = HashMap::new();
+            for name in self.get_nonterminal_names() {
+                out.insert(
+                    name.to_owned(),
+                    FirstSet {
+                        terminals: Oset::new(),
+                        contains_epsilon: false,
+                    },
+                );
+            }
+            out
+        }
+
+        fn get_nonterminal_names(&self) -> Oset<&str> {
+            self.rules
+                .iter()
+                .map(|rule| rule.constructor_name.type_name())
+                .collect()
+        }
+    }
 }
