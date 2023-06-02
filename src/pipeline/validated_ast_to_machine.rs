@@ -16,7 +16,9 @@ pub fn validated_ast_to_machine(file: &File) -> Machine {
 #[derive(Debug, Clone)]
 struct MachineBuilder<'a> {
     context: ImmutContext<'a>,
-    machine: Machine,
+    /// The first state is the start state.
+    states: Vec<State>,
+    transitions: Oset<Transition>,
     queue: VecDeque<StateIndex>,
 }
 
@@ -42,10 +44,8 @@ impl MachineBuilder<'_> {
         let start_state = context.get_start_state();
         MachineBuilder {
             context,
-            machine: Machine {
-                states: vec![start_state],
-                transitions: Oset::new(),
-            },
+            states: vec![start_state],
+            transitions: Oset::new(),
             queue: VecDeque::from([StateIndex(0)]),
         }
     }
@@ -68,7 +68,7 @@ impl MachineBuilder<'_> {
         while let Some(state_index) = self.queue.pop_front() {
             self.enqueue_transition_targets(state_index);
         }
-        self.machine
+        update_state_indices(self.states, self.transitions)
     }
 
     fn enqueue_state_if_needed(&mut self, state: State) -> StateIndex {
@@ -80,8 +80,7 @@ impl MachineBuilder<'_> {
     }
 
     fn get_index_of_mergable(&self, state: &State) -> Option<StateIndex> {
-        self.machine
-            .states
+        self.states
             .iter()
             .enumerate()
             .find_map(|(i, existing_state)| {
@@ -119,8 +118,8 @@ impl MachineBuilder<'_> {
     }
 
     fn enqueue_new_state(&mut self, state: State) -> StateIndex {
-        let index = StateIndex(self.machine.states.len());
-        self.machine.states.push(state);
+        let index = StateIndex(self.states.len());
+        self.states.push(state);
         self.queue.push_back(index);
         index
     }
@@ -153,7 +152,7 @@ impl MachineBuilder<'_> {
             to: target_index,
             symbol: symbol.clone(),
         };
-        self.machine.transitions.insert(transition);
+        self.transitions.insert(transition);
     }
 
     fn get_transition_target(&self, state_index: StateIndex, symbol: &Symbol) -> State {
@@ -192,11 +191,11 @@ impl MachineBuilder<'_> {
 
 impl MachineBuilder<'_> {
     fn state(&self, index: StateIndex) -> &State {
-        &self.machine.states[index.0]
+        &self.states[index.0]
     }
 
     fn state_mut(&mut self, index: StateIndex) -> &mut State {
-        &mut self.machine.states[index.0]
+        &mut self.states[index.0]
     }
 }
 
@@ -382,6 +381,11 @@ impl ImmutContext<'_> {
         let rule = &self.rules[rule_index];
         get_nth_field_symbol(dot, rule.fieldset)
     }
+}
+
+/// The first state must be the start state.
+fn update_state_indices(states: Vec<State>, transitions: Oset<Transition>) -> Machine {
+    todo!()
 }
 
 fn add_lookahead_if_needed(first: FirstSet, lookahead: &Lookahead) -> AugmentedFirstSet {

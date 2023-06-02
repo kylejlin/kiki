@@ -2,8 +2,8 @@ use crate::data::{ast::IdentOrTerminalIdent, validated_file::DollarlessTerminalN
 
 #[derive(Debug, Clone)]
 pub struct Machine {
-    /// The first state is the start state.
-    pub states: Vec<State>,
+    pub start: StateIndex,
+    pub states: Oset<State>,
     pub transitions: Oset<Transition>,
 }
 
