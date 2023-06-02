@@ -1,15 +1,20 @@
 use super::*;
 use crate::{
-    data::ast::{EnumDef, EnumVariant, Ident, TerminalIdent, TupleField},
+    data::ast::{
+        EnumDef, EnumVariant, Ident, IdentOrUnderscore, NamedField, TerminalIdent, TupleField,
+    },
     ByteIndex,
 };
 
 use pretty_assertions::assert_eq;
 
-// Since we can use `use` with struct namespaces,
-// we must use a `const`, as a hack.
-#[allow(non_upper_case_globals)]
-const remove_dollars: fn(&str) -> DollarlessTerminalName = DollarlessTerminalName::remove_dollars;
+#[test]
+fn balanced_parens() {
+    let file = balanced_parens_input();
+    let actual = validated_ast_to_machine(&file);
+    let expected = balanced_parens_expected_output();
+    assert_eq!(actual, expected);
+}
 
 fn balanced_parens_input() -> File {
     File {
@@ -182,12 +187,76 @@ fn balanced_parens_expected_output() -> Machine {
 }
 
 #[test]
-fn balanced_parens() {
-    let file = balanced_parens_input();
+fn balanced_parens_esoteric() {
+    let file = balanced_parens_esoteric_input();
     let actual = validated_ast_to_machine(&file);
-    let expected = balanced_parens_expected_output();
+    let expected = balanced_parens_esoteric_expected_output();
     assert_eq!(actual, expected);
 }
+
+fn balanced_parens_esoteric_input() -> File {
+    File {
+        start: "Expr".to_owned(),
+        terminal_enum: TerminalEnum {
+            name: "Token".to_string(),
+            variants: vec![
+                TerminalVariant {
+                    dollarless_name: DollarlessTerminalName::remove_dollars("LParen"),
+                    type_: "()".to_string(),
+                },
+                TerminalVariant {
+                    dollarless_name: DollarlessTerminalName::remove_dollars("RParen"),
+                    type_: "()".to_string(),
+                },
+            ],
+        },
+        nonterminals: vec![Nonterminal::Enum(EnumDef {
+            name: positionless_ident("Expr"),
+            variants: vec![
+                EnumVariant {
+                    name: positionless_ident("Empty"),
+                    fieldset: Fieldset::Empty,
+                },
+                EnumVariant {
+                    name: positionless_ident("Wrap"),
+                    fieldset: Fieldset::Named(NamedFieldset {
+                        fields: vec![
+                            NamedField {
+                                name: IdentOrUnderscore::Underscore,
+                                symbol: IdentOrTerminalIdent::Terminal(
+                                    positionless_terminal_ident(
+                                        &DollarlessTerminalName::remove_dollars("LParen"),
+                                    ),
+                                ),
+                            },
+                            NamedField {
+                                name: IdentOrUnderscore::Ident(positionless_ident("inner")),
+                                symbol: IdentOrTerminalIdent::Ident(positionless_ident("Expr")),
+                            },
+                            NamedField {
+                                name: IdentOrUnderscore::Ident(positionless_ident("right")),
+                                symbol: IdentOrTerminalIdent::Terminal(
+                                    positionless_terminal_ident(
+                                        &DollarlessTerminalName::remove_dollars("RParen"),
+                                    ),
+                                ),
+                            },
+                        ],
+                    }),
+                },
+            ],
+        })],
+    }
+}
+
+fn balanced_parens_esoteric_expected_output() -> Machine {
+    balanced_parens_expected_output()
+}
+
+// Since we can use `use` with struct namespaces,
+// we must use a `const`, as a hack.
+#[allow(non_upper_case_globals)]
+const remove_dollars: fn(&str) -> DollarlessTerminalName = DollarlessTerminalName::remove_dollars;
 
 fn positionless_ident(s: &str) -> Ident {
     Ident {
