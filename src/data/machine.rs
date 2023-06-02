@@ -1,6 +1,6 @@
 use crate::data::{ast::IdentOrTerminalIdent, validated_file::DollarlessTerminalName, Oset};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Machine {
     pub start: StateIndex,
     pub states: Oset<State>,
