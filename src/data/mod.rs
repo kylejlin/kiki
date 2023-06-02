@@ -1,5 +1,6 @@
 pub mod ast;
 pub mod cst;
+pub mod index_updater;
 pub mod machine;
 pub mod oset;
 pub mod table;
@@ -26,6 +27,7 @@ pub struct RustSrc(pub String);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ByteIndex(pub usize);
 
+pub use index_updater::IndexUpdater;
 pub use oset::Oset;
 
 use validated_file::DollarlessTerminalName;

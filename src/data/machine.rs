@@ -7,7 +7,7 @@ pub struct Machine {
     pub transitions: Oset<Transition>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct State {
     pub items: Oset<Item>,
 }

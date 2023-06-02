@@ -2,7 +2,7 @@ use crate::data::{
     ast::{Fieldset, IdentOrTerminalIdent, NamedFieldset, TupleFieldset},
     machine::*,
     validated_file::*,
-    Oset,
+    IndexUpdater, Oset,
 };
 use std::collections::HashMap;
 use std::collections::VecDeque;
@@ -385,7 +385,29 @@ impl ImmutContext<'_> {
 
 /// The first state must be the start state.
 fn update_state_indices(states: Vec<State>, transitions: Oset<Transition>) -> Machine {
-    todo!()
+    let (states, updater) = sort_and_get_index_updater(states);
+    let transitions = update_transitions(transitions, &updater);
+    let start = StateIndex(updater.update(0));
+    Machine {
+        start,
+        states: states.into_iter().collect(),
+        transitions,
+    }
+}
+
+fn update_transitions(transitions: Oset<Transition>, updater: &IndexUpdater) -> Oset<Transition> {
+    transitions
+        .into_iter()
+        .map(|transition| update_transition(transition, updater))
+        .collect()
+}
+
+fn update_transition(transition: Transition, updater: &IndexUpdater) -> Transition {
+    Transition {
+        from: StateIndex(updater.update(transition.from.0)),
+        to: StateIndex(updater.update(transition.to.0)),
+        symbol: transition.symbol,
+    }
 }
 
 fn add_lookahead_if_needed(first: FirstSet, lookahead: &Lookahead) -> AugmentedFirstSet {
@@ -476,6 +498,8 @@ fn get_field_symbols_from_n_onwards_for_tuple(tuple: &TupleFieldset, n: usize) -
 }
 
 use first_set_map::get_first_sets;
+
+use super::sort_and_get_index_updater::sort_and_get_index_updater;
 mod first_set_map {
     use super::*;
 
