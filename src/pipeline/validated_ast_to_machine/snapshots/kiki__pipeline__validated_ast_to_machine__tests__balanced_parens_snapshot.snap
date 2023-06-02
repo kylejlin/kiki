@@ -1,0 +1,208 @@
+---
+source: src/pipeline/validated_ast_to_machine/tests.rs
+expression: machine
+---
+Machine {
+    start: StateIndex(
+        1,
+    ),
+    states: Oset {
+        raw: [
+            State {
+                items: Oset {
+                    raw: [
+                        Item {
+                            rule_index: Original(
+                                0,
+                            ),
+                            lookahead: Terminal(
+                                DollarlessTerminalName(
+                                    "RParen",
+                                ),
+                            ),
+                            dot: 0,
+                        },
+                        Item {
+                            rule_index: Original(
+                                1,
+                            ),
+                            lookahead: Terminal(
+                                DollarlessTerminalName(
+                                    "RParen",
+                                ),
+                            ),
+                            dot: 0,
+                        },
+                        Item {
+                            rule_index: Original(
+                                1,
+                            ),
+                            lookahead: Terminal(
+                                DollarlessTerminalName(
+                                    "RParen",
+                                ),
+                            ),
+                            dot: 1,
+                        },
+                        Item {
+                            rule_index: Original(
+                                1,
+                            ),
+                            lookahead: Eof,
+                            dot: 1,
+                        },
+                    ],
+                },
+            },
+            State {
+                items: Oset {
+                    raw: [
+                        Item {
+                            rule_index: Original(
+                                0,
+                            ),
+                            lookahead: Eof,
+                            dot: 0,
+                        },
+                        Item {
+                            rule_index: Original(
+                                1,
+                            ),
+                            lookahead: Eof,
+                            dot: 0,
+                        },
+                        Item {
+                            rule_index: Augmented,
+                            lookahead: Eof,
+                            dot: 0,
+                        },
+                    ],
+                },
+            },
+            State {
+                items: Oset {
+                    raw: [
+                        Item {
+                            rule_index: Original(
+                                1,
+                            ),
+                            lookahead: Terminal(
+                                DollarlessTerminalName(
+                                    "RParen",
+                                ),
+                            ),
+                            dot: 2,
+                        },
+                        Item {
+                            rule_index: Original(
+                                1,
+                            ),
+                            lookahead: Eof,
+                            dot: 2,
+                        },
+                    ],
+                },
+            },
+            State {
+                items: Oset {
+                    raw: [
+                        Item {
+                            rule_index: Original(
+                                1,
+                            ),
+                            lookahead: Terminal(
+                                DollarlessTerminalName(
+                                    "RParen",
+                                ),
+                            ),
+                            dot: 3,
+                        },
+                        Item {
+                            rule_index: Original(
+                                1,
+                            ),
+                            lookahead: Eof,
+                            dot: 3,
+                        },
+                    ],
+                },
+            },
+            State {
+                items: Oset {
+                    raw: [
+                        Item {
+                            rule_index: Augmented,
+                            lookahead: Eof,
+                            dot: 1,
+                        },
+                    ],
+                },
+            },
+        ],
+    },
+    transitions: Oset {
+        raw: [
+            Transition {
+                from: StateIndex(
+                    0,
+                ),
+                to: StateIndex(
+                    0,
+                ),
+                symbol: Terminal(
+                    DollarlessTerminalName(
+                        "LParen",
+                    ),
+                ),
+            },
+            Transition {
+                from: StateIndex(
+                    0,
+                ),
+                to: StateIndex(
+                    2,
+                ),
+                symbol: Nonterminal(
+                    "Expr",
+                ),
+            },
+            Transition {
+                from: StateIndex(
+                    1,
+                ),
+                to: StateIndex(
+                    0,
+                ),
+                symbol: Terminal(
+                    DollarlessTerminalName(
+                        "LParen",
+                    ),
+                ),
+            },
+            Transition {
+                from: StateIndex(
+                    1,
+                ),
+                to: StateIndex(
+                    4,
+                ),
+                symbol: Nonterminal(
+                    "Expr",
+                ),
+            },
+            Transition {
+                from: StateIndex(
+                    2,
+                ),
+                to: StateIndex(
+                    3,
+                ),
+                symbol: Terminal(
+                    DollarlessTerminalName(
+                        "RParen",
+                    ),
+                ),
+            },
+        ],
+    },
+}

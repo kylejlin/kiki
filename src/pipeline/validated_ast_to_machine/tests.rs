@@ -4,6 +4,8 @@ use crate::{
     ByteIndex,
 };
 
+use pretty_assertions::assert_eq;
+
 // Since we can use `use` with struct namespaces,
 // we must use a `const`, as a hack.
 #[allow(non_upper_case_globals)]
@@ -145,7 +147,7 @@ fn balanced_parens_manual() {
                     },
                     Item {
                         rule_index: Original(0),
-                        lookahead: Eof,
+                        lookahead: Terminal(remove_dollars("RParen")),
                         dot: 0,
                     },
                     Item {
