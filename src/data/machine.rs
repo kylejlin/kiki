@@ -1,4 +1,4 @@
-use crate::data::{ast::IdentOrTerminalIdent, validated_file::DollarlessTerminalName, Oset};
+use crate::data::{validated_file::*, Oset};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Machine {

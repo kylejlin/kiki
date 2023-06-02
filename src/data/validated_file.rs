@@ -1,4 +1,3 @@
-use crate::data::ast::{EnumDef, Fieldset, StructDef};
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
@@ -140,8 +139,8 @@ impl ToString for DollarlessTerminalName {
 
 #[derive(Debug, Clone)]
 pub enum Nonterminal {
-    Struct(StructDef),
-    Enum(EnumDef),
+    Struct(Struct),
+    Enum(Enum),
 }
 
 impl Nonterminal {
@@ -152,3 +151,9 @@ impl Nonterminal {
         }
     }
 }
+
+pub use crate::data::ast::{
+    ComplexType, Enum, EnumVariant, Fieldset, NamedField, NamedFieldset, Struct, TupleField,
+    TupleFieldset, Type,
+};
+pub use crate::data::ast::{Ident, IdentOrTerminalIdent, IdentOrUnderscore, TerminalIdent, Token};

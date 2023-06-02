@@ -1,9 +1,4 @@
-use crate::data::{
-    ast::*,
-    table::*,
-    validated_file::{self as validated, ConstructorName, DollarlessTerminalName},
-    RustSrc,
-};
+use crate::data::{table::*, validated_file::*, RustSrc};
 use std::collections::{HashMap, HashSet};
 
 const NONTERMINAL_DERIVE_CLAUSE: &str = "#[derive(Clone, Debug)]";
@@ -14,7 +9,7 @@ const ACTION_REDUCE_VARIANT_NAME: &str = "Reduce";
 const ACTION_ACCEPT_VARIANT_NAME: &str = "Accept";
 const ACTION_ERR_VARIANT_NAME: &str = "Err";
 
-pub fn table_to_rust(table: &Table, file: &validated::File) -> RustSrc {
+pub fn table_to_rust(table: &Table, file: &File) -> RustSrc {
     let builder = SrcBuilder::new(table, file);
     builder.file_src()
 }
@@ -22,7 +17,7 @@ pub fn table_to_rust(table: &Table, file: &validated::File) -> RustSrc {
 #[derive(Debug)]
 struct SrcBuilder<'a> {
     table: &'a Table,
-    file: &'a validated::File,
+    file: &'a File,
     start_type_name: String,
     terminal_enum_name: String,
     eof_variant_name: String,
@@ -40,7 +35,7 @@ struct SrcBuilder<'a> {
 }
 
 impl SrcBuilder<'_> {
-    fn new<'a>(table: &'a Table, file: &'a validated::File) -> SrcBuilder<'a> {
+    fn new<'a>(table: &'a Table, file: &'a File) -> SrcBuilder<'a> {
         let used_identifiers = &mut file.get_defined_identifiers();
         let start_type_name = file.start.to_owned();
         let terminal_enum_name = file.terminal_enum.name.to_owned();
@@ -309,12 +304,12 @@ impl {node_enum_name} {{
         self.file.nonterminals
             .iter()
             .map(|nonterminal| match nonterminal {
-                validated::Nonterminal::Struct(s) => {
+                Nonterminal::Struct(s) => {
                     let nonterminal_name = &s.name.name;
                     let fieldset = self.get_fieldset_src_with_semicolon_if_unnamed(&s.fieldset);
                     format!("{NONTERMINAL_DERIVE_CLAUSE}\npub struct {nonterminal_name}{fieldset}")
                 },
-                validated::Nonterminal::Enum(e) => {
+                Nonterminal::Enum(e) => {
                     let nonterminal_name = &e.name.name;
                     let variants_indent_1 = e.variants
                         .iter()
@@ -471,8 +466,8 @@ impl {node_enum_name} {{
             .nonterminals
             .iter()
             .map(|nonterminal| match nonterminal {
-                validated::Nonterminal::Struct(_) => 1,
-                validated::Nonterminal::Enum(e) => e.variants.len(),
+                Nonterminal::Struct(_) => 1,
+                Nonterminal::Enum(e) => e.variants.len(),
             })
             .sum()
     }
@@ -484,7 +479,7 @@ impl {node_enum_name} {{
             .map(
                 |(
                     rule_index,
-                    validated::Rule {
+                    Rule {
                         constructor_name,
                         fieldset,
                     },
@@ -854,7 +849,7 @@ fn pascal_to_snake_case(s: &str) -> String {
 mod tests {
     use super::*;
 
-    use crate::data::{validated_file::TerminalVariant, ByteIndex};
+    use crate::data::ByteIndex;
 
     #[test]
     fn balanced_parens() {
@@ -884,9 +879,9 @@ mod tests {
             actions,
             gotos,
         };
-        let file = validated::File {
+        let file = File {
             start: "Expr".to_owned(),
-            terminal_enum: validated::TerminalEnum {
+            terminal_enum: TerminalEnum {
                 name: "Token".to_string(),
                 variants: vec![
                     TerminalVariant {
@@ -899,7 +894,7 @@ mod tests {
                     },
                 ],
             },
-            nonterminals: vec![validated::Nonterminal::Enum(EnumDef {
+            nonterminals: vec![Nonterminal::Enum(Enum {
                 name: positionless_ident("Expr"),
                 variants: vec![
                     EnumVariant {
@@ -962,9 +957,9 @@ mod tests {
             actions,
             gotos,
         };
-        let file = validated::File {
+        let file = File {
             start: "Expr".to_owned(),
-            terminal_enum: validated::TerminalEnum {
+            terminal_enum: TerminalEnum {
                 name: "Token".to_string(),
                 variants: vec![
                     TerminalVariant {
@@ -977,7 +972,7 @@ mod tests {
                     },
                 ],
             },
-            nonterminals: vec![validated::Nonterminal::Enum(EnumDef {
+            nonterminals: vec![Nonterminal::Enum(Enum {
                 name: positionless_ident("Expr"),
                 variants: vec![
                     EnumVariant {

@@ -11,7 +11,7 @@ pub fn get_start_symbol_name(
         .items
         .iter()
         .filter_map(|item| match item {
-            Item::Start(start) => Some(start),
+            FileItem::Start(start) => Some(start),
             _ => None,
         })
         .collect();

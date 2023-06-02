@@ -16,34 +16,34 @@ pub File: File = {
 
 pub OptItems: OptItems = {
     <Epsilon> => OptItems::Nil,
-    <items:OptItems> <item:Item> => OptItems::Cons(Box::new(items), item),
+    <items:OptItems> <item:FileItem> => OptItems::Cons(Box::new(items), item),
 };
 
-pub Item: Item = {
-    <start:Start> => Item::Start(start),
-    <struct_:Struct> => Item::Struct(struct_),
-    <enum_:Enum> => Item::Enum(enum_),
-    <terminal:Terminal> => Item::Terminal(terminal),
+pub FileItem: FileItem = {
+    <start:Start> => FileItem::Start(start),
+    <struct_:Struct> => FileItem::Struct(struct_),
+    <enum_:Enum> => FileItem::Enum(enum_),
+    <terminal:Terminal> => FileItem::Terminal(terminal),
 };
 
 pub Start: Ident = {
     <_drop:StartKw> <name:Ident> => name,
 };
 
-pub Struct: StructDef = {
-    <_drop:StructKw> <name:Ident> <fieldset:Fieldset> => StructDef { name, fieldset },
+pub Struct: Struct = {
+    <_drop:StructKw> <name:Ident> <fieldset:Fieldset> => Struct { name, fieldset },
 };
 
-pub Enum: EnumDef = {
-    <_drop:EnumKw> <name:Ident> <_drop2:LCurly> <variants:OptEnumVariants> <_drop3:RCurly> => EnumDef {
+pub Enum: Enum = {
+    <_drop:EnumKw> <name:Ident> <_drop2:LCurly> <variants:OptEnumVariants> <_drop3:RCurly> => Enum {
         name,
         variants,
     },
 };
 
-pub Terminal: TerminalDef = {
-    <_drop:TerminalKw> <name:Ident> <_drop2:LCurly> <variants:OptTerminalVariants> <_drop3:RCurly> => {
-        TerminalDef { name, variants }
+pub Terminal: TerminalEnum = {
+    <_drop:TerminalKw> <name:Ident> <_drop2:LCurly> <variants:OptTerminalEnumVariants> <_drop3:RCurly> => {
+        TerminalEnum { name, variants }
     },
 };
 
@@ -81,13 +81,13 @@ pub EnumVariant: EnumVariant = {
     <name:Ident> <fieldset:Fieldset> => EnumVariant { name, fieldset },
 };
 
-pub OptTerminalVariants: OptTerminalVariants = {
-    <Epsilon> => OptTerminalVariants::Nil,
-    <left:OptTerminalVariants> <right:TerminalVariant> => OptTerminalVariants::Cons(Box::new(left), right),
+pub OptTerminalEnumVariants: OptTerminalEnumVariants = {
+    <Epsilon> => OptTerminalEnumVariants::Nil,
+    <left:OptTerminalEnumVariants> <right:TerminalEnumVariant> => OptTerminalEnumVariants::Cons(Box::new(left), right),
 };
 
-pub TerminalVariant: TerminalVariant = {
-    <name:TerminalIdent> <_drop:Colon> <type_:Type> => TerminalVariant { name, type_ },
+pub TerminalEnumVariant: TerminalEnumVariant = {
+    <name:TerminalIdent> <_drop:Colon> <type_:Type> => TerminalEnumVariant { name, type_ },
 };
 
 pub Type: Type = {

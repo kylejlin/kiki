@@ -33,14 +33,14 @@ pub fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, Kiki
 
 #[derive(Debug, Clone, Copy)]
 enum UnvalidatedNonterminal<'a> {
-    Struct(&'a StructDef),
-    Enum(&'a EnumDef),
+    Struct(&'a Struct),
+    Enum(&'a Enum),
 }
 
-fn get_unvalidated_nonterminal(item: &Item) -> Option<UnvalidatedNonterminal<'_>> {
+fn get_unvalidated_nonterminal(item: &FileItem) -> Option<UnvalidatedNonterminal<'_>> {
     match item {
-        Item::Struct(struct_def) => Some(UnvalidatedNonterminal::Struct(struct_def)),
-        Item::Enum(enum_def) => Some(UnvalidatedNonterminal::Enum(enum_def)),
+        FileItem::Struct(struct_def) => Some(UnvalidatedNonterminal::Struct(struct_def)),
+        FileItem::Enum(enum_def) => Some(UnvalidatedNonterminal::Enum(enum_def)),
         _ => None,
     }
 }
@@ -56,7 +56,7 @@ fn validate_nonterminal(
 }
 
 fn validate_enum(
-    enum_def: &EnumDef,
+    enum_def: &Enum,
     defined_symbols: &DefinedSymbols,
 ) -> Result<validated::Nonterminal, KikiErr> {
     validate_ident_uppercase_start(&enum_def.name)?;
@@ -98,7 +98,7 @@ fn assert_variants_are_unique(variants: &[EnumVariant]) -> Result<(), KikiErr> {
 }
 
 fn validate_struct(
-    struct_def: &StructDef,
+    struct_def: &Struct,
     defined_symbols: &DefinedSymbols,
 ) -> Result<validated::Nonterminal, KikiErr> {
     validate_ident_uppercase_start(&struct_def.name)?;

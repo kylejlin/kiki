@@ -22,12 +22,12 @@ pub fn get_terminal_enum(file: &File) -> Result<validated::TerminalEnum, KikiErr
 ///
 /// If it finds exactly one `terminal` statement, it returns
 /// **without** any further validation.
-pub fn get_unvalidated_terminal_enum(file: &File) -> Result<&TerminalDef, KikiErr> {
-    let terminals: Vec<&TerminalDef> = file
+pub fn get_unvalidated_terminal_enum(file: &File) -> Result<&TerminalEnum, KikiErr> {
+    let terminals: Vec<&TerminalEnum> = file
         .items
         .iter()
         .filter_map(|item| match item {
-            Item::Terminal(t) => Some(t),
+            FileItem::Terminal(t) => Some(t),
             _ => None,
         })
         .collect();
@@ -44,14 +44,14 @@ pub fn get_unvalidated_terminal_enum(file: &File) -> Result<&TerminalDef, KikiEr
     Ok(&terminals[0])
 }
 
-fn validate_terminal_def(def: &TerminalDef) -> Result<validated::TerminalEnum, KikiErr> {
+fn validate_terminal_def(def: &TerminalEnum) -> Result<validated::TerminalEnum, KikiErr> {
     let name = validate_ident_uppercase_start(&def.name)?.to_string();
     let variants = validate_terminal_variants(def)?;
     Ok(validated::TerminalEnum { name, variants })
 }
 
 fn validate_terminal_variants(
-    def: &TerminalDef,
+    def: &TerminalEnum,
 ) -> Result<Vec<validated::TerminalVariant>, KikiErr> {
     let variants = def
         .variants
@@ -62,7 +62,7 @@ fn validate_terminal_variants(
 }
 
 fn validate_variant_capitalization(
-    variant: &TerminalVariant,
+    variant: &TerminalEnumVariant,
 ) -> Result<validated::TerminalVariant, KikiErr> {
     let validated_name = validate_terminal_ident_uppercase_start(&variant.name)?;
     let dollarless_name = DollarlessTerminalName::remove_dollars(validated_name);

@@ -8,12 +8,12 @@ impl From<cst::File> for ast::File {
     }
 }
 
-impl From<cst::OptItems> for Vec<ast::Item> {
+impl From<cst::OptItems> for Vec<ast::FileItem> {
     fn from(cst: cst::OptItems) -> Self {
         match cst {
             cst::OptItems::Nil => vec![],
             cst::OptItems::Cons(left, right) => {
-                let mut items: Vec<ast::Item> = (*left).into();
+                let mut items: Vec<ast::FileItem> = (*left).into();
                 items.push(right.into());
                 items
             }
@@ -21,38 +21,38 @@ impl From<cst::OptItems> for Vec<ast::Item> {
     }
 }
 
-impl From<cst::Item> for ast::Item {
-    fn from(cst: cst::Item) -> Self {
+impl From<cst::FileItem> for ast::FileItem {
+    fn from(cst: cst::FileItem) -> Self {
         match cst {
-            cst::Item::Start(ident) => ast::Item::Start(ident.into()),
-            cst::Item::Struct(struct_) => ast::Item::Struct(struct_.into()),
-            cst::Item::Enum(enum_) => ast::Item::Enum(enum_.into()),
-            cst::Item::Terminal(terminal) => ast::Item::Terminal(terminal.into()),
+            cst::FileItem::Start(ident) => ast::FileItem::Start(ident.into()),
+            cst::FileItem::Struct(struct_) => ast::FileItem::Struct(struct_.into()),
+            cst::FileItem::Enum(enum_) => ast::FileItem::Enum(enum_.into()),
+            cst::FileItem::Terminal(terminal) => ast::FileItem::Terminal(terminal.into()),
         }
     }
 }
 
-impl From<cst::StructDef> for ast::StructDef {
-    fn from(cst: cst::StructDef) -> Self {
-        ast::StructDef {
+impl From<cst::Struct> for ast::Struct {
+    fn from(cst: cst::Struct) -> Self {
+        ast::Struct {
             name: cst.name.into(),
             fieldset: cst.fieldset.into(),
         }
     }
 }
 
-impl From<cst::EnumDef> for ast::EnumDef {
-    fn from(cst: cst::EnumDef) -> Self {
-        ast::EnumDef {
+impl From<cst::Enum> for ast::Enum {
+    fn from(cst: cst::Enum) -> Self {
+        ast::Enum {
             name: cst.name.into(),
             variants: cst.variants.into(),
         }
     }
 }
 
-impl From<cst::TerminalDef> for ast::TerminalDef {
-    fn from(cst: cst::TerminalDef) -> Self {
-        ast::TerminalDef {
+impl From<cst::TerminalEnum> for ast::TerminalEnum {
+    fn from(cst: cst::TerminalEnum) -> Self {
+        ast::TerminalEnum {
             name: cst.name.into(),
             variants: cst.variants.into(),
         }
@@ -151,12 +151,12 @@ impl From<cst::EnumVariant> for ast::EnumVariant {
     }
 }
 
-impl From<cst::OptTerminalVariants> for Vec<ast::TerminalVariant> {
-    fn from(cst: cst::OptTerminalVariants) -> Self {
+impl From<cst::OptTerminalEnumVariants> for Vec<ast::TerminalEnumVariant> {
+    fn from(cst: cst::OptTerminalEnumVariants) -> Self {
         match cst {
-            cst::OptTerminalVariants::Nil => vec![],
-            cst::OptTerminalVariants::Cons(left, right) => {
-                let mut variants: Vec<ast::TerminalVariant> = (*left).into();
+            cst::OptTerminalEnumVariants::Nil => vec![],
+            cst::OptTerminalEnumVariants::Cons(left, right) => {
+                let mut variants: Vec<ast::TerminalEnumVariant> = (*left).into();
                 variants.push(right.into());
                 variants
             }
@@ -164,9 +164,9 @@ impl From<cst::OptTerminalVariants> for Vec<ast::TerminalVariant> {
     }
 }
 
-impl From<cst::TerminalVariant> for ast::TerminalVariant {
-    fn from(cst: cst::TerminalVariant) -> Self {
-        ast::TerminalVariant {
+impl From<cst::TerminalEnumVariant> for ast::TerminalEnumVariant {
+    fn from(cst: cst::TerminalEnumVariant) -> Self {
+        ast::TerminalEnumVariant {
             name: cst.name.into(),
             type_: cst.type_.into(),
         }

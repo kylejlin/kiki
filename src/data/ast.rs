@@ -1,32 +1,32 @@
 #[derive(Clone, Debug)]
 pub struct File {
-    pub items: Vec<Item>,
+    pub items: Vec<FileItem>,
 }
 
 #[derive(Clone, Debug)]
-pub enum Item {
+pub enum FileItem {
     Start(Ident),
-    Struct(StructDef),
-    Enum(EnumDef),
-    Terminal(TerminalDef),
+    Struct(Struct),
+    Enum(Enum),
+    Terminal(TerminalEnum),
 }
 
 #[derive(Clone, Debug)]
-pub struct StructDef {
+pub struct Struct {
     pub name: Ident,
     pub fieldset: Fieldset,
 }
 
 #[derive(Clone, Debug)]
-pub struct EnumDef {
+pub struct Enum {
     pub name: Ident,
     pub variants: Vec<EnumVariant>,
 }
 
 #[derive(Clone, Debug)]
-pub struct TerminalDef {
+pub struct TerminalEnum {
     pub name: Ident,
-    pub variants: Vec<TerminalVariant>,
+    pub variants: Vec<TerminalEnumVariant>,
 }
 
 #[derive(Clone, Debug)]
@@ -74,7 +74,7 @@ pub struct EnumVariant {
 }
 
 #[derive(Clone, Debug)]
-pub struct TerminalVariant {
+pub struct TerminalEnumVariant {
     pub name: TerminalIdent,
     pub type_: Type,
 }

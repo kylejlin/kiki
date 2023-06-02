@@ -8,33 +8,33 @@ pub struct File {
 #[derive(Clone, Debug)]
 pub enum OptItems {
     Nil,
-    Cons(Box<OptItems>, Item),
+    Cons(Box<OptItems>, FileItem),
 }
 
 #[derive(Clone, Debug)]
-pub enum Item {
+pub enum FileItem {
     Start(Ident),
-    Struct(StructDef),
-    Enum(EnumDef),
-    Terminal(TerminalDef),
+    Struct(Struct),
+    Enum(Enum),
+    Terminal(TerminalEnum),
 }
 
 #[derive(Clone, Debug)]
-pub struct StructDef {
+pub struct Struct {
     pub name: Ident,
     pub fieldset: Fieldset,
 }
 
 #[derive(Clone, Debug)]
-pub struct EnumDef {
+pub struct Enum {
     pub name: Ident,
     pub variants: OptEnumVariants,
 }
 
 #[derive(Clone, Debug)]
-pub struct TerminalDef {
+pub struct TerminalEnum {
     pub name: Ident,
-    pub variants: OptTerminalVariants,
+    pub variants: OptTerminalEnumVariants,
 }
 
 #[derive(Clone, Debug)]
@@ -91,13 +91,13 @@ pub struct EnumVariant {
 }
 
 #[derive(Clone, Debug)]
-pub enum OptTerminalVariants {
+pub enum OptTerminalEnumVariants {
     Nil,
-    Cons(Box<OptTerminalVariants>, TerminalVariant),
+    Cons(Box<OptTerminalEnumVariants>, TerminalEnumVariant),
 }
 
 #[derive(Clone, Debug)]
-pub struct TerminalVariant {
+pub struct TerminalEnumVariant {
     pub name: TerminalIdent,
     pub type_: Type,
 }

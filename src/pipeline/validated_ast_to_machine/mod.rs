@@ -1,9 +1,4 @@
-use crate::data::{
-    ast::{Fieldset, IdentOrTerminalIdent, NamedFieldset, TupleFieldset},
-    machine::*,
-    validated_file::*,
-    IndexUpdater, Oset,
-};
+use crate::data::{machine::*, validated_file::*, IndexUpdater, Oset};
 use crate::pipeline::sort_and_get_index_updater::sort_and_get_index_updater;
 use std::collections::HashMap;
 use std::collections::VecDeque;

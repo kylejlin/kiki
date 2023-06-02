@@ -1,10 +1,5 @@
 use super::*;
-use crate::{
-    data::ast::{
-        EnumDef, EnumVariant, Ident, IdentOrUnderscore, NamedField, TerminalIdent, TupleField,
-    },
-    ByteIndex,
-};
+use crate::ByteIndex;
 
 use pretty_assertions::assert_eq;
 
@@ -32,7 +27,7 @@ fn balanced_parens_input() -> File {
                 },
             ],
         },
-        nonterminals: vec![Nonterminal::Enum(EnumDef {
+        nonterminals: vec![Nonterminal::Enum(Enum {
             name: positionless_ident("Expr"),
             variants: vec![
                 EnumVariant {
@@ -210,7 +205,7 @@ fn balanced_parens_esoteric_input() -> File {
                 },
             ],
         },
-        nonterminals: vec![Nonterminal::Enum(EnumDef {
+        nonterminals: vec![Nonterminal::Enum(Enum {
             name: positionless_ident("Expr"),
             variants: vec![
                 EnumVariant {

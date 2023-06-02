@@ -64,13 +64,13 @@ fn define_nonterminals(seen: &mut HashMap<String, ByteIndex>, file: &File) -> Re
 
 fn define_nonterminal_if_possible(
     seen: &mut HashMap<String, ByteIndex>,
-    item: &Item,
+    item: &FileItem,
 ) -> Result<(), KikiErr> {
     match item {
-        Item::Start(_) => Ok(()),
-        Item::Struct(struct_def) => define_nonterminal(seen, &struct_def.name),
-        Item::Enum(enum_def) => define_nonterminal(seen, &enum_def.name),
-        Item::Terminal(_) => Ok(()),
+        FileItem::Start(_) => Ok(()),
+        FileItem::Struct(struct_def) => define_nonterminal(seen, &struct_def.name),
+        FileItem::Enum(enum_def) => define_nonterminal(seen, &enum_def.name),
+        FileItem::Terminal(_) => Ok(()),
     }
 }
 
@@ -90,7 +90,7 @@ fn define_nonterminal(seen: &mut HashMap<String, ByteIndex>, ident: &Ident) -> R
 
 fn define_terminal_variants(
     seen: &mut HashMap<String, ByteIndex>,
-    terminal_enum: &TerminalDef,
+    terminal_enum: &TerminalEnum,
 ) -> Result<(), KikiErr> {
     for variant in &terminal_enum.variants {
         define_terminal_variant(seen, variant)?;
@@ -100,7 +100,7 @@ fn define_terminal_variants(
 
 fn define_terminal_variant(
     seen: &mut HashMap<String, ByteIndex>,
-    variant: &TerminalVariant,
+    variant: &TerminalEnumVariant,
 ) -> Result<(), KikiErr> {
     let dollarless_name = DollarlessTerminalName::remove_dollars(&variant.name.dollared_name);
     let dollarless_position = ByteIndex(variant.name.position.0 + "$".len());
