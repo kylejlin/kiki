@@ -11,9 +11,8 @@ use pretty_assertions::assert_eq;
 #[allow(non_upper_case_globals)]
 const remove_dollars: fn(&str) -> DollarlessTerminalName = DollarlessTerminalName::remove_dollars;
 
-#[test]
-fn balanced_parens_snapshot() {
-    let file = File {
+fn balanced_parens_input() -> File {
+    File {
         start: "Expr".to_owned(),
         terminal_enum: TerminalEnum {
             name: "Token".to_string(),
@@ -53,60 +52,13 @@ fn balanced_parens_snapshot() {
                 },
             ],
         })],
-    };
-
-    let machine = validated_ast_to_machine(&file);
-    insta::assert_debug_snapshot!(machine);
+    }
 }
 
-#[test]
-fn balanced_parens_manual() {
-    let file = File {
-        start: "Expr".to_owned(),
-        terminal_enum: TerminalEnum {
-            name: "Token".to_string(),
-            variants: vec![
-                TerminalVariant {
-                    dollarless_name: remove_dollars("LParen"),
-                    type_: "()".to_string(),
-                },
-                TerminalVariant {
-                    dollarless_name: remove_dollars("RParen"),
-                    type_: "()".to_string(),
-                },
-            ],
-        },
-        nonterminals: vec![Nonterminal::Enum(EnumDef {
-            name: positionless_ident("Expr"),
-            variants: vec![
-                EnumVariant {
-                    name: positionless_ident("Empty"),
-                    fieldset: Fieldset::Empty,
-                },
-                EnumVariant {
-                    name: positionless_ident("Wrap"),
-                    fieldset: Fieldset::Tuple(TupleFieldset {
-                        fields: vec![
-                            TupleField::Used(IdentOrTerminalIdent::Terminal(
-                                positionless_terminal_ident(&remove_dollars("LParen")),
-                            )),
-                            TupleField::Used(IdentOrTerminalIdent::Ident(positionless_ident(
-                                "Expr",
-                            ))),
-                            TupleField::Used(IdentOrTerminalIdent::Terminal(
-                                positionless_terminal_ident(&remove_dollars("RParen")),
-                            )),
-                        ],
-                    }),
-                },
-            ],
-        })],
-    };
-
-    let actual = validated_ast_to_machine(&file);
-
+fn balanced_parens_expected_output() -> Machine {
     use crate::data::machine::{Lookahead::*, RuleIndex::*};
-    let expected = update_state_indices(
+
+    update_state_indices(
         vec![
             State {
                 items: [
@@ -226,8 +178,14 @@ fn balanced_parens_manual() {
         ]
         .into_iter()
         .collect(),
-    );
+    )
+}
 
+#[test]
+fn balanced_parens() {
+    let file = balanced_parens_input();
+    let actual = validated_ast_to_machine(&file);
+    let expected = balanced_parens_expected_output();
     assert_eq!(actual, expected);
 }
 
