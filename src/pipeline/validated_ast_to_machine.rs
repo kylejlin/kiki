@@ -2,13 +2,13 @@ use crate::data::{
     ast::{Fieldset, IdentOrTerminalIdent, NamedFieldset, TupleFieldset},
     machine::*,
     validated_file::*,
-    KikiErr, Oset,
+    Oset,
 };
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
 /// Converts the AST to a finite state machine (FSM).
-pub fn validated_ast_to_machine(file: &File) -> Result<Machine, KikiErr> {
+pub fn validated_ast_to_machine(file: &File) -> Machine {
     let builder = MachineBuilder::new(file);
     builder.build()
 }
@@ -64,11 +64,11 @@ impl ImmutContext<'_> {
 }
 
 impl MachineBuilder<'_> {
-    fn build(mut self) -> Result<Machine, KikiErr> {
+    fn build(mut self) -> Machine {
         while let Some(state_index) = self.queue.pop_front() {
             self.enqueue_transition_targets(state_index);
         }
-        Ok(self.machine)
+        self.machine
     }
 
     fn enqueue_state_if_needed(&mut self, state: State) -> StateIndex {
@@ -680,7 +680,7 @@ mod tests {
             })],
         };
 
-        let machine = validated_ast_to_machine(&file).unwrap();
+        let machine = validated_ast_to_machine(&file);
         insta::assert_debug_snapshot!(machine);
     }
 
