@@ -81,16 +81,42 @@ impl ImmutContext<'_> {
     ) -> Result<(), KikiErr> {
         let state = &self.machine.states[state_index.0];
         for item in &state.items {
-            self.add_item_actions_to_table(builder, state_index, item)?;
+            self.add_item_action_to_table(builder, state_index, item)?;
         }
         Ok(())
     }
 
-    fn add_item_actions_to_table(
+    fn add_item_action_to_table(
         &self,
         builder: &mut TableBuilder,
         state_index: StateIndex,
         item: &Item,
+    ) -> Result<(), KikiErr> {
+        match item.rule_index {
+            RuleIndex::Augmented => {
+                self.add_augmented_item_action_to_table(builder, state_index, item.dot)
+            }
+            RuleIndex::Original(rule_index) => {
+                self.add_original_item_action_to_table(builder, state_index, item, rule_index)
+            }
+        }
+    }
+
+    fn add_augmented_item_action_to_table(
+        &self,
+        builder: &mut TableBuilder,
+        state_index: StateIndex,
+        dot: usize,
+    ) -> Result<(), KikiErr> {
+        todo!()
+    }
+
+    fn add_original_item_action_to_table(
+        &self,
+        builder: &mut TableBuilder,
+        state_index: StateIndex,
+        item: &Item,
+        rule_index: usize,
     ) -> Result<(), KikiErr> {
         todo!()
     }
