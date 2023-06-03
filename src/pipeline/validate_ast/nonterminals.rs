@@ -124,7 +124,19 @@ fn assert_variants_have_unique_field_symbol_sequences(
 }
 
 fn get_field_symbol_sequence(variant: &EnumVariant) -> Vec<Symbol> {
-    todo!()
+    match &variant.fieldset {
+        Fieldset::Empty => vec![],
+        Fieldset::Named(named) => named
+            .fields
+            .iter()
+            .map(|field| field.symbol.clone().into())
+            .collect::<Vec<_>>(),
+        Fieldset::Tuple(tuple) => tuple
+            .fields
+            .iter()
+            .map(|field| field.symbol().clone().into())
+            .collect::<Vec<_>>(),
+    }
 }
 
 fn validate_struct(
