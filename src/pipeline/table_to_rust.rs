@@ -670,12 +670,12 @@ states.truncate(states.len() - {num_fields});
 
     fn get_action_table_rows_src(&self) -> String {
         (0..self.table.state_count())
-            .map(|state| self.get_action_table_row_src(state))
+            .map(|i| self.get_action_table_row_src(StateIndex(i)))
             .collect::<Vec<_>>()
             .join("\n")
     }
 
-    fn get_action_table_row_src(&self, state: usize) -> String {
+    fn get_action_table_row_src(&self, state_index: StateIndex) -> String {
         let action_enum_name = &self.action_enum_name;
         let row_items_indent_1 = self
             .table
@@ -684,7 +684,7 @@ states.truncate(states.len() - {num_fields});
             .map(Quasiterminal::Terminal)
             .chain(std::iter::once(Quasiterminal::Eof))
             .map(|quasiterminal| {
-                let action = self.table.action(state, quasiterminal);
+                let action = self.table.action(state_index, quasiterminal);
                 let unqualified_variant = self.get_action_variant_unqualified_src(action);
                 format!("{action_enum_name}::{unqualified_variant},")
             })
@@ -711,18 +711,18 @@ states.truncate(states.len() - {num_fields});
 
     fn get_goto_table_rows_src(&self) -> String {
         (0..self.table.state_count())
-            .map(|state| self.get_goto_table_row_src(state))
+            .map(|i| self.get_goto_table_row_src(StateIndex(i)))
             .collect::<Vec<_>>()
             .join("\n")
     }
 
-    fn get_goto_table_row_src(&self, state: usize) -> String {
+    fn get_goto_table_row_src(&self, state_index: StateIndex) -> String {
         let row_items_indent_1 = self
             .table
             .nonterminals
             .iter()
             .map(|nonterminal| {
-                let goto = self.table.goto(state, nonterminal);
+                let goto = self.table.goto(state_index, nonterminal);
                 let qualified_variant = self.get_goto_variant_qualified_src(goto);
                 format!("{qualified_variant},")
             })

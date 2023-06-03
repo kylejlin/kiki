@@ -39,23 +39,27 @@ impl Table {
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn action(&self, state: usize, terminal: Quasiterminal) -> Action {
-        let i = self.action_index(state, terminal);
+    pub fn action(&self, state_index: StateIndex, terminal: Quasiterminal) -> Action {
+        let i = self.action_index(state_index, terminal);
         self.actions[i]
     }
 
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn set_action(&mut self, state: usize, terminal: Quasiterminal, val: Action) {
-        let i = self.action_index(state, terminal);
+    pub fn set_action(&mut self, state_index: StateIndex, terminal: Quasiterminal, val: Action) {
+        let i = self.action_index(state_index, terminal);
         self.actions[i] = val;
     }
 
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    fn action_index(&self, state: usize, quasiterminal: Quasiterminal) -> usize {
+    fn action_index(
+        &self,
+        StateIndex(state_index): StateIndex,
+        quasiterminal: Quasiterminal,
+    ) -> usize {
         let quasiterminal_index = match quasiterminal {
             Quasiterminal::Terminal(terminal) => self
                 .terminals
@@ -65,45 +69,45 @@ impl Table {
             Quasiterminal::Eof => self.terminals.len(),
         };
 
-        if state >= self.state_count() {
+        if state_index >= self.state_count() {
             let states = self.state_count();
-            panic!("State {state} is too large. There are only {states} states.");
+            panic!("State index {state_index} is too large. There are only {states} states.");
         }
 
-        state * (self.terminals.len() + 1) + quasiterminal_index
+        state_index * (self.terminals.len() + 1) + quasiterminal_index
     }
 
     /// ## Panics
     /// 1. Panics if the nonterminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn goto(&self, state: usize, nonterminal: &str) -> Goto {
-        let i = self.goto_index(state, nonterminal);
+    pub fn goto(&self, state_index: StateIndex, nonterminal: &str) -> Goto {
+        let i = self.goto_index(state_index, nonterminal);
         self.gotos[i]
     }
 
     /// ## Panics
     /// 1. Panics if the nonterminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn set_goto(&mut self, state: usize, nonterminal: &str, val: Goto) {
-        let i = self.goto_index(state, nonterminal);
+    pub fn set_goto(&mut self, state_index: StateIndex, nonterminal: &str, val: Goto) {
+        let i = self.goto_index(state_index, nonterminal);
         self.gotos[i] = val;
     }
 
     /// ## Panics
     /// 1. Panics if the nonterminal is not in the table.
     /// 2. Panics if the state is too large.
-    fn goto_index(&self, state: usize, nonterminal: &str) -> usize {
+    fn goto_index(&self, StateIndex(state_index): StateIndex, nonterminal: &str) -> usize {
         let nonterminal_index = self
             .nonterminals
             .iter()
             .position(|t| t == nonterminal)
             .expect("Nonterminal not found in table");
 
-        if state >= self.state_count() {
+        if state_index >= self.state_count() {
             let states = self.state_count();
-            panic!("State {state} is too large. There are only {states} states.");
+            panic!("State index {state_index} is too large. There are only {states} states.");
         }
 
-        state * self.nonterminals.len() + nonterminal_index
+        state_index * self.nonterminals.len() + nonterminal_index
     }
 }

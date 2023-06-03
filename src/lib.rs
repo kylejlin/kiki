@@ -20,6 +20,6 @@ pub fn generate(src: &str) -> Result<RustSrc, KikiErr> {
     let ast: data::ast::File = cst.into();
     let validated = pipeline::validate_ast::validate_ast(ast)?;
     let machine = validated_ast_to_machine(&validated);
-    let table = machine_to_table(&machine)?;
+    let table = machine_to_table(&machine, &validated)?;
     Ok(table_to_rust(&table, &validated))
 }
