@@ -51,16 +51,16 @@ impl TableBuilder<'_> {
     }
 }
 
-impl ImmutContext<'_> {
-    fn add_actions_to_table<'a>(&'a self, builder: &mut TableBuilder<'a>) -> Result<(), KikiErr> {
+impl<'a> ImmutContext<'a> {
+    fn add_actions_to_table(&self, builder: &mut TableBuilder<'a>) -> Result<(), KikiErr> {
         for i in 0..self.machine.states.len() {
             self.add_state_actions_to_table(builder, StateIndex(i))?;
         }
         Ok(())
     }
 
-    fn add_state_actions_to_table<'a>(
-        &'a self,
+    fn add_state_actions_to_table(
+        &self,
         builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
     ) -> Result<(), KikiErr> {
@@ -71,8 +71,8 @@ impl ImmutContext<'_> {
         Ok(())
     }
 
-    fn add_item_action_to_table<'a>(
-        &'a self,
+    fn add_item_action_to_table(
+        &self,
         builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
         item: &'a StateItem,
@@ -87,7 +87,7 @@ impl ImmutContext<'_> {
         }
     }
 
-    fn add_augmented_item_action_to_table<'a>(
+    fn add_augmented_item_action_to_table(
         &self,
         builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
@@ -100,8 +100,8 @@ impl ImmutContext<'_> {
         builder.set_action(state_index, Quasiterminal::Eof, item, Action::Accept)
     }
 
-    fn add_original_item_action_to_table<'a>(
-        &'a self,
+    fn add_original_item_action_to_table(
+        &self,
         builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
         item: &'a StateItem,
@@ -120,7 +120,7 @@ impl ImmutContext<'_> {
         }
     }
 
-    fn add_shift_to_table<'a>(
+    fn add_shift_to_table(
         &self,
         builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
