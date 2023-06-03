@@ -88,7 +88,16 @@ impl ImmutContext<'_> {
         state_index: StateIndex,
         dot: usize,
     ) -> Result<(), KikiErr> {
-        todo!()
+        if dot == 0 {
+            return Ok(());
+        }
+
+        builder.set_action(
+            state_index,
+            Quasiterminal::Eof,
+            RuleIndex::Augmented,
+            Action::Accept,
+        )
     }
 
     fn add_original_item_action_to_table(
@@ -99,6 +108,24 @@ impl ImmutContext<'_> {
         rule_index: usize,
     ) -> Result<(), KikiErr> {
         todo!()
+    }
+}
+
+impl<'a> TableBuilder<'a> {
+    fn set_action(
+        &mut self,
+        state_index: StateIndex,
+        quasiterminal: Quasiterminal<'a>,
+        rule_index: RuleIndex,
+        action: Action,
+    ) -> Result<(), KikiErr> {
+        if let Some(_) = self.actions.get(&(state_index, quasiterminal)) {
+            return Err(todo!());
+        }
+
+        self.actions
+            .insert((state_index, quasiterminal), (rule_index, action));
+        Ok(())
     }
 }
 

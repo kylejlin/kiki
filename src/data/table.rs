@@ -11,7 +11,7 @@ pub struct Table {
 
 pub use machine::StateIndex;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Action {
     Shift(usize),
     Reduce(usize),
@@ -19,13 +19,13 @@ pub enum Action {
     Err,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Goto {
     State(usize),
     Err,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Quasiterminal<'a> {
     Terminal(&'a DollarlessTerminalName),
     Eof,
