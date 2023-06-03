@@ -729,7 +729,7 @@ states.truncate(states.len() - {num_fields});
     fn get_goto_variant_qualified_src(&self, goto: Goto) -> String {
         let state_enum_name = &self.state_enum_name;
         match goto {
-            Goto::State(state_index) => {
+            Goto::State(StateIndex(state_index)) => {
                 format!("Some({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
             }
             Goto::Err => format!("None"),
@@ -862,8 +862,13 @@ mod tests {
             .collect()
         };
         let gotos = {
-            use Goto::*;
-            vec![State(1), Err, State(3), Err, Err]
+            use Goto::Err;
+
+            fn state(i: usize) -> Goto {
+                Goto::State(StateIndex(i))
+            }
+
+            vec![state(1), Err, state(3), Err, Err]
         };
         let table = Table {
             start: StateIndex(0),
@@ -941,8 +946,13 @@ mod tests {
             .collect()
         };
         let gotos = {
-            use Goto::*;
-            vec![State(1), Err, State(3), Err, Err]
+            use Goto::Err;
+
+            fn state(i: usize) -> Goto {
+                Goto::State(StateIndex(i))
+            }
+
+            vec![state(1), Err, state(3), Err, Err]
         };
         let table = Table {
             start: StateIndex(0),

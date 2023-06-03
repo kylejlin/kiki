@@ -27,7 +27,7 @@ impl ImmutContext<'_> {
     fn get_table(&self) -> Result<Table, KikiErr> {
         let mut builder = TableBuilder::new(self);
         self.add_actions_to_table(&mut builder)?;
-        self.add_gotos_to_table(&mut builder)?;
+        self.add_gotos_to_table(&mut builder);
         Ok(self.build_as_is(builder))
     }
 }
@@ -175,9 +175,24 @@ impl<'a> TableBuilder<'a> {
     }
 }
 
-impl ImmutContext<'_> {
-    fn add_gotos_to_table(&self, builder: &mut TableBuilder) -> Result<(), KikiErr> {
-        todo!()
+impl<'a> ImmutContext<'a> {
+    fn add_gotos_to_table(&self, builder: &mut TableBuilder<'a>) {
+        for transition in &self.machine.transitions {
+            if let Symbol::Nonterminal(nonterminal) = &transition.symbol {
+                builder.set_goto(transition.from, &nonterminal, Goto::State(transition.to));
+            }
+        }
+    }
+}
+
+impl<'a> TableBuilder<'a> {
+    fn set_goto(&mut self, state_index: StateIndex, nonterminal: &'a str, goto: Goto) {
+        if let Some(old_goto) = self.gotos.get(&(state_index, nonterminal)) {
+            let StateIndex(state_index) = state_index;
+            panic!("Impossible: goto conflict. State index: {state_index}. Old goto: {old_goto:?}. New goto: {goto:?}");
+        }
+
+        self.gotos.insert((state_index, nonterminal), goto);
     }
 }
 

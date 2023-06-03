@@ -21,7 +21,7 @@ pub enum Action {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Goto {
-    State(usize),
+    State(StateIndex),
     Err,
 }
 
