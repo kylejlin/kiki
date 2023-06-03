@@ -9,11 +9,11 @@ pub struct Machine {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct State {
-    pub items: Oset<Item>,
+    pub items: Oset<StateItem>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Item {
+pub struct StateItem {
     pub rule_index: RuleIndex,
     pub lookahead: Lookahead,
     /// The `dot` is the index of the symbol to the right of the dot.

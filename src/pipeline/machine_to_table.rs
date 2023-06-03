@@ -6,6 +6,7 @@ pub fn machine_to_table(machine: &Machine, file: &File) -> Result<Table, KikiErr
     ImmutContext::new(machine, file).get_table()
 }
 
+#[derive(Debug)]
 struct ImmutContext<'a> {
     machine: &'a Machine,
     file: &'a File,
@@ -24,7 +25,7 @@ impl ImmutContext<'_> {
 
 impl ImmutContext<'_> {
     fn get_table(&self) -> Result<Table, KikiErr> {
-        let mut builder = TableBuilder::new();
+        let mut builder = TableBuilder::new(self);
         self.add_actions_to_table(&mut builder)?;
         self.add_gotos_to_table(&mut builder)?;
         Ok(self.build_as_is(builder))
@@ -33,30 +34,34 @@ impl ImmutContext<'_> {
 
 #[derive(Debug)]
 struct TableBuilder<'a> {
-    pub actions: HashMap<(StateIndex, Quasiterminal<'a>), (RuleIndex, Action)>,
-    pub gotos: HashMap<(StateIndex, &'a str), Goto>,
+    actions: HashMap<(StateIndex, QuasiterminalRef<'a>), (&'a StateItem, Action)>,
+    gotos: HashMap<(StateIndex, &'a str), Goto>,
+
+    context: &'a ImmutContext<'a>,
 }
 
 impl TableBuilder<'_> {
-    fn new<'a>() -> TableBuilder<'a> {
+    fn new<'a>(context: &'a ImmutContext<'a>) -> TableBuilder<'a> {
         TableBuilder {
             actions: HashMap::new(),
             gotos: HashMap::new(),
+
+            context,
         }
     }
 }
 
 impl ImmutContext<'_> {
-    fn add_actions_to_table(&self, builder: &mut TableBuilder) -> Result<(), KikiErr> {
+    fn add_actions_to_table<'a>(&'a self, builder: &mut TableBuilder<'a>) -> Result<(), KikiErr> {
         for i in 0..self.machine.states.len() {
             self.add_state_actions_to_table(builder, StateIndex(i))?;
         }
         Ok(())
     }
 
-    fn add_state_actions_to_table(
-        &self,
-        builder: &mut TableBuilder,
+    fn add_state_actions_to_table<'a>(
+        &'a self,
+        builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
     ) -> Result<(), KikiErr> {
         let state = &self.machine.states[state_index.0];
@@ -66,15 +71,15 @@ impl ImmutContext<'_> {
         Ok(())
     }
 
-    fn add_item_action_to_table(
+    fn add_item_action_to_table<'a>(
         &self,
-        builder: &mut TableBuilder,
+        builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
-        item: &Item,
+        item: &'a StateItem,
     ) -> Result<(), KikiErr> {
         match item.rule_index {
             RuleIndex::Augmented => {
-                self.add_augmented_item_action_to_table(builder, state_index, item.dot)
+                self.add_augmented_item_action_to_table(builder, state_index, item)
             }
             RuleIndex::Original(rule_index) => {
                 self.add_original_item_action_to_table(builder, state_index, item, rule_index)
@@ -82,29 +87,24 @@ impl ImmutContext<'_> {
         }
     }
 
-    fn add_augmented_item_action_to_table(
+    fn add_augmented_item_action_to_table<'a>(
         &self,
-        builder: &mut TableBuilder,
+        builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
-        dot: usize,
+        item: &'a StateItem,
     ) -> Result<(), KikiErr> {
-        if dot == 0 {
+        if item.dot == 0 {
             return Ok(());
         }
 
-        builder.set_action(
-            state_index,
-            Quasiterminal::Eof,
-            RuleIndex::Augmented,
-            Action::Accept,
-        )
+        builder.set_action(state_index, QuasiterminalRef::Eof, item, Action::Accept)
     }
 
     fn add_original_item_action_to_table(
         &self,
         builder: &mut TableBuilder,
         state_index: StateIndex,
-        item: &Item,
+        item: &StateItem,
         rule_index: usize,
     ) -> Result<(), KikiErr> {
         todo!()
@@ -115,16 +115,21 @@ impl<'a> TableBuilder<'a> {
     fn set_action(
         &mut self,
         state_index: StateIndex,
-        quasiterminal: Quasiterminal<'a>,
-        rule_index: RuleIndex,
+        quasiterminal: QuasiterminalRef<'a>,
+        item: &'a StateItem,
         action: Action,
     ) -> Result<(), KikiErr> {
-        if let Some(_) = self.actions.get(&(state_index, quasiterminal)) {
-            return Err(todo!());
+        if let Some((conflicting_item, _)) = self.actions.get(&(state_index, quasiterminal)) {
+            return Err(KikiErr::TableConflict(Box::new(TableConflictErr {
+                state_index,
+                items: ((*conflicting_item).clone(), item.clone()),
+                file: self.context.file.clone(),
+                machine: self.context.machine.clone(),
+            })));
         }
 
         self.actions
-            .insert((state_index, quasiterminal), (rule_index, action));
+            .insert((state_index, quasiterminal), (item, action));
         Ok(())
     }
 }

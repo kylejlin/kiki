@@ -681,8 +681,8 @@ states.truncate(states.len() - {num_fields});
             .table
             .terminals
             .iter()
-            .map(Quasiterminal::Terminal)
-            .chain(std::iter::once(Quasiterminal::Eof))
+            .map(QuasiterminalRef::Terminal)
+            .chain(std::iter::once(QuasiterminalRef::Eof))
             .map(|quasiterminal| {
                 let action = self.table.action(state_index, quasiterminal);
                 let unqualified_variant = self.get_action_variant_unqualified_src(action);

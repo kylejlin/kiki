@@ -23,6 +23,15 @@ pub enum KikiErr {
     NonterminalEnumVariantSymbolSequenceClash(Vec<Symbol>, ByteIndex, ByteIndex),
     UndefinedNonterminal(String, ByteIndex),
     UndefinedTerminal(DollarlessTerminalName, ByteIndex),
+    TableConflict(Box<TableConflictErr>),
+}
+
+#[derive(Debug)]
+pub struct TableConflictErr {
+    pub state_index: machine::StateIndex,
+    pub items: (machine::StateItem, machine::StateItem),
+    pub file: validated_file::File,
+    pub machine: machine::Machine,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]

@@ -90,7 +90,7 @@ impl MachineBuilder<'_> {
             })
     }
 
-    fn merge(&mut self, index: StateIndex, items: Oset<Item>) -> StateIndex {
+    fn merge(&mut self, index: StateIndex, items: Oset<StateItem>) -> StateIndex {
         let were_items_added = self.add_items_if_needed(index, items);
 
         if were_items_added {
@@ -101,7 +101,7 @@ impl MachineBuilder<'_> {
     }
 
     /// Returns true if items were added.
-    fn add_items_if_needed(&mut self, index: StateIndex, items: Oset<Item>) -> bool {
+    fn add_items_if_needed(&mut self, index: StateIndex, items: Oset<StateItem>) -> bool {
         let state = self.state_mut(index);
         let mut was_item_added = false;
 
@@ -138,7 +138,7 @@ impl MachineBuilder<'_> {
             .collect()
     }
 
-    fn get_symbol_right_of_dot(&self, item: &Item) -> Option<Symbol> {
+    fn get_symbol_right_of_dot(&self, item: &StateItem) -> Option<Symbol> {
         self.context.get_symbol_right_of_dot(item)
     }
 
@@ -158,11 +158,11 @@ impl MachineBuilder<'_> {
         self.get_closure(&items)
     }
 
-    fn get_closure(&self, items: &[Item]) -> State {
+    fn get_closure(&self, items: &[StateItem]) -> State {
         self.context.get_closure(items)
     }
 
-    fn get_transition_items(&self, state_index: StateIndex, symbol: &Symbol) -> Vec<Item> {
+    fn get_transition_items(&self, state_index: StateIndex, symbol: &Symbol) -> Vec<StateItem> {
         let state = self.state(state_index);
         state
             .items
@@ -173,10 +173,10 @@ impl MachineBuilder<'_> {
 
     /// If `item` is `A -> alpha . B beta` and `symbol` is `B`,
     /// then this returns `Some(A -> alpha B . beta)`.
-    fn advance(&self, item: &Item, symbol: &Symbol) -> Option<Item> {
+    fn advance(&self, item: &StateItem, symbol: &Symbol) -> Option<StateItem> {
         let right_of_dot = self.get_symbol_right_of_dot(item);
         if right_of_dot.as_ref() == Some(symbol) {
-            Some(Item {
+            Some(StateItem {
                 rule_index: item.rule_index,
                 lookahead: item.lookahead.clone(),
                 dot: item.dot + 1,
@@ -199,15 +199,15 @@ impl MachineBuilder<'_> {
 
 impl ImmutContext<'_> {
     fn get_start_state(&self) -> State {
-        self.get_closure(&[Item {
+        self.get_closure(&[StateItem {
             rule_index: RuleIndex::Augmented,
             lookahead: Lookahead::Eof,
             dot: 0,
         }])
     }
 
-    fn get_closure(&self, items: &[Item]) -> State {
-        let mut queue: VecDeque<Item> = items.iter().cloned().collect();
+    fn get_closure(&self, items: &[StateItem]) -> State {
+        let mut queue: VecDeque<StateItem> = items.iter().cloned().collect();
         let mut items = Oset::new();
 
         while let Some(next) = queue.pop_front() {
@@ -222,16 +222,20 @@ impl ImmutContext<'_> {
         State { items }
     }
 
-    fn enqueue_closure_implied_items(&self, queue: &mut VecDeque<Item>, implicator: &Item) {
+    fn enqueue_closure_implied_items(
+        &self,
+        queue: &mut VecDeque<StateItem>,
+        implicator: &StateItem,
+    ) {
         for implied in self.get_closure_implied_items(implicator) {
             queue.push_back(implied);
         }
     }
 
-    fn get_closure_implied_items(&self, item: &Item) -> Vec<Item> {
+    fn get_closure_implied_items(&self, item: &StateItem) -> Vec<StateItem> {
         match self.get_symbol_right_of_dot(item) {
             Some(Symbol::Nonterminal(name)) => {
-                let item_with_dot_advanced = Item {
+                let item_with_dot_advanced = StateItem {
                     rule_index: item.rule_index,
                     lookahead: item.lookahead.clone(),
                     dot: item.dot + 1,
@@ -245,13 +249,13 @@ impl ImmutContext<'_> {
         }
     }
 
-    fn get_augmented_first_after_dot(&self, item: &Item) -> AugmentedFirstSet {
+    fn get_augmented_first_after_dot(&self, item: &StateItem) -> AugmentedFirstSet {
         let after_dot = self.get_symbol_sequence_after_dot(item);
         let first = self.get_first_of_symbol_sequence(after_dot);
         add_lookahead_if_needed(first, &item.lookahead)
     }
 
-    fn get_symbol_sequence_after_dot<'a>(&'a self, item: &Item) -> Vec<Symbol> {
+    fn get_symbol_sequence_after_dot<'a>(&'a self, item: &StateItem) -> Vec<Symbol> {
         match item.rule_index {
             RuleIndex::Original(rule_index) => {
                 self.get_symbol_sequence_after_dot_for_original_rule(rule_index, item.dot)
@@ -310,7 +314,7 @@ impl ImmutContext<'_> {
         &self,
         nonterminal_name: String,
         lookaheads: AugmentedFirstSet,
-    ) -> Vec<Item> {
+    ) -> Vec<StateItem> {
         lookaheads
             .0
             .into_iter()
@@ -327,10 +331,10 @@ impl ImmutContext<'_> {
         &self,
         nonterminal_name: String,
         lookahead: Lookahead,
-    ) -> Vec<Item> {
+    ) -> Vec<StateItem> {
         self.get_rule_indices_for_nonterminal(&nonterminal_name)
             .into_iter()
-            .map(|rule_index| Item {
+            .map(|rule_index| StateItem {
                 rule_index: RuleIndex::Original(rule_index),
                 lookahead: lookahead.clone(),
                 dot: 0,
@@ -354,7 +358,7 @@ impl ImmutContext<'_> {
             })
     }
 
-    fn get_symbol_right_of_dot(&self, item: &Item) -> Option<Symbol> {
+    fn get_symbol_right_of_dot(&self, item: &StateItem) -> Option<Symbol> {
         match item.rule_index {
             RuleIndex::Original(rule_index) => {
                 self.get_symbol_right_of_dot_for_original_rule(item.dot, rule_index)

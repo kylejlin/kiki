@@ -62,17 +62,17 @@ fn balanced_parens_expected_output() -> Machine {
         vec![
             State {
                 items: [
-                    Item {
+                    StateItem {
                         rule_index: Augmented,
                         lookahead: Eof,
                         dot: 0,
                     },
-                    Item {
+                    StateItem {
                         rule_index: Original(0),
                         lookahead: Eof,
                         dot: 0,
                     },
-                    Item {
+                    StateItem {
                         rule_index: Original(1),
                         lookahead: Eof,
                         dot: 0,
@@ -82,7 +82,7 @@ fn balanced_parens_expected_output() -> Machine {
                 .collect(),
             },
             State {
-                items: [Item {
+                items: [StateItem {
                     rule_index: Augmented,
                     lookahead: Eof,
                     dot: 1,
@@ -92,22 +92,22 @@ fn balanced_parens_expected_output() -> Machine {
             },
             State {
                 items: [
-                    Item {
+                    StateItem {
                         rule_index: Original(1),
                         lookahead: Eof,
                         dot: 1,
                     },
-                    Item {
+                    StateItem {
                         rule_index: Original(0),
                         lookahead: Terminal(remove_dollars("RParen")),
                         dot: 0,
                     },
-                    Item {
+                    StateItem {
                         rule_index: Original(1),
                         lookahead: Terminal(remove_dollars("RParen")),
                         dot: 0,
                     },
-                    Item {
+                    StateItem {
                         rule_index: Original(1),
                         lookahead: Terminal(remove_dollars("RParen")),
                         dot: 1,
@@ -118,12 +118,12 @@ fn balanced_parens_expected_output() -> Machine {
             },
             State {
                 items: [
-                    Item {
+                    StateItem {
                         rule_index: Original(1),
                         lookahead: Eof,
                         dot: 2,
                     },
-                    Item {
+                    StateItem {
                         rule_index: Original(1),
                         lookahead: Terminal(remove_dollars("RParen")),
                         dot: 2,
@@ -134,12 +134,12 @@ fn balanced_parens_expected_output() -> Machine {
             },
             State {
                 items: [
-                    Item {
+                    StateItem {
                         rule_index: Original(1),
                         lookahead: Eof,
                         dot: 3,
                     },
-                    Item {
+                    StateItem {
                         rule_index: Original(1),
                         lookahead: Terminal(remove_dollars("RParen")),
                         dot: 3,
