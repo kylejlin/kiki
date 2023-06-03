@@ -36,6 +36,16 @@ pub enum Fieldset {
     Tuple(TupleFieldset),
 }
 
+impl Fieldset {
+    pub fn len(&self) -> usize {
+        match self {
+            Fieldset::Empty => 0,
+            Fieldset::Named(named) => named.fields.len(),
+            Fieldset::Tuple(tuple) => tuple.fields.len(),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct NamedFieldset {
     pub fields: Vec<NamedField>,
