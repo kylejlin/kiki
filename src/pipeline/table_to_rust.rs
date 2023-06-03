@@ -679,7 +679,7 @@ states.truncate(states.len() - {num_fields});
         let action_enum_name = &self.action_enum_name;
         let row_items_indent_1 = self
             .table
-            .dollarless_terminals
+            .terminals
             .iter()
             .map(Quasiterminal::Terminal)
             .chain(std::iter::once(Quasiterminal::Eof))
@@ -873,7 +873,7 @@ mod tests {
         };
         let table = Table {
             start: StateIndex(0),
-            dollarless_terminals: vec![
+            terminals: vec![
                 DollarlessTerminalName::remove_dollars("LParen"),
                 DollarlessTerminalName::remove_dollars("RParen"),
             ],
@@ -952,7 +952,7 @@ mod tests {
         };
         let table = Table {
             start: StateIndex(0),
-            dollarless_terminals: vec![
+            terminals: vec![
                 DollarlessTerminalName::remove_dollars("LParen"),
                 DollarlessTerminalName::remove_dollars("RParen"),
             ],

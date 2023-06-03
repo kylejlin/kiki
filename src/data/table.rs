@@ -3,7 +3,7 @@ use crate::data::*;
 #[derive(Debug, Clone)]
 pub struct Table {
     pub start: StateIndex,
-    pub dollarless_terminals: Vec<DollarlessTerminalName>,
+    pub terminals: Vec<DollarlessTerminalName>,
     pub nonterminals: Vec<String>,
     pub actions: Vec<Action>,
     pub gotos: Vec<Goto>,
@@ -33,7 +33,7 @@ pub enum Quasiterminal<'a> {
 
 impl Table {
     pub fn state_count(&self) -> usize {
-        self.actions.len() / (self.dollarless_terminals.len() + 1)
+        self.actions.len() / (self.terminals.len() + 1)
     }
 
     /// ## Panics
@@ -58,11 +58,11 @@ impl Table {
     fn action_index(&self, state: usize, quasiterminal: Quasiterminal) -> usize {
         let quasiterminal_index = match quasiterminal {
             Quasiterminal::Terminal(terminal) => self
-                .dollarless_terminals
+                .terminals
                 .iter()
                 .position(|t| t == terminal)
                 .expect("Terminal not found in table"),
-            Quasiterminal::Eof => self.dollarless_terminals.len(),
+            Quasiterminal::Eof => self.terminals.len(),
         };
 
         if state >= self.state_count() {
@@ -70,7 +70,7 @@ impl Table {
             panic!("State {state} is too large. There are only {states} states.");
         }
 
-        state * (self.dollarless_terminals.len() + 1) + quasiterminal_index
+        state * (self.terminals.len() + 1) + quasiterminal_index
     }
 
     /// ## Panics
