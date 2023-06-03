@@ -2,7 +2,8 @@ use crate::data::{machine::*, table::*, validated_file::*, KikiErr, *};
 
 pub fn machine_to_table(machine: &Machine, file: &File) -> Result<Table, KikiErr> {
     let mut table = get_empty_table(machine, file);
-    add_rules_to_table(&mut table, machine)?;
+    add_actions_to_table(&mut table, machine)?;
+    add_gotos_to_table(&mut table, machine)?;
     Ok(table)
 }
 
@@ -45,6 +46,10 @@ fn get_empty_goto_table(states: &[State], nonterminals: &[String]) -> Vec<Goto> 
     vec![Goto::Err; size]
 }
 
-fn add_rules_to_table(table: &mut Table, machine: &Machine) -> Result<(), KikiErr> {
+fn add_actions_to_table(table: &mut Table, machine: &Machine) -> Result<(), KikiErr> {
+    todo!()
+}
+
+fn add_gotos_to_table(table: &mut Table, machine: &Machine) -> Result<(), KikiErr> {
     todo!()
 }
