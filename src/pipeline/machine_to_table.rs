@@ -107,7 +107,44 @@ impl ImmutContext<'_> {
         item: &StateItem,
         rule_index: usize,
     ) -> Result<(), KikiErr> {
-        todo!()
+        let rule = &self.rules[rule_index];
+        if item.dot < rule.fieldset.len() {
+            self.add_shift_to_table(builder, state_index, item, rule_index)
+        } else {
+            self.add_reduction_to_table(builder, state_index, item, rule_index)
+        }
+    }
+
+    fn add_shift_to_table(
+        &self,
+        builder: &mut TableBuilder,
+        state_index: StateIndex,
+        item: &StateItem,
+        rule_index: usize,
+    ) -> Result<(), KikiErr> {
+        // TODO: Review
+        let rule = &self.rules[rule_index];
+        let quasiterminal = QuasiterminalRef::from(rule.fieldset[item.dot]);
+        let next_state_index = self.machine.get_next_state(state_index, quasiterminal);
+        builder.set_action(
+            state_index,
+            quasiterminal,
+            item,
+            Action::Shift(next_state_index),
+        )
+    }
+
+    fn add_reduction_to_table(
+        &self,
+        builder: &mut TableBuilder,
+        state_index: StateIndex,
+        item: &StateItem,
+        rule_index: usize,
+    ) -> Result<(), KikiErr> {
+        // TODO Review
+        let rule = &self.rules[rule_index];
+        let quasiterminal = QuasiterminalRef::from(rule.fieldset[item.dot]);
+        builder.set_action(state_index, quasiterminal, item, Action::Reduce(rule_index))
     }
 }
 
