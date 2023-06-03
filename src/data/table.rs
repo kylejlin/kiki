@@ -29,7 +29,7 @@ pub enum Quasiterminal<'a> {
 }
 
 impl Table {
-    pub fn states(&self) -> usize {
+    pub fn state_count(&self) -> usize {
         self.actions.len() / (self.dollarless_terminals.len() + 1)
     }
 
@@ -62,8 +62,8 @@ impl Table {
             Quasiterminal::Eof => self.dollarless_terminals.len(),
         };
 
-        if state >= self.states() {
-            let states = self.states();
+        if state >= self.state_count() {
+            let states = self.state_count();
             panic!("State {state} is too large. There are only {states} states.");
         }
 
@@ -96,8 +96,8 @@ impl Table {
             .position(|t| t == nonterminal)
             .expect("Nonterminal not found in table");
 
-        if state >= self.states() {
-            let states = self.states();
+        if state >= self.state_count() {
+            let states = self.state_count();
             panic!("State {state} is too large. There are only {states} states.");
         }
 
