@@ -1,4 +1,4 @@
-use crate::data::{validated_file::*, Oset};
+use crate::data::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Machine {
@@ -42,18 +42,3 @@ pub struct Transition {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct StateIndex(pub usize);
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Symbol {
-    Terminal(DollarlessTerminalName),
-    Nonterminal(String),
-}
-
-impl From<IdentOrTerminalIdent> for Symbol {
-    fn from(ident: IdentOrTerminalIdent) -> Self {
-        match ident {
-            IdentOrTerminalIdent::Ident(ident) => Symbol::Nonterminal(ident.name),
-            IdentOrTerminalIdent::Terminal(ident) => Symbol::Terminal(ident.dollarless_name()),
-        }
-    }
-}

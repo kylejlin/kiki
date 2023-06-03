@@ -1,4 +1,6 @@
-use crate::data::{machine::*, validated_file::*, IndexUpdater, Oset};
+use crate::data::{
+    machine::*, validated_file::*, DollarlessTerminalName, IndexUpdater, Oset, Symbol,
+};
 use crate::pipeline::sort_and_get_index_updater::sort_and_get_index_updater;
 use std::collections::HashMap;
 use std::collections::VecDeque;

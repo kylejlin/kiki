@@ -1,3 +1,5 @@
+use crate::data::*;
+
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
@@ -116,25 +118,6 @@ impl TerminalEnum {
 pub struct TerminalVariant {
     pub dollarless_name: DollarlessTerminalName,
     pub type_: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct DollarlessTerminalName(String);
-
-impl DollarlessTerminalName {
-    pub fn remove_dollars(name: &str) -> Self {
-        Self(name.chars().filter(|c| *c != '$').collect())
-    }
-
-    pub fn raw(&self) -> &str {
-        &self.0
-    }
-}
-
-impl ToString for DollarlessTerminalName {
-    fn to_string(&self) -> String {
-        self.raw().to_string()
-    }
 }
 
 #[derive(Debug, Clone)]

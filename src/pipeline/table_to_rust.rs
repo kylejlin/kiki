@@ -1,4 +1,4 @@
-use crate::data::{table::*, validated_file::*, RustSrc};
+use crate::data::{table::*, validated_file::*, DollarlessTerminalName, RustSrc};
 use std::collections::{HashMap, HashSet};
 
 const NONTERMINAL_DERIVE_CLAUSE: &str = "#[derive(Clone, Debug)]";

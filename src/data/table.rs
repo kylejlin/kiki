@@ -1,4 +1,4 @@
-use crate::data::validated_file::DollarlessTerminalName;
+use crate::data::*;
 
 #[derive(Debug, Clone)]
 pub struct Table {

@@ -1,7 +1,7 @@
 use crate::data::{
     ast::*,
-    validated_file::{self as validated, DollarlessTerminalName},
-    ByteIndex, KikiErr,
+    validated_file::{self as validated},
+    ByteIndex, DollarlessTerminalName, KikiErr,
 };
 use std::collections::{HashMap, HashSet};
 

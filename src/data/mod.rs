@@ -6,6 +6,9 @@ pub mod oset;
 pub mod table;
 pub mod validated_file;
 
+pub use index_updater::*;
+pub use oset::*;
+
 #[derive(Debug)]
 pub enum KikiErr {
     Parse(ByteIndex, String, ByteIndex),
@@ -27,7 +30,36 @@ pub struct RustSrc(pub String);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ByteIndex(pub usize);
 
-pub use index_updater::IndexUpdater;
-pub use oset::Oset;
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct DollarlessTerminalName(String);
 
-use validated_file::DollarlessTerminalName;
+impl DollarlessTerminalName {
+    pub fn remove_dollars(name: &str) -> Self {
+        Self(name.chars().filter(|c| *c != '$').collect())
+    }
+
+    pub fn raw(&self) -> &str {
+        &self.0
+    }
+}
+
+impl ToString for DollarlessTerminalName {
+    fn to_string(&self) -> String {
+        self.raw().to_string()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Symbol {
+    Terminal(DollarlessTerminalName),
+    Nonterminal(String),
+}
+
+impl From<cst::IdentOrTerminalIdent> for Symbol {
+    fn from(ident: cst::IdentOrTerminalIdent) -> Self {
+        match ident {
+            cst::IdentOrTerminalIdent::Ident(ident) => Symbol::Nonterminal(ident.name),
+            cst::IdentOrTerminalIdent::Terminal(ident) => Symbol::Terminal(ident.dollarless_name()),
+        }
+    }
+}
