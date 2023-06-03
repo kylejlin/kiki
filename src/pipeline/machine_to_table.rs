@@ -25,7 +25,7 @@ impl TableBuilder<'_> {
 
 impl TableBuilder<'_> {
     fn build(mut self, context: &ImmutContext) -> Result<Table, KikiErr> {
-        context.fill_empty_table_builder(&mut self);
+        context.fill_empty_table_builder(&mut self)?;
         self.convert_to_table(context)
     }
 
