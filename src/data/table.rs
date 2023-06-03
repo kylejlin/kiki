@@ -13,7 +13,7 @@ pub use machine::StateIndex;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Action {
-    Shift(usize),
+    Shift(StateIndex),
     Reduce(usize),
     Accept,
     Err,

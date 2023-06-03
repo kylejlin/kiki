@@ -692,7 +692,7 @@ states.truncate(states.len() - {num_fields});
         let state_enum_name = &self.state_enum_name;
         let rule_kind_enum_name = &self.rule_kind_enum_name;
         match action {
-            Action::Shift(state_index) => {
+            Action::Shift(StateIndex(state_index)) => {
                 format!("{ACTION_SHIFT_VARIANT_NAME}({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
             }
             Action::Reduce(rule_index) => {
@@ -851,10 +851,10 @@ mod tests {
         let actions = {
             use Action::*;
             [
-                [Shift(2), Err, Reduce(0)],
+                [shift(2), Err, Reduce(0)],
                 [Err, Err, Accept],
-                [Shift(2), Reduce(0), Err],
-                [Err, Shift(4), Err],
+                [shift(2), Reduce(0), Err],
+                [Err, shift(4), Err],
                 [Err, Reduce(1), Reduce(1)],
             ]
             .into_iter()
@@ -930,10 +930,10 @@ mod tests {
         let actions = {
             use Action::*;
             [
-                [Shift(2), Err, Reduce(0)],
+                [shift(2), Err, Reduce(0)],
                 [Err, Err, Accept],
-                [Shift(2), Reduce(0), Err],
-                [Err, Shift(4), Err],
+                [shift(2), Reduce(0), Err],
+                [Err, shift(4), Err],
                 [Err, Reduce(1), Reduce(1)],
             ]
             .into_iter()
@@ -1023,6 +1023,10 @@ mod tests {
             name: s.clone(),
             dollarless_position: ByteIndex(1),
         }
+    }
+
+    const fn shift(i: usize) -> Action {
+        Action::Shift(StateIndex(i))
     }
 
     mod pascal_to_snake_case {

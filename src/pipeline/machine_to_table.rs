@@ -72,7 +72,7 @@ impl ImmutContext<'_> {
     }
 
     fn add_item_action_to_table<'a>(
-        &self,
+        &'a self,
         builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
         item: &'a StateItem,
@@ -100,39 +100,40 @@ impl ImmutContext<'_> {
         builder.set_action(state_index, Quasiterminal::Eof, item, Action::Accept)
     }
 
-    fn add_original_item_action_to_table(
-        &self,
-        builder: &mut TableBuilder,
+    fn add_original_item_action_to_table<'a>(
+        &'a self,
+        builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
-        item: &StateItem,
+        item: &'a StateItem,
         rule_index: usize,
     ) -> Result<(), KikiErr> {
         let rule = &self.rules[rule_index];
-        if item.dot < rule.fieldset.len() {
-            self.add_shift_to_table(builder, state_index, item, rule_index)
-        } else {
+
+        if item.dot == rule.fieldset.len() {
             self.add_reduction_to_table(builder, state_index, item, rule_index)
+        } else if let IdentOrTerminalIdent::Terminal(terminal) =
+            rule.fieldset.get_symbol_ident(item.dot)
+        {
+            self.add_shift_to_table(builder, state_index, item, &terminal.name)
+        } else {
+            Ok(())
         }
     }
 
-    fn add_shift_to_table(
+    fn add_shift_to_table<'a>(
         &self,
-        builder: &mut TableBuilder,
+        builder: &mut TableBuilder<'a>,
         state_index: StateIndex,
-        item: &StateItem,
-        rule_index: usize,
+        item: &'a StateItem,
+        terminal: &'a DollarlessTerminalName,
     ) -> Result<(), KikiErr> {
-        // TODO: Review
-        // let rule = &self.rules[rule_index];
-        // let quasiterminal = Quasiterminal::from(rule.fieldset[item.dot]);
-        // let next_state_index = self.machine.get_next_state(state_index, quasiterminal);
-        // builder.set_action(
-        //     state_index,
-        //     quasiterminal,
-        //     item,
-        //     Action::Shift(next_state_index),
-        // )
-        todo!()
+        let dest = self.machine.get_shift_dest(state_index, terminal).unwrap();
+        builder.set_action(
+            state_index,
+            Quasiterminal::Terminal(terminal),
+            item,
+            Action::Shift(dest),
+        )
     }
 
     fn add_reduction_to_table(

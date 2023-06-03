@@ -7,6 +7,31 @@ pub struct Machine {
     pub transitions: Oset<Transition>,
 }
 
+impl Machine {
+    pub fn get_shift_dest(
+        &self,
+        start: StateIndex,
+        terminal: &DollarlessTerminalName,
+    ) -> Option<StateIndex> {
+        self.transitions.iter().find_map(|t| {
+            if t.from == start && t.symbol == *terminal {
+                Some(t.to)
+            } else {
+                None
+            }
+        })
+    }
+}
+
+impl PartialEq<DollarlessTerminalName> for Symbol {
+    fn eq(&self, other: &DollarlessTerminalName) -> bool {
+        match self {
+            Symbol::Terminal(t) => t == other,
+            Symbol::Nonterminal(_) => false,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct State {
     pub items: Oset<StateItem>,
