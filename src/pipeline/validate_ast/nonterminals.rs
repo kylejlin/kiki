@@ -237,15 +237,12 @@ fn assert_terminal_is_defined(
     terminal_ident: &TerminalIdent,
     defined_symbols: &DefinedSymbols,
 ) -> Result<(), KikiErr> {
-    if defined_symbols
-        .0
-        .contains(terminal_ident.dollarless_name().raw())
-    {
+    if defined_symbols.0.contains(terminal_ident.name.raw()) {
         Ok(())
     } else {
         Err(KikiErr::UndefinedTerminal(
-            terminal_ident.dollarless_name(),
-            ByteIndex(terminal_ident.position.0 + "$".len()),
+            terminal_ident.name.clone(),
+            terminal_ident.dollarless_position,
         ))
     }
 }

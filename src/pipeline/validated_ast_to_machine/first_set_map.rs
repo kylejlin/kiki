@@ -114,9 +114,9 @@ fn get_current_first_set_for_symbol(
     map: &HashMap<String, FirstSet>,
 ) -> FirstSet {
     match symbol {
-        IdentOrTerminalIdent::Ident(name) => map.get(&name.name).unwrap().clone(),
-        IdentOrTerminalIdent::Terminal(name) => FirstSet {
-            terminals: [name.dollarless_name()].into_iter().collect(),
+        IdentOrTerminalIdent::Ident(ident) => map.get(&ident.name).unwrap().clone(),
+        IdentOrTerminalIdent::Terminal(terminal_ident) => FirstSet {
+            terminals: [terminal_ident.name.clone()].into_iter().collect(),
             contains_epsilon: false,
         },
     }

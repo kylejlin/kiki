@@ -170,12 +170,6 @@ pub struct Ident {
 
 #[derive(Clone, Debug)]
 pub struct TerminalIdent {
-    pub dollared_name: String,
-    pub position: ByteIndex,
-}
-
-impl TerminalIdent {
-    pub fn dollarless_name(&self) -> DollarlessTerminalName {
-        DollarlessTerminalName::remove_dollars(&self.dollared_name)
-    }
+    pub name: DollarlessTerminalName,
+    pub dollarless_position: ByteIndex,
 }

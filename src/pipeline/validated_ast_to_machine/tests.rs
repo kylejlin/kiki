@@ -262,7 +262,7 @@ fn positionless_ident(s: &str) -> Ident {
 
 fn positionless_terminal_ident(s: &DollarlessTerminalName) -> TerminalIdent {
     TerminalIdent {
-        dollared_name: format!("${}", s.raw()),
-        position: ByteIndex(0),
+        name: s.clone(),
+        dollarless_position: ByteIndex(1),
     }
 }

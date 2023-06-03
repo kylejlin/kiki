@@ -69,7 +69,7 @@ impl From<cst::IdentOrTerminalIdent> for Symbol {
     fn from(ident: cst::IdentOrTerminalIdent) -> Self {
         match ident {
             cst::IdentOrTerminalIdent::Ident(ident) => Symbol::Nonterminal(ident.name),
-            cst::IdentOrTerminalIdent::Terminal(ident) => Symbol::Terminal(ident.dollarless_name()),
+            cst::IdentOrTerminalIdent::Terminal(ident) => Symbol::Terminal(ident.name),
         }
     }
 }

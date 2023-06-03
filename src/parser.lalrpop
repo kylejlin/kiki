@@ -1,5 +1,5 @@
 use crate::data::cst::*;
-use crate::data::ByteIndex;
+use crate::data::{ByteIndex, DollarlessTerminalName};
 
 grammar;
 
@@ -147,9 +147,9 @@ pub Ident: Ident = <s:r"[a-zA-Z_][a-zA-Z_0-9]*"> => Ident {
     position: ByteIndex(0),
 };
 pub TerminalIdent: TerminalIdent = <s:r"\$[a-zA-Z_][a-zA-Z_0-9]*"> => TerminalIdent {
-    dollared_name: s.to_owned(),
+    name: DollarlessTerminalName::remove_dollars(s),
     // TODO
-    position: ByteIndex(0),
+    dollarless_position: ByteIndex(1),
 };
 
 #[inline]

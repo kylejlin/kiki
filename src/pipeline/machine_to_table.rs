@@ -123,15 +123,16 @@ impl ImmutContext<'_> {
         rule_index: usize,
     ) -> Result<(), KikiErr> {
         // TODO: Review
-        let rule = &self.rules[rule_index];
-        let quasiterminal = Quasiterminal::from(rule.fieldset[item.dot]);
-        let next_state_index = self.machine.get_next_state(state_index, quasiterminal);
-        builder.set_action(
-            state_index,
-            quasiterminal,
-            item,
-            Action::Shift(next_state_index),
-        )
+        // let rule = &self.rules[rule_index];
+        // let quasiterminal = Quasiterminal::from(rule.fieldset[item.dot]);
+        // let next_state_index = self.machine.get_next_state(state_index, quasiterminal);
+        // builder.set_action(
+        //     state_index,
+        //     quasiterminal,
+        //     item,
+        //     Action::Shift(next_state_index),
+        // )
+        todo!()
     }
 
     fn add_reduction_to_table(
@@ -142,9 +143,10 @@ impl ImmutContext<'_> {
         rule_index: usize,
     ) -> Result<(), KikiErr> {
         // TODO Review
-        let rule = &self.rules[rule_index];
-        let quasiterminal = Quasiterminal::from(rule.fieldset[item.dot]);
-        builder.set_action(state_index, quasiterminal, item, Action::Reduce(rule_index))
+        // let rule = &self.rules[rule_index];
+        // let quasiterminal = Quasiterminal::from(rule.fieldset[item.dot]);
+        // builder.set_action(state_index, quasiterminal, item, Action::Reduce(rule_index))
+        todo!()
     }
 }
 

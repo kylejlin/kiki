@@ -37,7 +37,7 @@ fn validate_ident_uppercase_start(ident: &Ident) -> Result<&str, KikiErr> {
 }
 
 fn validate_terminal_ident_uppercase_start(ident: &TerminalIdent) -> Result<&str, KikiErr> {
-    validate_uppercase_start(&ident.dollared_name, ident.position)
+    validate_uppercase_start(ident.name.raw(), ident.dollarless_position)
 }
 
 fn validate_uppercase_start(name: &str, position: ByteIndex) -> Result<&str, KikiErr> {

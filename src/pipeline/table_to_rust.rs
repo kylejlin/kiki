@@ -367,11 +367,8 @@ impl {node_enum_name} {{
                     IdentOrTerminalIdent::Terminal(field_type),
                 ) => {
                     let field_name = &field_name.name;
-                    let field_type_name = self
-                        .file
-                        .terminal_enum
-                        .get_type(&field_type.dollarless_name())
-                        .unwrap();
+                    let field_type_name =
+                        self.file.terminal_enum.get_type(&field_type.name).unwrap();
                     Some(format!("{field_name}: {field_type_name},"))
                 }
             })
@@ -392,11 +389,8 @@ impl {node_enum_name} {{
                     Some(format!("Box<{field_type_name}>,"))
                 }
                 TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                    let field_type_name = self
-                        .file
-                        .terminal_enum
-                        .get_type(&field_type.dollarless_name())
-                        .unwrap();
+                    let field_type_name =
+                        self.file.terminal_enum.get_type(&field_type.name).unwrap();
                     Some(format!("{field_type_name},"))
                 }
             })
@@ -552,7 +546,7 @@ impl {node_enum_name} {{
                 },
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Terminal(field_type)) => {
                     let field_name = &field_name.name;
-                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.dollarless_name()).unwrap();
+                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
                     format!("let {field_name}_{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
                 }
             })
@@ -608,7 +602,7 @@ states.truncate(states.len() - {num_fields});
                     format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = Box::new({field_type_name}::try_from(nodes.pop().unwrap()).unwrap());\n")
                 },
                 TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
-                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.dollarless_name()).unwrap();
+                    let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
                     format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
                 },
             })
@@ -1026,8 +1020,8 @@ mod tests {
 
     fn positionless_terminal_ident(s: &DollarlessTerminalName) -> TerminalIdent {
         TerminalIdent {
-            dollared_name: format!("${}", s.raw()),
-            position: ByteIndex(0),
+            name: s.clone(),
+            dollarless_position: ByteIndex(1),
         }
     }
 

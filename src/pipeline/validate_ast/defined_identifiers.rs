@@ -102,8 +102,8 @@ fn define_terminal_variant(
     seen: &mut HashMap<String, ByteIndex>,
     variant: &TerminalEnumVariant,
 ) -> Result<(), KikiErr> {
-    let dollarless_name = DollarlessTerminalName::remove_dollars(&variant.name.dollared_name);
-    let dollarless_position = ByteIndex(variant.name.position.0 + "$".len());
+    let dollarless_name = variant.name.name.clone();
+    let dollarless_position = variant.name.dollarless_position;
 
     if let Some(conflicting_symbol_pos) = seen.get(dollarless_name.raw()) {
         return Err(KikiErr::NameClash(
