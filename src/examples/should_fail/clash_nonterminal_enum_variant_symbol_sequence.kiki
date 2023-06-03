@@ -1,0 +1,20 @@
+start TwoFractions
+
+enum TwoFractions {
+    Spam(Fraction Fraction)
+    Ham {
+        left: Fraction
+        right: Fraction
+    }
+}
+
+struct Fraction {
+    numerator: $Num
+    _: $Slash
+    denominator: $Num
+}
+
+terminal Token {
+    $Num: isize
+    $Slash: ()
+}

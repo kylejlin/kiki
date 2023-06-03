@@ -146,11 +146,26 @@ mod should_fail {
     }
 
     #[test]
-    fn clash_nonterminal_enum_variants() {
-        let src = include_str!("examples/should_fail/clash_nonterminal_enum_variants.kiki");
+    fn clash_nonterminal_enum_variant_name() {
+        let src = include_str!("examples/should_fail/clash_nonterminal_enum_variant_name.kiki");
         let err = assert_src_fails_pre_machine_validation(src);
         assert!(
             matches!(err, KikiErr::NonterminalEnumVariantNameClash(name, _, _) if name == "Ipsum")
+        );
+    }
+
+    #[test]
+    fn clash_nonterminal_enum_variant_symbol_sequence() {
+        let src = include_str!(
+            "examples/should_fail/clash_nonterminal_enum_variant_symbol_sequence.kiki"
+        );
+        let err = assert_src_fails_pre_machine_validation(src);
+        let expected_seq = vec![
+            Symbol::Nonterminal("Fraction".into()),
+            Symbol::Nonterminal("Fraction".into()),
+        ];
+        assert!(
+            matches!(err, KikiErr::NonterminalEnumVariantSymbolSequenceClash(seq, _, _) if seq == expected_seq)
         );
     }
 
