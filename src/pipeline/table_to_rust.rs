@@ -105,6 +105,7 @@ impl SrcBuilder<'_> {
             ..
         } = self;
 
+        let StateIndex(start_state_index) = table.start;
         let terminal_enum_variants_indent_1 = self.get_terminal_enum_variants_src().indent(1);
         let nonterminal_type_defs = self.get_nonterminal_type_defs_src();
         let terminal_kind_enum_variants_indent_1 =
@@ -151,7 +152,7 @@ where S: IntoIterator<Item = {terminal_enum_name}> {{
         .map({quasiterminal_enum_name}::Terminal)
         .chain(std::iter::once({quasiterminal_enum_name}::Eof))
         .peekable();
-    let mut states = vec![{state_enum_name}::{STATE_VARIANT_PREFIX}0];
+    let mut states = vec![{state_enum_name}::{STATE_VARIANT_PREFIX}{start_state_index}];
     let mut nodes: Vec<{node_enum_name}> = vec![];
     loop {{
         let top_state = *states.last().unwrap();
@@ -871,6 +872,7 @@ mod tests {
             vec![State(1), Err, State(3), Err, Err]
         };
         let table = Table {
+            start: StateIndex(0),
             dollarless_terminals: vec![
                 DollarlessTerminalName::remove_dollars("LParen"),
                 DollarlessTerminalName::remove_dollars("RParen"),
@@ -949,6 +951,7 @@ mod tests {
             vec![State(1), Err, State(3), Err, Err]
         };
         let table = Table {
+            start: StateIndex(0),
             dollarless_terminals: vec![
                 DollarlessTerminalName::remove_dollars("LParen"),
                 DollarlessTerminalName::remove_dollars("RParen"),

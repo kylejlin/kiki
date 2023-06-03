@@ -2,11 +2,14 @@ use crate::data::*;
 
 #[derive(Debug, Clone)]
 pub struct Table {
+    pub start: StateIndex,
     pub dollarless_terminals: Vec<DollarlessTerminalName>,
     pub nonterminals: Vec<String>,
     pub actions: Vec<Action>,
     pub gotos: Vec<Goto>,
 }
+
+pub use machine::StateIndex;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Action {
