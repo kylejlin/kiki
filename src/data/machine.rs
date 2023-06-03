@@ -1,4 +1,4 @@
-use crate::data::*;
+use crate::data::{table::Quasiterminal, *};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Machine {
@@ -56,6 +56,15 @@ pub enum RuleIndex {
 pub enum Lookahead {
     Terminal(DollarlessTerminalName),
     Eof,
+}
+
+impl Lookahead {
+    pub fn as_quasiterminal(&self) -> Quasiterminal {
+        match self {
+            Lookahead::Terminal(t) => Quasiterminal::Terminal(t),
+            Lookahead::Eof => Quasiterminal::Eof,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
