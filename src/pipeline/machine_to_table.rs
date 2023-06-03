@@ -3,45 +3,7 @@ use crate::data::{machine::*, table::*, validated_file::*, KikiErr, *};
 use std::collections::HashMap;
 
 pub fn machine_to_table(machine: &Machine, file: &File) -> Result<Table, KikiErr> {
-    let builder = TableBuilder::new();
-    let context = ImmutContext::new(machine, file);
-    builder.build(&context)
-}
-
-#[derive(Debug)]
-struct TableBuilder<'a> {
-    pub actions: HashMap<(StateIndex, Quasiterminal<'a>), (RuleIndex, Action)>,
-    pub gotos: HashMap<(StateIndex, &'a str), Goto>,
-}
-
-impl TableBuilder<'_> {
-    fn new<'a>() -> TableBuilder<'a> {
-        TableBuilder {
-            actions: HashMap::new(),
-            gotos: HashMap::new(),
-        }
-    }
-}
-
-impl TableBuilder<'_> {
-    fn build(mut self, context: &ImmutContext) -> Result<Table, KikiErr> {
-        context.fill_empty_table_builder(&mut self)?;
-        self.convert_to_table(context)
-    }
-
-    fn convert_to_table(self, context: &ImmutContext) -> Result<Table, KikiErr> {
-        let mut table = get_empty_table(context.machine, context.file);
-
-        for ((state, quasiterminal), (_, action)) in self.actions {
-            table.set_action(state, quasiterminal, action);
-        }
-
-        for ((state, nonterminal), goto) in self.gotos {
-            table.set_goto(state, &nonterminal, goto);
-        }
-
-        Ok(table)
-    }
+    ImmutContext::new(machine, file).get_table()
 }
 
 struct ImmutContext<'a> {
@@ -61,12 +23,30 @@ impl ImmutContext<'_> {
 }
 
 impl ImmutContext<'_> {
-    fn fill_empty_table_builder(&self, builder: &mut TableBuilder) -> Result<(), KikiErr> {
-        self.add_actions_to_table(builder)?;
-        self.add_gotos_to_table(builder)?;
-        Ok(())
+    fn get_table(&self) -> Result<Table, KikiErr> {
+        let mut builder = TableBuilder::new();
+        self.add_actions_to_table(&mut builder)?;
+        self.add_gotos_to_table(&mut builder)?;
+        Ok(self.build_as_is(builder))
     }
+}
 
+#[derive(Debug)]
+struct TableBuilder<'a> {
+    pub actions: HashMap<(StateIndex, Quasiterminal<'a>), (RuleIndex, Action)>,
+    pub gotos: HashMap<(StateIndex, &'a str), Goto>,
+}
+
+impl TableBuilder<'_> {
+    fn new<'a>() -> TableBuilder<'a> {
+        TableBuilder {
+            actions: HashMap::new(),
+            gotos: HashMap::new(),
+        }
+    }
+}
+
+impl ImmutContext<'_> {
     fn add_actions_to_table(&self, builder: &mut TableBuilder) -> Result<(), KikiErr> {
         for i in 0..self.machine.states.len() {
             self.add_state_actions_to_table(builder, StateIndex(i))?;
@@ -120,9 +100,27 @@ impl ImmutContext<'_> {
     ) -> Result<(), KikiErr> {
         todo!()
     }
+}
 
+impl ImmutContext<'_> {
     fn add_gotos_to_table(&self, builder: &mut TableBuilder) -> Result<(), KikiErr> {
         todo!()
+    }
+}
+
+impl ImmutContext<'_> {
+    fn build_as_is(&self, builder: TableBuilder) -> Table {
+        let mut table = get_empty_table(self.machine, self.file);
+
+        for ((state, quasiterminal), (_, action)) in builder.actions {
+            table.set_action(state, quasiterminal, action);
+        }
+
+        for ((state, nonterminal), goto) in builder.gotos {
+            table.set_goto(state, &nonterminal, goto);
+        }
+
+        table
     }
 }
 
