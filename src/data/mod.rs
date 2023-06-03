@@ -20,6 +20,7 @@ pub enum KikiErr {
     FieldFirstLetterNotLowercase(ByteIndex),
     NameClash(String, ByteIndex, ByteIndex),
     NonterminalEnumVariantNameClash(String, ByteIndex, ByteIndex),
+    NonterminalEnumVariantSymbolSequenceClash(Vec<Symbol>, ByteIndex, ByteIndex),
     UndefinedNonterminal(String, ByteIndex),
     UndefinedTerminal(DollarlessTerminalName, ByteIndex),
 }

@@ -1,10 +1,14 @@
 use super::*;
+use crate::data::Symbol;
 
 /// This function validates that:
 /// 1. Every nonterminal name is properly capitalized.
 /// 2. Every nonterminal enum variant name is properly capitalized.
 /// 3. Every field name is properly capitalized.
-/// 4. Every nonterminal enum has zero or more unique variants.
+/// 4. Every nonterminal enum's variants have unique names within that enum.
+///    1. _Different_ nonterminal enums may have variants with the same name.
+/// 5. Every nonterminal enum's variants have a unique sequence of field symbols.
+///    1. _Different_ nonterminal enums may have variants with the same sequence of field symbols.
 ///
 /// This function does **not** check for name clashes,
 /// except for those between nonterminal enum variants.
@@ -68,7 +72,8 @@ fn assert_variants_are_valid(
     variants: &[EnumVariant],
     defined_symbols: &DefinedSymbols,
 ) -> Result<(), KikiErr> {
-    assert_variants_are_unique(variants)?;
+    assert_variants_have_unique_names(variants)?;
+    assert_variants_have_unique_field_symbol_sequences(variants)?;
 
     for variant in variants {
         validate_ident_uppercase_start(&variant.name)?;
@@ -78,7 +83,7 @@ fn assert_variants_are_valid(
     Ok(())
 }
 
-fn assert_variants_are_unique(variants: &[EnumVariant]) -> Result<(), KikiErr> {
+fn assert_variants_have_unique_names(variants: &[EnumVariant]) -> Result<(), KikiErr> {
     let mut seen: HashMap<&str, ByteIndex> = HashMap::new();
 
     for variant in variants {
@@ -95,6 +100,31 @@ fn assert_variants_are_unique(variants: &[EnumVariant]) -> Result<(), KikiErr> {
     }
 
     Ok(())
+}
+
+fn assert_variants_have_unique_field_symbol_sequences(
+    variants: &[EnumVariant],
+) -> Result<(), KikiErr> {
+    let mut seen: HashMap<Vec<Symbol>, ByteIndex> = HashMap::new();
+
+    for variant in variants {
+        let symbol_sequence = get_field_symbol_sequence(variant);
+        let position = variant.name.position;
+        if let Some(conflicting_variant_position) = seen.get(&symbol_sequence) {
+            return Err(KikiErr::NonterminalEnumVariantSymbolSequenceClash(
+                symbol_sequence,
+                *conflicting_variant_position,
+                position,
+            ));
+        }
+        seen.insert(symbol_sequence, position);
+    }
+
+    Ok(())
+}
+
+fn get_field_symbol_sequence(variant: &EnumVariant) -> Vec<Symbol> {
+    todo!()
 }
 
 fn validate_struct(
