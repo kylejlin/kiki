@@ -34,7 +34,7 @@ impl ImmutContext<'_> {
 
 #[derive(Debug)]
 struct TableBuilder<'a> {
-    actions: HashMap<(StateIndex, QuasiterminalRef<'a>), (&'a StateItem, Action)>,
+    actions: HashMap<(StateIndex, Quasiterminal<'a>), (&'a StateItem, Action)>,
     gotos: HashMap<(StateIndex, &'a str), Goto>,
 
     context: &'a ImmutContext<'a>,
@@ -97,7 +97,7 @@ impl ImmutContext<'_> {
             return Ok(());
         }
 
-        builder.set_action(state_index, QuasiterminalRef::Eof, item, Action::Accept)
+        builder.set_action(state_index, Quasiterminal::Eof, item, Action::Accept)
     }
 
     fn add_original_item_action_to_table(
@@ -124,7 +124,7 @@ impl ImmutContext<'_> {
     ) -> Result<(), KikiErr> {
         // TODO: Review
         let rule = &self.rules[rule_index];
-        let quasiterminal = QuasiterminalRef::from(rule.fieldset[item.dot]);
+        let quasiterminal = Quasiterminal::from(rule.fieldset[item.dot]);
         let next_state_index = self.machine.get_next_state(state_index, quasiterminal);
         builder.set_action(
             state_index,
@@ -143,7 +143,7 @@ impl ImmutContext<'_> {
     ) -> Result<(), KikiErr> {
         // TODO Review
         let rule = &self.rules[rule_index];
-        let quasiterminal = QuasiterminalRef::from(rule.fieldset[item.dot]);
+        let quasiterminal = Quasiterminal::from(rule.fieldset[item.dot]);
         builder.set_action(state_index, quasiterminal, item, Action::Reduce(rule_index))
     }
 }
@@ -152,7 +152,7 @@ impl<'a> TableBuilder<'a> {
     fn set_action(
         &mut self,
         state_index: StateIndex,
-        quasiterminal: QuasiterminalRef<'a>,
+        quasiterminal: Quasiterminal<'a>,
         item: &'a StateItem,
         action: Action,
     ) -> Result<(), KikiErr> {

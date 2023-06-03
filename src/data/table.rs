@@ -25,14 +25,8 @@ pub enum Goto {
     Err,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Quasiterminal {
-    Terminal(DollarlessTerminalName),
-    Eof,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum QuasiterminalRef<'a> {
+pub enum Quasiterminal<'a> {
     Terminal(&'a DollarlessTerminalName),
     Eof,
 }
@@ -45,7 +39,7 @@ impl Table {
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn action(&self, state_index: StateIndex, terminal: QuasiterminalRef) -> Action {
+    pub fn action(&self, state_index: StateIndex, terminal: Quasiterminal) -> Action {
         let i = self.action_index(state_index, terminal);
         self.actions[i]
     }
@@ -53,7 +47,7 @@ impl Table {
     /// ## Panics
     /// 1. Panics if the terminal is not in the table.
     /// 2. Panics if the state is too large.
-    pub fn set_action(&mut self, state_index: StateIndex, terminal: QuasiterminalRef, val: Action) {
+    pub fn set_action(&mut self, state_index: StateIndex, terminal: Quasiterminal, val: Action) {
         let i = self.action_index(state_index, terminal);
         self.actions[i] = val;
     }
@@ -64,15 +58,15 @@ impl Table {
     fn action_index(
         &self,
         StateIndex(state_index): StateIndex,
-        quasiterminal: QuasiterminalRef,
+        quasiterminal: Quasiterminal,
     ) -> usize {
         let quasiterminal_index = match quasiterminal {
-            QuasiterminalRef::Terminal(terminal) => self
+            Quasiterminal::Terminal(terminal) => self
                 .terminals
                 .iter()
                 .position(|t| t == terminal)
                 .expect("Terminal not found in table"),
-            QuasiterminalRef::Eof => self.terminals.len(),
+            Quasiterminal::Eof => self.terminals.len(),
         };
 
         if state_index >= self.state_count() {
