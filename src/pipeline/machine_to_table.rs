@@ -1,11 +1,9 @@
 use crate::data::{machine::*, table::*, validated_file::*, KikiErr, *};
 
 pub fn machine_to_table(machine: &Machine, file: &File) -> Result<Table, KikiErr> {
-    let mut table = get_empty_table(machine, file);
-    let rules: Vec<Rule> = file.get_rules().collect();
-    add_actions_to_table(&mut table, machine, &rules)?;
-    add_gotos_to_table(&mut table, machine, &rules)?;
-    Ok(table)
+    let table = get_empty_table(machine, file);
+    let context = ImmutContext::new(machine, file);
+    context.fill_empty_table(table)
 }
 
 fn get_empty_table(machine: &Machine, file: &File) -> Table {
@@ -47,45 +45,56 @@ fn get_empty_goto_table(states: &[State], nonterminals: &[String]) -> Vec<Goto> 
     vec![Goto::Err; size]
 }
 
-fn add_actions_to_table(
-    table: &mut Table,
-    machine: &Machine,
-    rules: &[Rule],
-) -> Result<(), KikiErr> {
-    for (state_index, state) in machine
-        .states
-        .iter()
-        .enumerate()
-        .map(|(i, state)| (StateIndex(i), state))
-    {
-        add_state_actions_to_table(table, state_index, state, &machine.transitions, rules)?;
+struct ImmutContext<'a> {
+    machine: &'a Machine,
+    rules: Vec<Rule<'a>>,
+}
+
+impl ImmutContext<'_> {
+    fn new<'a>(machine: &'a Machine, file: &'a File) -> ImmutContext<'a> {
+        ImmutContext {
+            machine,
+            rules: file.get_rules().collect(),
+        }
     }
-    Ok(())
 }
 
-fn add_state_actions_to_table(
-    table: &mut Table,
-    state_index: StateIndex,
-    state: &State,
-    transitions: &Oset<Transition>,
-    rules: &[Rule],
-) -> Result<(), KikiErr> {
-    for item in &state.items {
-        add_item_actions_to_table(table, state_index, item, transitions, rules)?;
+impl ImmutContext<'_> {
+    fn fill_empty_table(&self, mut table: Table) -> Result<Table, KikiErr> {
+        self.add_actions_to_table(&mut table)?;
+        self.add_gotos_to_table(&mut table)?;
+        Ok(table)
     }
-    Ok(())
-}
 
-fn add_item_actions_to_table(
-    table: &mut Table,
-    state_index: StateIndex,
-    item: &Item,
-    transitions: &Oset<Transition>,
-    rules: &[Rule],
-) -> Result<(), KikiErr> {
-    todo!()
-}
+    fn add_actions_to_table(&self, table: &mut Table) -> Result<(), KikiErr> {
+        for i in 0..self.machine.states.len() {
+            self.add_state_actions_to_table(table, StateIndex(i))?;
+        }
+        Ok(())
+    }
 
-fn add_gotos_to_table(table: &mut Table, machine: &Machine, rules: &[Rule]) -> Result<(), KikiErr> {
-    todo!()
+    fn add_state_actions_to_table(
+        &self,
+        table: &mut Table,
+        state_index: StateIndex,
+    ) -> Result<(), KikiErr> {
+        let state = &self.machine.states[state_index.0];
+        for item in &state.items {
+            self.add_item_actions_to_table(table, state_index, item)?;
+        }
+        Ok(())
+    }
+
+    fn add_item_actions_to_table(
+        &self,
+        table: &mut Table,
+        state_index: StateIndex,
+        item: &Item,
+    ) -> Result<(), KikiErr> {
+        todo!()
+    }
+
+    fn add_gotos_to_table(&self, table: &mut Table) -> Result<(), KikiErr> {
+        todo!()
+    }
 }
