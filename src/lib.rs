@@ -30,3 +30,18 @@ pub fn generate(src: &str) -> Result<RustSrc, KikiErr> {
     let table = machine_to_table(&machine, &validated)?;
     Ok(table_to_rust(&table, &validated, src))
 }
+
+pub fn get_grammar_hash(src: RustSrcRef) -> Option<&str> {
+    const HASH_PREFIX: &str = "// @sha256 ";
+    for line in src.0.lines() {
+        if !line.starts_with("//") {
+            return None;
+        }
+
+        if line.starts_with(HASH_PREFIX) {
+            let hash = line.trim_start_matches(HASH_PREFIX);
+            return Some(hash);
+        }
+    }
+    None
+}

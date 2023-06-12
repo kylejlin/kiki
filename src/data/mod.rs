@@ -38,6 +38,15 @@ pub struct TableConflictErr {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct RustSrc(pub String);
 
+impl RustSrc {
+    pub fn as_ref(&self) -> RustSrcRef {
+        RustSrcRef(&self.0)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct RustSrcRef<'a>(pub &'a str);
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ByteIndex(pub usize);
 
