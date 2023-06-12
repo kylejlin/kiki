@@ -217,7 +217,7 @@ fn balanced_parens_esoteric_input() -> File {
                     fieldset: Fieldset::Named(NamedFieldset {
                         fields: vec![
                             NamedField {
-                                name: IdentOrUnderscore::Underscore,
+                                name: IdentOrUnderscore::Underscore(ByteIndex(0)),
                                 symbol: IdentOrTerminalIdent::Terminal(
                                     positionless_terminal_ident(
                                         &DollarlessTerminalName::remove_dollars("LParen"),

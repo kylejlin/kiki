@@ -365,7 +365,7 @@ impl {node_enum_name} {{
             .fields
             .iter()
             .filter_map(|field| match (&field.name, &field.symbol) {
-                (IdentOrUnderscore::Underscore, _) => None,
+                (IdentOrUnderscore::Underscore(_), _) => None,
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_name = &field_name.name;
                     let field_type_name = &field_type.name;
@@ -547,7 +547,7 @@ impl {node_enum_name} {{
             .enumerate()
             .rev()
             .map(|(field_index, field)| match (&field.name, &field.symbol) {
-                (IdentOrUnderscore::Underscore, _) => "nodes.pop().unwrap();\n".to_owned(),
+                (IdentOrUnderscore::Underscore(_), _) => "nodes.pop().unwrap();\n".to_owned(),
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_name = &field_name.name;
                     let field_type_name = &field_type.name;
@@ -567,7 +567,7 @@ impl {node_enum_name} {{
             .iter()
             .enumerate()
             .filter_map(|(field_index, field)| match &field.name {
-                IdentOrUnderscore::Underscore => None,
+                IdentOrUnderscore::Underscore(_) => None,
                 IdentOrUnderscore::Ident(field_name) => {
                     let field_name = &field_name.name;
                     Some(format!("{field_name}: {field_name}_{field_index},"))
@@ -1002,7 +1002,7 @@ mod tests {
                         fieldset: Fieldset::Named(NamedFieldset {
                             fields: vec![
                                 NamedField {
-                                    name: IdentOrUnderscore::Underscore,
+                                    name: IdentOrUnderscore::Underscore(ByteIndex(0)),
                                     symbol: IdentOrTerminalIdent::Terminal(
                                         positionless_terminal_ident(
                                             &DollarlessTerminalName::remove_dollars("LParen"),

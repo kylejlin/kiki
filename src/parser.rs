@@ -3,7 +3,7 @@
 // You can read more at https://crates.io/crates/kiki
 //
 // This code was generated from a grammar with the following hash:
-// @sha256 79a758b6b021a6d22dd7aeecbb54844efa5042f0aff2e668e4364a4c1a27bec6
+// @sha256 f4dca2c64f11b8d46e84e6ac860d9f60821082bfd1a56a178df1d2b6dc3de4c2
 
 #[derive(Debug)]
 pub enum Token {
@@ -27,207 +27,151 @@ pub enum Token {
 
 #[derive(Clone, Debug)]
 pub struct File {
-    items: Box<OptItems>,
+    pub items: Box<OptItems>,
 }
 
 #[derive(Clone, Debug)]
 pub enum OptItems {
     Nil,
-    Cons(
-        Box<OptItems>,
-        Box<FileItem>,
-    ),
+    Cons(Box<OptItems>, Box<FileItem>),
 }
 
 #[derive(Clone, Debug)]
 pub enum FileItem {
-    Start(
-        crate::data::token::Ident,
-    ),
-    Struct(
-        Box<Struct>,
-    ),
-    Enum(
-        Box<Enum>,
-    ),
-    Terminal(
-        Box<TerminalEnum>,
-    ),
+    Start(crate::data::token::Ident),
+    Struct(Box<Struct>),
+    Enum(Box<Enum>),
+    Terminal(Box<TerminalEnum>),
 }
 
 #[derive(Clone, Debug)]
 pub struct Struct {
-    name: crate::data::token::Ident,
-    fieldset: Box<Fieldset>,
+    pub name: crate::data::token::Ident,
+    pub fieldset: Box<Fieldset>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Enum {
-    name: crate::data::token::Ident,
-    variants: Box<OptEnumVariants>,
+    pub name: crate::data::token::Ident,
+    pub variants: Box<OptEnumVariants>,
 }
 
 #[derive(Clone, Debug)]
 pub struct TerminalEnum {
-    name: crate::data::token::Ident,
-    variants: Box<OptTerminalEnumVariants>,
+    pub name: crate::data::token::Ident,
+    pub variants: Box<OptTerminalEnumVariants>,
 }
 
 #[derive(Clone, Debug)]
 pub enum Fieldset {
     Empty,
-    Named(
-        Box<NamedFieldset>,
-    ),
-    Tuple(
-        Box<TupleFieldset>,
-    ),
+    Named(Box<NamedFieldset>),
+    Tuple(Box<TupleFieldset>),
 }
 
 #[derive(Clone, Debug)]
 pub struct NamedFieldset {
-    fields: Box<NamedFields>,
+    pub fields: Box<NamedFields>,
 }
 
 #[derive(Clone, Debug)]
 pub enum NamedFields {
-    One(
-        Box<NamedField>,
-    ),
-    Cons(
-        Box<NamedFields>,
-        Box<NamedField>,
-    ),
+    One(Box<NamedField>),
+    Cons(Box<NamedFields>, Box<NamedField>),
 }
 
 #[derive(Clone, Debug)]
 pub struct NamedField {
-    name: Box<IdentOrUnderscore>,
-    symbol: Box<IdentOrTerminalIdent>,
+    pub name: Box<IdentOrUnderscore>,
+    pub symbol: Box<IdentOrTerminalIdent>,
 }
 
 #[derive(Clone, Debug)]
 pub struct TupleFieldset {
-    fields: Box<TupleFields>,
+    pub fields: Box<TupleFields>,
 }
 
 #[derive(Clone, Debug)]
 pub enum TupleFields {
-    One(
-        Box<TupleField>,
-    ),
-    Cons(
-        Box<TupleFields>,
-        Box<TupleField>,
-    ),
+    One(Box<TupleField>),
+    Cons(Box<TupleFields>, Box<TupleField>),
 }
 
 #[derive(Clone, Debug)]
 pub enum TupleField {
-    Used(
-        Box<IdentOrTerminalIdent>,
-    ),
-    Skipped(
-        Box<IdentOrTerminalIdent>,
-    ),
+    Used(Box<IdentOrTerminalIdent>),
+    Skipped(Box<IdentOrTerminalIdent>),
 }
 
 #[derive(Clone, Debug)]
 pub enum OptEnumVariants {
     Nil,
-    Cons(
-        Box<OptEnumVariants>,
-        Box<EnumVariant>,
-    ),
+    Cons(Box<OptEnumVariants>, Box<EnumVariant>),
 }
 
 #[derive(Clone, Debug)]
 pub struct EnumVariant {
-    name: crate::data::token::Ident,
-    fieldset: Box<Fieldset>,
+    pub name: crate::data::token::Ident,
+    pub fieldset: Box<Fieldset>,
 }
 
 #[derive(Clone, Debug)]
 pub enum OptTerminalEnumVariants {
     Nil,
-    Cons(
-        Box<OptTerminalEnumVariants>,
-        Box<TerminalEnumVariant>,
-    ),
+    Cons(Box<OptTerminalEnumVariants>, Box<TerminalEnumVariant>),
 }
 
 #[derive(Clone, Debug)]
 pub struct TerminalEnumVariant {
-    name: crate::data::token::TerminalIdent,
-    type_: Box<Type>,
+    pub name: crate::data::token::TerminalIdent,
+    pub type_: Box<Type>,
 }
 
 #[derive(Clone, Debug)]
 pub enum Type {
-    Unit(
-        
-    ),
-    Path(
-        Box<Path>,
-    ),
-    Complex(
-        Box<ComplexType>,
-    ),
+    Unit(),
+    Path(Box<Path>),
+    Complex(Box<ComplexType>),
 }
 
 #[derive(Clone, Debug)]
 pub enum Path {
-    One(
-        crate::data::token::Ident,
-    ),
-    Cons(
-        Box<Path>,
-        crate::data::token::Ident,
-    ),
+    One(crate::data::token::Ident),
+    Cons(Box<Path>, crate::data::token::Ident),
 }
 
 #[derive(Clone, Debug)]
 pub struct ComplexType {
-    callee: Box<Type>,
-    args: Box<CommaSeparatedTypes>,
+    pub callee: Box<Path>,
+    pub args: Box<CommaSeparatedTypes>,
 }
 
 #[derive(Clone, Debug)]
 pub enum CommaSeparatedTypes {
-    One(
-        Box<Type>,
-    ),
-    Cons(
-        Box<CommaSeparatedTypes>,
-        Box<Type>,
-    ),
+    One(Box<Type>),
+    Cons(Box<CommaSeparatedTypes>, Box<Type>),
 }
 
 #[derive(Clone, Debug)]
 pub enum IdentOrUnderscore {
-    Ident(
-        crate::data::token::Ident,
-    ),
-    Underscore(
-        crate::data::ByteIndex,
-    ),
+    Ident(crate::data::token::Ident),
+    Underscore(crate::data::ByteIndex),
 }
 
 #[derive(Clone, Debug)]
 pub enum IdentOrTerminalIdent {
-    Ident(
-        crate::data::token::Ident,
-    ),
-    Terminal(
-        crate::data::token::TerminalIdent,
-    ),
+    Ident(crate::data::token::Ident),
+    Terminal(crate::data::token::TerminalIdent),
 }
 
 /// If the parser encounters an unexpected token `t`, it will return `Err(Some(t))`.
 /// If the parser encounters an unexpected end of input, it will return `Err(None)`.
 pub fn parse<S>(src: S) -> Result<File, Option<Token>>
-where S: IntoIterator<Item = Token> {
-    let mut quasiterminals = src.into_iter()
+where
+    S: IntoIterator<Item = Token>,
+{
+    let mut quasiterminals = src
+        .into_iter()
         .map(Quasiterminal::Terminal)
         .chain(std::iter::once(Quasiterminal::Eof))
         .peekable();
@@ -235,11 +179,14 @@ where S: IntoIterator<Item = Token> {
     let mut nodes: Vec<Node> = vec![];
     loop {
         let top_state = *states.last().unwrap();
-        let next_quasiterminal_kind = QuasiterminalKind::from_quasiterminal(quasiterminals.peek().unwrap());
+        let next_quasiterminal_kind =
+            QuasiterminalKind::from_quasiterminal(quasiterminals.peek().unwrap());
         match get_action(top_state, next_quasiterminal_kind) {
             Action::Shift(new_state) => {
                 states.push(new_state);
-                nodes.push(Node::from_terminal(quasiterminals.next().unwrap().try_into_terminal().unwrap()));
+                nodes.push(Node::from_terminal(
+                    quasiterminals.next().unwrap().try_into_terminal().unwrap(),
+                ));
             }
 
             Action::Reduce(rule_kind) => {
@@ -481,102 +428,85 @@ enum RuleKind {
     R39 = 39,
 }
 
-fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: RuleKind) -> (Node, NonterminalKind) {
+fn pop_and_reduce(
+    states: &mut Vec<State>,
+    nodes: &mut Vec<Node>,
+    rule_kind: RuleKind,
+) -> (Node, NonterminalKind) {
     match rule_kind {
         RuleKind::R0 => {
             let items_0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
-            (
-                Node::File(File {
-                    items: items_0,
-                }),
-                NonterminalKind::File
-            )
+
+            (Node::File(File { items: items_0 }), NonterminalKind::File)
         }
-        RuleKind::R1 => {
-            (
-                Node::OptItems(OptItems::Nil),
-                NonterminalKind::OptItems,
-            )
-        }
+        RuleKind::R1 => (Node::OptItems(OptItems::Nil), NonterminalKind::OptItems),
         RuleKind::R2 => {
             let t1 = Box::new(FileItem::try_from(nodes.pop().unwrap()).unwrap());
             let t0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
-                Node::OptItems(OptItems::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::OptItems
+                Node::OptItems(OptItems::Cons(t0, t1)),
+                NonterminalKind::OptItems,
             )
         }
         RuleKind::R3 => {
             let t1 = nodes.pop().unwrap().try_into_ident_1().unwrap();
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
-                Node::FileItem(FileItem::Start(
-                    t1,
-                )),
-                NonterminalKind::FileItem
+                Node::FileItem(FileItem::Start(t1)),
+                NonterminalKind::FileItem,
             )
         }
         RuleKind::R4 => {
             let t0 = Box::new(Struct::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::FileItem(FileItem::Struct(
-                    t0,
-                )),
-                NonterminalKind::FileItem
+                Node::FileItem(FileItem::Struct(t0)),
+                NonterminalKind::FileItem,
             )
         }
         RuleKind::R5 => {
             let t0 = Box::new(Enum::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::FileItem(FileItem::Enum(
-                    t0,
-                )),
-                NonterminalKind::FileItem
+                Node::FileItem(FileItem::Enum(t0)),
+                NonterminalKind::FileItem,
             )
         }
         RuleKind::R6 => {
             let t0 = Box::new(TerminalEnum::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::FileItem(FileItem::Terminal(
-                    t0,
-                )),
-                NonterminalKind::FileItem
+                Node::FileItem(FileItem::Terminal(t0)),
+                NonterminalKind::FileItem,
             )
         }
         RuleKind::R7 => {
             let fieldset_2 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).unwrap());
             let name_1 = nodes.pop().unwrap().try_into_ident_1().unwrap();
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::Struct(Struct {
                     name: name_1,
                     fieldset: fieldset_2,
                 }),
-                NonterminalKind::Struct
+                NonterminalKind::Struct,
             )
         }
         RuleKind::R8 => {
@@ -585,407 +515,332 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             nodes.pop().unwrap();
             let name_1 = nodes.pop().unwrap().try_into_ident_1().unwrap();
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 5);
-            
+
             (
                 Node::Enum(Enum {
                     name: name_1,
                     variants: variants_3,
                 }),
-                NonterminalKind::Enum
+                NonterminalKind::Enum,
             )
         }
         RuleKind::R9 => {
             nodes.pop().unwrap();
-            let variants_3 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).unwrap());
+            let variants_3 =
+                Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).unwrap());
             nodes.pop().unwrap();
             let name_1 = nodes.pop().unwrap().try_into_ident_1().unwrap();
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 5);
-            
+
             (
                 Node::TerminalEnum(TerminalEnum {
                     name: name_1,
                     variants: variants_3,
                 }),
-                NonterminalKind::TerminalEnum
+                NonterminalKind::TerminalEnum,
             )
         }
-        RuleKind::R10 => {
-            (
-                Node::Fieldset(Fieldset::Empty),
-                NonterminalKind::Fieldset,
-            )
-        }
+        RuleKind::R10 => (Node::Fieldset(Fieldset::Empty), NonterminalKind::Fieldset),
         RuleKind::R11 => {
             let t0 = Box::new(NamedFieldset::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::Fieldset(Fieldset::Named(
-                    t0,
-                )),
-                NonterminalKind::Fieldset
+                Node::Fieldset(Fieldset::Named(t0)),
+                NonterminalKind::Fieldset,
             )
         }
         RuleKind::R12 => {
             let t0 = Box::new(TupleFieldset::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::Fieldset(Fieldset::Tuple(
-                    t0,
-                )),
-                NonterminalKind::Fieldset
+                Node::Fieldset(Fieldset::Tuple(t0)),
+                NonterminalKind::Fieldset,
             )
         }
         RuleKind::R13 => {
             nodes.pop().unwrap();
             let fields_1 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).unwrap());
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
-                Node::NamedFieldset(NamedFieldset {
-                    fields: fields_1,
-                }),
-                NonterminalKind::NamedFieldset
+                Node::NamedFieldset(NamedFieldset { fields: fields_1 }),
+                NonterminalKind::NamedFieldset,
             )
         }
         RuleKind::R14 => {
             let t0 = Box::new(NamedField::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::NamedFields(NamedFields::One(
-                    t0,
-                )),
-                NonterminalKind::NamedFields
+                Node::NamedFields(NamedFields::One(t0)),
+                NonterminalKind::NamedFields,
             )
         }
         RuleKind::R15 => {
             let t1 = Box::new(NamedField::try_from(nodes.pop().unwrap()).unwrap());
             let t0 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
-                Node::NamedFields(NamedFields::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::NamedFields
+                Node::NamedFields(NamedFields::Cons(t0, t1)),
+                NonterminalKind::NamedFields,
             )
         }
         RuleKind::R16 => {
             let symbol_2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).unwrap());
             nodes.pop().unwrap();
             let name_0 = Box::new(IdentOrUnderscore::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::NamedField(NamedField {
                     name: name_0,
                     symbol: symbol_2,
                 }),
-                NonterminalKind::NamedField
+                NonterminalKind::NamedField,
             )
         }
         RuleKind::R17 => {
             nodes.pop().unwrap();
             let fields_1 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).unwrap());
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
-                Node::TupleFieldset(TupleFieldset {
-                    fields: fields_1,
-                }),
-                NonterminalKind::TupleFieldset
+                Node::TupleFieldset(TupleFieldset { fields: fields_1 }),
+                NonterminalKind::TupleFieldset,
             )
         }
         RuleKind::R18 => {
             let t0 = Box::new(TupleField::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::TupleFields(TupleFields::One(
-                    t0,
-                )),
-                NonterminalKind::TupleFields
+                Node::TupleFields(TupleFields::One(t0)),
+                NonterminalKind::TupleFields,
             )
         }
         RuleKind::R19 => {
             let t1 = Box::new(TupleField::try_from(nodes.pop().unwrap()).unwrap());
             let t0 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
-                Node::TupleFields(TupleFields::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::TupleFields
+                Node::TupleFields(TupleFields::Cons(t0, t1)),
+                NonterminalKind::TupleFields,
             )
         }
         RuleKind::R20 => {
             let t0 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::TupleField(TupleField::Used(
-                    t0,
-                )),
-                NonterminalKind::TupleField
+                Node::TupleField(TupleField::Used(t0)),
+                NonterminalKind::TupleField,
             )
         }
         RuleKind::R21 => {
             let t2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).unwrap());
             nodes.pop().unwrap();
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
-                Node::TupleField(TupleField::Skipped(
-                    t2,
-                )),
-                NonterminalKind::TupleField
+                Node::TupleField(TupleField::Skipped(t2)),
+                NonterminalKind::TupleField,
             )
         }
-        RuleKind::R22 => {
-            (
-                Node::OptEnumVariants(OptEnumVariants::Nil),
-                NonterminalKind::OptEnumVariants,
-            )
-        }
+        RuleKind::R22 => (
+            Node::OptEnumVariants(OptEnumVariants::Nil),
+            NonterminalKind::OptEnumVariants,
+        ),
         RuleKind::R23 => {
             let t1 = Box::new(EnumVariant::try_from(nodes.pop().unwrap()).unwrap());
             let t0 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
-                Node::OptEnumVariants(OptEnumVariants::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::OptEnumVariants
+                Node::OptEnumVariants(OptEnumVariants::Cons(t0, t1)),
+                NonterminalKind::OptEnumVariants,
             )
         }
         RuleKind::R24 => {
             let fieldset_1 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).unwrap());
             let name_0 = nodes.pop().unwrap().try_into_ident_1().unwrap();
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
                 Node::EnumVariant(EnumVariant {
                     name: name_0,
                     fieldset: fieldset_1,
                 }),
-                NonterminalKind::EnumVariant
+                NonterminalKind::EnumVariant,
             )
         }
-        RuleKind::R25 => {
-            (
-                Node::OptTerminalEnumVariants(OptTerminalEnumVariants::Nil),
-                NonterminalKind::OptTerminalEnumVariants,
-            )
-        }
+        RuleKind::R25 => (
+            Node::OptTerminalEnumVariants(OptTerminalEnumVariants::Nil),
+            NonterminalKind::OptTerminalEnumVariants,
+        ),
         RuleKind::R26 => {
             let t1 = Box::new(TerminalEnumVariant::try_from(nodes.pop().unwrap()).unwrap());
             let t0 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
-                Node::OptTerminalEnumVariants(OptTerminalEnumVariants::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::OptTerminalEnumVariants
+                Node::OptTerminalEnumVariants(OptTerminalEnumVariants::Cons(t0, t1)),
+                NonterminalKind::OptTerminalEnumVariants,
             )
         }
         RuleKind::R27 => {
             let type__2 = Box::new(Type::try_from(nodes.pop().unwrap()).unwrap());
             nodes.pop().unwrap();
             let name_0 = nodes.pop().unwrap().try_into_terminal_ident_2().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::TerminalEnumVariant(TerminalEnumVariant {
                     name: name_0,
                     type_: type__2,
                 }),
-                NonterminalKind::TerminalEnumVariant
+                NonterminalKind::TerminalEnumVariant,
             )
         }
         RuleKind::R28 => {
             nodes.pop().unwrap();
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 2);
-            
-            (
-                Node::Type(Type::Unit(
-                    
-                )),
-                NonterminalKind::Type
-            )
+
+            (Node::Type(Type::Unit()), NonterminalKind::Type)
         }
         RuleKind::R29 => {
             let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
-            (
-                Node::Type(Type::Path(
-                    t0,
-                )),
-                NonterminalKind::Type
-            )
+
+            (Node::Type(Type::Path(t0)), NonterminalKind::Type)
         }
         RuleKind::R30 => {
             let t0 = Box::new(ComplexType::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
-            (
-                Node::Type(Type::Complex(
-                    t0,
-                )),
-                NonterminalKind::Type
-            )
+
+            (Node::Type(Type::Complex(t0)), NonterminalKind::Type)
         }
         RuleKind::R31 => {
             let t0 = nodes.pop().unwrap().try_into_ident_1().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
-            (
-                Node::Path(Path::One(
-                    t0,
-                )),
-                NonterminalKind::Path
-            )
+
+            (Node::Path(Path::One(t0)), NonterminalKind::Path)
         }
         RuleKind::R32 => {
             let t2 = nodes.pop().unwrap().try_into_ident_1().unwrap();
             nodes.pop().unwrap();
             let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 3);
-            
-            (
-                Node::Path(Path::Cons(
-                    t0,
-                    t2,
-                )),
-                NonterminalKind::Path
-            )
+
+            (Node::Path(Path::Cons(t0, t2)), NonterminalKind::Path)
         }
         RuleKind::R33 => {
             nodes.pop().unwrap();
             let args_2 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).unwrap());
             nodes.pop().unwrap();
-            let callee_0 = Box::new(Type::try_from(nodes.pop().unwrap()).unwrap());
-            
+            let callee_0 = Box::new(Path::try_from(nodes.pop().unwrap()).unwrap());
+
             states.truncate(states.len() - 4);
-            
+
             (
                 Node::ComplexType(ComplexType {
                     callee: callee_0,
                     args: args_2,
                 }),
-                NonterminalKind::ComplexType
+                NonterminalKind::ComplexType,
             )
         }
         RuleKind::R34 => {
             let t0 = Box::new(Type::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::CommaSeparatedTypes(CommaSeparatedTypes::One(
-                    t0,
-                )),
-                NonterminalKind::CommaSeparatedTypes
+                Node::CommaSeparatedTypes(CommaSeparatedTypes::One(t0)),
+                NonterminalKind::CommaSeparatedTypes,
             )
         }
         RuleKind::R35 => {
             let t2 = Box::new(Type::try_from(nodes.pop().unwrap()).unwrap());
             nodes.pop().unwrap();
             let t0 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).unwrap());
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
-                Node::CommaSeparatedTypes(CommaSeparatedTypes::Cons(
-                    t0,
-                    t2,
-                )),
-                NonterminalKind::CommaSeparatedTypes
+                Node::CommaSeparatedTypes(CommaSeparatedTypes::Cons(t0, t2)),
+                NonterminalKind::CommaSeparatedTypes,
             )
         }
         RuleKind::R36 => {
             let t0 = nodes.pop().unwrap().try_into_ident_1().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::IdentOrUnderscore(IdentOrUnderscore::Ident(
-                    t0,
-                )),
-                NonterminalKind::IdentOrUnderscore
+                Node::IdentOrUnderscore(IdentOrUnderscore::Ident(t0)),
+                NonterminalKind::IdentOrUnderscore,
             )
         }
         RuleKind::R37 => {
             let t0 = nodes.pop().unwrap().try_into_underscore_0().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::IdentOrUnderscore(IdentOrUnderscore::Underscore(
-                    t0,
-                )),
-                NonterminalKind::IdentOrUnderscore
+                Node::IdentOrUnderscore(IdentOrUnderscore::Underscore(t0)),
+                NonterminalKind::IdentOrUnderscore,
             )
         }
         RuleKind::R38 => {
             let t0 = nodes.pop().unwrap().try_into_ident_1().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::IdentOrTerminalIdent(IdentOrTerminalIdent::Ident(
-                    t0,
-                )),
-                NonterminalKind::IdentOrTerminalIdent
+                Node::IdentOrTerminalIdent(IdentOrTerminalIdent::Ident(t0)),
+                NonterminalKind::IdentOrTerminalIdent,
             )
         }
         RuleKind::R39 => {
             let t0 = nodes.pop().unwrap().try_into_terminal_ident_2().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
-                Node::IdentOrTerminalIdent(IdentOrTerminalIdent::Terminal(
-                    t0,
-                )),
-                NonterminalKind::IdentOrTerminalIdent
+                Node::IdentOrTerminalIdent(IdentOrTerminalIdent::Terminal(t0)),
+                NonterminalKind::IdentOrTerminalIdent,
             )
         }
     }
@@ -1943,7 +1798,7 @@ const ACTION_TABLE: [[Action; 17]; 65] = [
         Action::Err,
         Action::Err,
         Action::Reduce(RuleKind::R27),
-        Action::Shift(State::S47),
+        Action::Err,
         Action::Err,
         Action::Err,
     ],
@@ -2019,7 +1874,7 @@ const ACTION_TABLE: [[Action; 17]; 65] = [
         Action::Err,
         Action::Err,
         Action::Reduce(RuleKind::R28),
-        Action::Reduce(RuleKind::R28),
+        Action::Err,
         Action::Reduce(RuleKind::R28),
         Action::Err,
     ],
@@ -2038,7 +1893,7 @@ const ACTION_TABLE: [[Action; 17]; 65] = [
         Action::Err,
         Action::Err,
         Action::Reduce(RuleKind::R29),
-        Action::Reduce(RuleKind::R29),
+        Action::Shift(State::S47),
         Action::Reduce(RuleKind::R29),
         Action::Err,
     ],
@@ -2057,7 +1912,7 @@ const ACTION_TABLE: [[Action; 17]; 65] = [
         Action::Err,
         Action::Err,
         Action::Reduce(RuleKind::R30),
-        Action::Reduce(RuleKind::R30),
+        Action::Err,
         Action::Reduce(RuleKind::R30),
         Action::Err,
     ],
@@ -2128,51 +1983,13 @@ const ACTION_TABLE: [[Action; 17]; 65] = [
         Action::Err,
         Action::Err,
         Action::Err,
-        Action::Reduce(RuleKind::R34),
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Shift(State::S47),
-        Action::Reduce(RuleKind::R34),
-        Action::Err,
-    ],
-    [
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Reduce(RuleKind::R35),
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Shift(State::S47),
-        Action::Reduce(RuleKind::R35),
-        Action::Err,
-    ],
-    [
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
-        Action::Err,
         Action::Shift(State::S48),
         Action::Err,
         Action::Err,
         Action::Err,
         Action::Err,
         Action::Err,
-        Action::Shift(State::S59),
+        Action::Shift(State::S57),
         Action::Err,
     ],
     [
@@ -2190,8 +2007,46 @@ const ACTION_TABLE: [[Action; 17]; 65] = [
         Action::Err,
         Action::Err,
         Action::Reduce(RuleKind::R33),
+        Action::Err,
         Action::Reduce(RuleKind::R33),
-        Action::Reduce(RuleKind::R33),
+        Action::Err,
+    ],
+    [
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Reduce(RuleKind::R34),
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Reduce(RuleKind::R34),
+        Action::Err,
+    ],
+    [
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Reduce(RuleKind::R35),
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Err,
+        Action::Reduce(RuleKind::R35),
         Action::Err,
     ],
     [
@@ -2347,179 +2202,32 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -2547,79 +2255,16 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -2672,79 +2317,16 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -2797,29 +2379,8 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -2847,54 +2408,12 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -2947,104 +2466,20 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -3072,29 +2507,8 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         Some(State::S31),
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -3147,129 +2561,24 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         Some(State::S37),
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -3297,129 +2606,24 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         Some(State::S40),
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -3447,29 +2651,8 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
         None,
@@ -3489,10 +2672,10 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
         None,
         None,
-        Some(State::S56),
-        Some(State::S51),
-        Some(State::S52),
         Some(State::S58),
+        Some(State::S51),
+        Some(State::S52),
+        Some(State::S56),
         None,
         None,
     ],
@@ -3514,7 +2697,7 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
         None,
         None,
-        Some(State::S57),
+        Some(State::S59),
         Some(State::S51),
         Some(State::S52),
         None,
@@ -3522,404 +2705,68 @@ const GOTO_TABLE: [[Option<State>; 23]; 65] = [
         None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
     [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        None, None, None, None, None, None, None, None,
     ],
 ];
 
@@ -4187,105 +3034,105 @@ impl Node {
             _ => Err(self),
         }
     }
-    
+
     fn try_into_ident_1(self) -> Result<crate::data::token::Ident, Self> {
         match self {
             Self::Ident(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_terminal_ident_2(self) -> Result<crate::data::token::TerminalIdent, Self> {
         match self {
             Self::TerminalIdent(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_start_kw_3(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::StartKw(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_struct_kw_4(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::StructKw(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_enum_kw_5(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::EnumKw(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_terminal_kw_6(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::TerminalKw(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_colon_7(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::Colon(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_double_colon_8(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::DoubleColon(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_comma_9(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::Comma(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_l_paren_10(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::LParen(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_r_paren_11(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::RParen(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_l_curly_12(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::LCurly(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_r_curly_13(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::RCurly(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_l_angle_14(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::LAngle(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_r_angle_15(self) -> Result<crate::data::ByteIndex, Self> {
         match self {
             Self::RAngle(t) => Ok(t),

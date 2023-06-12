@@ -184,7 +184,7 @@ fn assert_field_ident_or_underscore_name_is_valid(
     field: &IdentOrUnderscore,
 ) -> Result<(), KikiErr> {
     match field {
-        IdentOrUnderscore::Underscore => Ok(()),
+        IdentOrUnderscore::Underscore(_) => Ok(()),
         IdentOrUnderscore::Ident(ident) => assert_ident_lowercase_start(ident),
     }
 }
