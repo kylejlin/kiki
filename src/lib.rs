@@ -3,7 +3,7 @@ extern crate lalrpop_util;
 
 lalrpop_mod!(pub parser);
 
-mod data;
+pub mod data;
 mod pipeline;
 
 #[cfg(test)]
