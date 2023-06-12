@@ -160,10 +160,27 @@ impl<'a> TableBuilder<'a> {
         item: &'a StateItem,
         action: Action,
     ) -> Result<(), KikiErr> {
-        if let Some((conflicting_item, _)) = self.actions.get(&(state_index, quasiterminal)) {
+        if let Some((existing_item, existing_action)) =
+            self.actions.get(&(state_index, quasiterminal))
+        {
+            // It is possible that we have two (or more)
+            // items that are identical except for
+            // their lookahead.
+            // If those items produce a Shift action,
+            // this will cause that action to get
+            // added twice (or more times).
+            // In that case, we simply ignore the second
+            // (or later) action(s).
+            //
+            // Since the actions are the same,
+            // there is no conflict.
+            if *existing_action == action {
+                return Ok(());
+            }
+
             return Err(KikiErr::TableConflict(Box::new(TableConflictErr {
                 state_index,
-                items: ((*conflicting_item).clone(), item.clone()),
+                items: ((*existing_item).clone(), item.clone()),
                 file: self.context.file.clone(),
                 machine: self.context.machine.clone(),
             })));
@@ -263,10 +280,6 @@ mod tests {
     fn balanced_parens() {
         let file = ast_to_machine::balanced_parens_input();
         let machine = ast_to_machine::balanced_parens_expected_output();
-
-        // TODO Delete
-        println!("{:#?}", machine_to_table(&machine, &file));
-
         let actual = machine_to_table(&machine, &file).unwrap();
         let expected = balanced_parens_expected_output(&machine);
         assert_eq!(expected, actual);
@@ -280,8 +293,28 @@ mod tests {
                 .map(DollarlessTerminalName::remove_dollars)
                 .collect(),
             nonterminals: vec!["Expr"].into_iter().map(str::to_owned).collect(),
-            actions: vec![],
-            gotos: vec![],
+            actions: {
+                use Action::*;
+                [
+                    [shift(0), Reduce(0), Err],
+                    [shift(0), Err, Reduce(0)],
+                    [Err, shift(3), Err],
+                    [Err, Reduce(1), Reduce(1)],
+                    [Err, Err, Accept],
+                ]
+                .into_iter()
+                .flatten()
+                .collect()
+            },
+            gotos: vec![goto(2), goto(4), Goto::Err, Goto::Err, Goto::Err],
         }
+    }
+
+    fn shift(i: usize) -> Action {
+        Action::Shift(StateIndex(i))
+    }
+
+    fn goto(i: usize) -> Goto {
+        Goto::State(StateIndex(i))
     }
 }
