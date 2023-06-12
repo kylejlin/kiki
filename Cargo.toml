@@ -1,6 +1,6 @@
 [package]
 name = "kiki"
-version = "2.0.0"
+version = "3.0.0"
 edition = "2021"
 authors = ["Kyle Lin <kylejlin.us@gmail.com>"]
 license = "MIT"
@@ -13,11 +13,11 @@ categories = ["parsing"]
 
 [dependencies]
 sha256 = "1.1.4"
-lalrpop-util = {version = "0.19", features = ["lexer"]}
-regex = "1"
 
 [build-dependencies]
-lalrpop = "0.19.7"
+walkdir = "2.3.3"
+kiki = "2.0.0"
+sha256 = "1.1.4"
 
 [dev-dependencies]
 insta = "1.26.0"
