@@ -5,6 +5,11 @@ edition = "2021"
 authors = ["Kyle Lin <kylejlin.us@gmail.com>"]
 license = "MIT"
 build = "build.rs"
+description = "A minimalist parser generator for Rust."
+homepage = "https://github.com/kylejlin/kiki"
+repository = "https://github.com/kylejlin/kiki"
+keywords = ["parser", "generator", "LR", "LALR", "grammar"]
+categories = ["parsing"]
 
 [dependencies]
 lalrpop-util = {version = "0.19", features = ["lexer"]}
