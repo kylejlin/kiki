@@ -3,6 +3,8 @@
 pub mod data;
 mod pipeline;
 
+mod parser;
+
 #[cfg(test)]
 mod tests;
 
@@ -11,9 +13,10 @@ pub use data::*;
 use pipeline::prelude::*;
 
 pub fn generate(src: &str) -> Result<RustSrc, KikiErr> {
-    let cst = pipeline::parser::parse(src)?;
+    let tokens = tokenize(src)?;
+    let cst = parse(tokens).map_err(unexpected_token_or_eof_to_kiki_err)?;
     let ast: data::ast::File = cst.into();
-    let validated = pipeline::validate_ast::validate_ast(ast)?;
+    let validated = validate_ast(ast)?;
     let machine = validated_ast_to_machine(&validated);
     let table = machine_to_table(&machine, &validated)?;
     Ok(table_to_rust(&table, &validated, src))

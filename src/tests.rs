@@ -195,9 +195,8 @@ mod should_fail {
     }
 
     fn assert_src_fails_pre_machine_validation(src: &str) -> KikiErr {
-        let cst = parser::FileParser::new()
-            .parse(src)
-            .expect("should parse correctly");
+        let tokens = tokenize(src).expect("Should be able to tokenize correctly");
+        let cst = parse(tokens).expect("should parse correctly");
         let ast: crate::data::ast::File = cst.into();
         crate::pipeline::validate_ast::validate_ast(ast)
             .expect_err("should fail pre-machine validation")
