@@ -1,6 +1,6 @@
 use crate::data::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Table {
     pub start: StateIndex,
     pub terminals: Vec<DollarlessTerminalName>,

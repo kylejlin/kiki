@@ -250,3 +250,38 @@ fn get_empty_goto_table(states: &[State], nonterminals: &[String]) -> Vec<Goto> 
     let size = states.len() * nonterminals.len();
     vec![Goto::Err; size]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::pipeline::validated_ast_to_machine::tests as ast_to_machine;
+
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn balanced_parens() {
+        let file = ast_to_machine::balanced_parens_input();
+        let machine = ast_to_machine::balanced_parens_expected_output();
+
+        // TODO Delete
+        println!("{:#?}", machine_to_table(&machine, &file));
+
+        let actual = machine_to_table(&machine, &file).unwrap();
+        let expected = balanced_parens_expected_output(&machine);
+        assert_eq!(expected, actual);
+    }
+
+    fn balanced_parens_expected_output(machine: &Machine) -> Table {
+        Table {
+            start: machine.start,
+            terminals: vec!["LParen", "RParen"]
+                .into_iter()
+                .map(DollarlessTerminalName::remove_dollars)
+                .collect(),
+            nonterminals: vec!["Expr"].into_iter().map(str::to_owned).collect(),
+            actions: vec![],
+            gotos: vec![],
+        }
+    }
+}

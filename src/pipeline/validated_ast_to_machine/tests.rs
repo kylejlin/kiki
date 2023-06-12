@@ -11,7 +11,7 @@ fn balanced_parens() {
     assert_eq!(actual, expected);
 }
 
-fn balanced_parens_input() -> File {
+pub fn balanced_parens_input() -> File {
     File {
         start: "Expr".to_owned(),
         terminal_enum: TerminalEnum {
@@ -55,7 +55,7 @@ fn balanced_parens_input() -> File {
     }
 }
 
-fn balanced_parens_expected_output() -> Machine {
+pub fn balanced_parens_expected_output() -> Machine {
     use crate::data::machine::{Lookahead::*, RuleIndex::*};
 
     normalize_machine(UnnormalizedMachine {

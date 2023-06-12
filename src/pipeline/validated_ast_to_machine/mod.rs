@@ -483,4 +483,4 @@ use first_set_map::get_first_sets;
 mod first_set_map;
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;
