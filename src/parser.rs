@@ -5,6 +5,9 @@
 // This code was generated from a grammar with the following hash:
 // @sha256 f4dca2c64f11b8d46e84e6ac860d9f60821082bfd1a56a178df1d2b6dc3de4c2
 
+// TODO: We had to manually add the `pub`, due to a bug.
+// We will have to regenerate this once we fix the bug.
+
 #[derive(Debug)]
 pub enum Token {
     Underscore(crate::data::ByteIndex),
