@@ -6,34 +6,29 @@ mod should_succeed {
     #[test]
     fn json() {
         let src = include_str!("examples/json.kiki");
-        assert_src_passes_pre_machine_validation(src);
+        let rust_src = generate(src).expect("should generate Rust code");
+        insta::assert_debug_snapshot!(rust_src);
     }
 
     #[test]
     fn kiki() {
         let src = include_str!("examples/kiki.kiki");
-        assert_src_passes_pre_machine_validation(src);
+        let rust_src = generate(src).expect("should generate Rust code");
+        insta::assert_debug_snapshot!(rust_src);
     }
 
     #[test]
     fn balanced_parens() {
         let src = include_str!("examples/balanced_parens.kiki");
-        assert_src_passes_pre_machine_validation(src);
+        let rust_src = generate(src).expect("should generate Rust code");
+        insta::assert_debug_snapshot!(rust_src);
     }
 
     #[test]
     fn balanced_parens_esoteric() {
         let src = include_str!("examples/balanced_parens_esoteric.kiki");
-        assert_src_passes_pre_machine_validation(src);
-    }
-
-    fn assert_src_passes_pre_machine_validation(src: &str) {
-        let cst = parser::FileParser::new()
-            .parse(src)
-            .expect("should parse correctly");
-        let ast: crate::data::ast::File = cst.into();
-        crate::pipeline::validate_ast::validate_ast(ast)
-            .expect("should pass pre-machine validation");
+        let rust_src = generate(src).expect("should generate Rust code");
+        insta::assert_debug_snapshot!(rust_src);
     }
 }
 
