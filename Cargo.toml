@@ -12,6 +12,7 @@ keywords = ["parser", "generator", "LR", "LALR", "grammar"]
 categories = ["parsing"]
 
 [dependencies]
+sha256 = "1.1.4"
 lalrpop-util = {version = "0.19", features = ["lexer"]}
 regex = "1"
 
