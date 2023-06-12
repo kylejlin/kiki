@@ -1,22 +1,26 @@
 use crate::data::{
-    machine::*, validated_file::*, DollarlessTerminalName, IndexUpdater, Oset, Symbol,
+    machine::*, unnormalized_machine::UnnormalizedMachine, validated_file::*,
+    DollarlessTerminalName, Oset, Symbol,
 };
-use crate::pipeline::sort_and_get_index_updater::sort_and_get_index_updater;
-use std::collections::HashMap;
+
 use std::collections::VecDeque;
+use std::collections::{HashMap, HashSet};
+
+use crate::pipeline::normalize_machine::normalize_machine;
 
 /// Converts the AST to a finite state machine (FSM).
 pub fn validated_ast_to_machine(file: &File) -> Machine {
-    let builder = MachineBuilder::new(file);
-    builder.build()
+    let builder = UnnormalizedMachineBuilder::new(file);
+    let unnormalized = builder.build();
+    normalize_machine(unnormalized)
 }
 
 #[derive(Debug, Clone)]
-struct MachineBuilder<'a> {
+struct UnnormalizedMachineBuilder<'a> {
     context: ImmutContext<'a>,
     /// The first state is the start state.
     states: Vec<State>,
-    transitions: Oset<Transition>,
+    transitions: HashSet<Transition>,
     queue: VecDeque<StateIndex>,
 }
 
@@ -36,14 +40,14 @@ struct FirstSet {
 #[derive(Debug, Clone)]
 struct AugmentedFirstSet(Oset<Lookahead>);
 
-impl MachineBuilder<'_> {
-    fn new(file: &File) -> MachineBuilder {
+impl UnnormalizedMachineBuilder<'_> {
+    fn new(file: &File) -> UnnormalizedMachineBuilder {
         let context = ImmutContext::new(file);
         let start_state = context.get_start_state();
-        MachineBuilder {
+        UnnormalizedMachineBuilder {
             context,
             states: vec![start_state],
-            transitions: Oset::new(),
+            transitions: HashSet::new(),
             queue: VecDeque::from([StateIndex(0)]),
         }
     }
@@ -61,12 +65,15 @@ impl ImmutContext<'_> {
     }
 }
 
-impl MachineBuilder<'_> {
-    fn build(mut self) -> Machine {
+impl UnnormalizedMachineBuilder<'_> {
+    fn build(mut self) -> UnnormalizedMachine {
         while let Some(state_index) = self.queue.pop_front() {
             self.enqueue_transition_targets(state_index);
         }
-        update_state_indices(self.states, self.transitions)
+        UnnormalizedMachine {
+            states: self.states,
+            transitions: self.transitions,
+        }
     }
 
     fn enqueue_state_if_needed(&mut self, state: State) -> StateIndex {
@@ -187,7 +194,7 @@ impl MachineBuilder<'_> {
     }
 }
 
-impl MachineBuilder<'_> {
+impl UnnormalizedMachineBuilder<'_> {
     fn state(&self, index: StateIndex) -> &State {
         &self.states[index.0]
     }
@@ -382,33 +389,6 @@ impl ImmutContext<'_> {
     ) -> Option<Symbol> {
         let rule = &self.rules[rule_index];
         get_nth_field_symbol(dot, rule.fieldset)
-    }
-}
-
-/// The first state must be the start state.
-fn update_state_indices(states: Vec<State>, transitions: Oset<Transition>) -> Machine {
-    let (states, updater) = sort_and_get_index_updater(states);
-    let transitions = update_transitions(transitions, &updater);
-    let start = StateIndex(updater.update(0));
-    Machine {
-        start,
-        states: states.into_iter().collect(),
-        transitions,
-    }
-}
-
-fn update_transitions(transitions: Oset<Transition>, updater: &IndexUpdater) -> Oset<Transition> {
-    transitions
-        .into_iter()
-        .map(|transition| update_transition(transition, updater))
-        .collect()
-}
-
-fn update_transition(transition: Transition, updater: &IndexUpdater) -> Transition {
-    Transition {
-        from: StateIndex(updater.update(transition.from.0)),
-        to: StateIndex(updater.update(transition.to.0)),
-        symbol: transition.symbol,
     }
 }
 

@@ -58,8 +58,8 @@ fn balanced_parens_input() -> File {
 fn balanced_parens_expected_output() -> Machine {
     use crate::data::machine::{Lookahead::*, RuleIndex::*};
 
-    update_state_indices(
-        vec![
+    normalize_machine(UnnormalizedMachine {
+        states: vec![
             State {
                 items: [
                     StateItem {
@@ -149,7 +149,7 @@ fn balanced_parens_expected_output() -> Machine {
                 .collect(),
             },
         ],
-        [
+        transitions: [
             Transition {
                 from: StateIndex(0),
                 to: StateIndex(1),
@@ -178,7 +178,7 @@ fn balanced_parens_expected_output() -> Machine {
         ]
         .into_iter()
         .collect(),
-    )
+    })
 }
 
 #[test]

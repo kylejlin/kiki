@@ -1,6 +1,7 @@
 pub mod cst_to_ast;
 pub mod lalr_parse_err_to_kiki_err;
 pub mod machine_to_table;
+pub mod normalize_machine;
 pub mod sort_and_get_index_updater;
 pub mod table_to_rust;
 pub mod validate_ast;

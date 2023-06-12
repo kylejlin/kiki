@@ -4,6 +4,7 @@ pub mod index_updater;
 pub mod machine;
 pub mod oset;
 pub mod table;
+pub mod unnormalized_machine;
 pub mod validated_file;
 
 pub use index_updater::*;
