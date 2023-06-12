@@ -14,7 +14,8 @@ use pipeline::prelude::*;
 
 pub fn generate(src: &str) -> Result<RustSrc, KikiErr> {
     let tokens = tokenize(src)?;
-    let cst = parse(tokens).map_err(unexpected_token_or_eof_to_kiki_err)?;
+    let cst = parse(tokens)
+        .map_err(|unexpected| unexpected_token_or_eof_to_kiki_err(unexpected.as_ref(), src))?;
     let ast: data::ast::File = cst.into();
     let validated = validate_ast(ast)?;
     let machine = validated_ast_to_machine(&validated);
