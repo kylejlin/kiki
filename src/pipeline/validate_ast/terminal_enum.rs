@@ -32,7 +32,7 @@ pub fn get_unvalidated_terminal_enum(file: &File) -> Result<&TerminalEnum, KikiE
         })
         .collect();
 
-    if terminals.len() == 0 {
+    if terminals.is_empty() {
         return Err(KikiErr::NoTerminalEnum);
     }
 
@@ -41,7 +41,7 @@ pub fn get_unvalidated_terminal_enum(file: &File) -> Result<&TerminalEnum, KikiE
         return Err(KikiErr::MultipleTerminalEnums(positions));
     }
 
-    Ok(&terminals[0])
+    Ok(terminals[0])
 }
 
 fn validate_terminal_def(def: &TerminalEnum) -> Result<validated::TerminalEnum, KikiErr> {

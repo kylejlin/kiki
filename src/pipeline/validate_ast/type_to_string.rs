@@ -2,7 +2,7 @@ use super::*;
 
 pub fn type_to_string(type_: &Type) -> String {
     match type_ {
-        Type::Unit => format!("()"),
+        Type::Unit => "()".to_string(),
         Type::Path(path) => path_to_string(path),
         Type::Complex(complex) => complex_to_string(complex),
     }

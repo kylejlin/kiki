@@ -52,7 +52,7 @@ impl FirstSetMapBuilder<'_> {
 }
 
 fn expand_rule(rule: &Rule, out: &mut HashMap<String, FirstSet>) -> DidChange {
-    let current_first = get_current_first_set(&rule.fieldset, out);
+    let current_first = get_current_first_set(rule.fieldset, out);
     let first_set = out.get_mut(rule.constructor_name.type_name()).unwrap();
     add_all(current_first, first_set)
 }

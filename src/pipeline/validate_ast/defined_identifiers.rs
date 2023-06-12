@@ -40,7 +40,7 @@ pub struct DefinedSymbols(pub HashSet<String>);
 pub fn get_defined_symbols(file: &File) -> Result<DefinedSymbols, KikiErr> {
     let seen = get_defined_symbol_positions(file)?;
     Ok(DefinedSymbols(
-        seen.into_iter().map(|(name, _)| name.to_owned()).collect(),
+        seen.into_iter().map(|(name, _)| name).collect(),
     ))
 }
 

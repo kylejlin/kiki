@@ -27,7 +27,7 @@ pub fn get_nonterminals(file: &File) -> Result<Vec<validated::Nonterminal>, Kiki
         .filter_map(get_unvalidated_nonterminal)
         .collect();
 
-    let defined_symbols = get_defined_symbols(&file)?;
+    let defined_symbols = get_defined_symbols(file)?;
     let nonterminals = unvalidated
         .iter()
         .map(|nonterminal| validate_nonterminal(*nonterminal, &defined_symbols))

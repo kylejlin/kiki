@@ -12,6 +12,12 @@ impl<T> Oset<T> {
     }
 }
 
+impl<T> Default for Oset<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> Oset<T>
 where
     T: Ord,
@@ -61,7 +67,7 @@ impl<'a, T> IntoIterator for &'a Oset<T> {
     }
 }
 
-impl<'a, T> Deref for Oset<T> {
+impl<T> Deref for Oset<T> {
     type Target = [T];
 
     fn deref(&self) -> &Self::Target {

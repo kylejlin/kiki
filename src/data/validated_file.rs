@@ -1,6 +1,7 @@
 use crate::data::*;
 
 use std::collections::HashSet;
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -54,17 +55,19 @@ pub enum ConstructorName<'a> {
     },
 }
 
-impl ConstructorName<'_> {
-    pub fn to_string(&self) -> String {
+impl Display for ConstructorName<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            ConstructorName::Struct(name) => name.to_string(),
+            ConstructorName::Struct(name) => write!(f, "{}", name),
             ConstructorName::EnumVariant {
                 enum_name,
                 variant_name,
-            } => format!("{enum_name}::{variant_name}"),
+            } => write!(f, "{}::{}", enum_name, variant_name),
         }
     }
+}
 
+impl ConstructorName<'_> {
     pub fn type_name(&self) -> &str {
         match self {
             ConstructorName::Struct(name) => name,

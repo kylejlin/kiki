@@ -104,7 +104,7 @@ impl UnnormalizedMachineBuilder<'_> {
             self.queue.push_back(index);
         }
 
-        return index;
+        index
     }
 
     /// Returns true if items were added.
@@ -262,7 +262,7 @@ impl ImmutContext<'_> {
         add_lookahead_if_needed(first, &item.lookahead)
     }
 
-    fn get_symbol_sequence_after_dot<'a>(&'a self, item: &StateItem) -> Vec<Symbol> {
+    fn get_symbol_sequence_after_dot(&self, item: &StateItem) -> Vec<Symbol> {
         match item.rule_index {
             RuleIndex::Original(rule_index) => {
                 self.get_symbol_sequence_after_dot_for_original_rule(rule_index, item.dot)
@@ -277,7 +277,7 @@ impl ImmutContext<'_> {
         dot: usize,
     ) -> Vec<Symbol> {
         let rule = &self.rules[rule_index];
-        get_field_symbols_from_n_onwards(&rule.fieldset, dot)
+        get_field_symbols_from_n_onwards(rule.fieldset, dot)
     }
 
     fn get_symbol_sequence_after_dot_for_augmented_rule(&self, dot: usize) -> Vec<Symbol> {

@@ -698,8 +698,8 @@ states.truncate(states.len() - {num_fields});
             Action::Reduce(rule_index) => {
                 format!("{ACTION_REDUCE_VARIANT_NAME}({rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index})")
             }
-            Action::Accept => format!("{ACTION_ACCEPT_VARIANT_NAME}"),
-            Action::Err => format!("{ACTION_ERR_VARIANT_NAME}"),
+            Action::Accept => ACTION_ACCEPT_VARIANT_NAME.to_string(),
+            Action::Err => ACTION_ERR_VARIANT_NAME.to_string(),
         }
     }
 
@@ -732,7 +732,7 @@ states.truncate(states.len() - {num_fields});
             Goto::State(StateIndex(state_index)) => {
                 format!("Some({state_enum_name}::{STATE_VARIANT_PREFIX}{state_index})")
             }
-            Goto::Err => format!("None"),
+            Goto::Err => "None".to_string(),
         }
     }
 

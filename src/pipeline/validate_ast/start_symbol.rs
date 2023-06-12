@@ -16,7 +16,7 @@ pub fn get_start_symbol_name(
         })
         .collect();
 
-    if starts.len() == 0 {
+    if starts.is_empty() {
         return Err(KikiErr::NoStartSymbol);
     }
 
@@ -25,7 +25,7 @@ pub fn get_start_symbol_name(
         return Err(KikiErr::MultipleStartSymbols(positions));
     }
 
-    validate_start_symbol_name_is_defined(&starts[0], nonterminals)
+    validate_start_symbol_name_is_defined(starts[0], nonterminals)
 }
 
 fn validate_start_symbol_name_is_defined(

@@ -196,7 +196,7 @@ impl<'a> ImmutContext<'a> {
     fn add_gotos_to_table(&self, builder: &mut TableBuilder<'a>) {
         for transition in &self.machine.transitions {
             if let Symbol::Nonterminal(nonterminal) = &transition.symbol {
-                builder.set_goto(transition.from, &nonterminal, Goto::State(transition.to));
+                builder.set_goto(transition.from, nonterminal, Goto::State(transition.to));
             }
         }
     }
@@ -222,7 +222,7 @@ impl ImmutContext<'_> {
         }
 
         for ((state, nonterminal), goto) in builder.gotos {
-            table.set_goto(state, &nonterminal, goto);
+            table.set_goto(state, nonterminal, goto);
         }
 
         table

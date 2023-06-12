@@ -45,11 +45,15 @@ impl Fieldset {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     pub fn get_symbol_ident(&self, i: usize) -> &IdentOrTerminalIdent {
         match self {
             Fieldset::Empty => panic!("Called Fieldset::get_symbol_ident on Fieldset::Empty"),
             Fieldset::Named(named) => &named.fields[i].symbol,
-            Fieldset::Tuple(tuple) => &tuple.fields[i].symbol(),
+            Fieldset::Tuple(tuple) => tuple.fields[i].symbol(),
         }
     }
 }
