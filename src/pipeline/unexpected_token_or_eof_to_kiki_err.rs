@@ -38,6 +38,23 @@ impl Token {
     }
 
     fn content_len(&self) -> usize {
-        todo!()
+        match self {
+            Token::Underscore(_) => "_".len(),
+            Token::Ident(ident) => ident.name.len(),
+            Token::TerminalIdent(ident) => "$".len() + ident.name.raw().len(),
+            Token::StartKw(_) => "start".len(),
+            Token::StructKw(_) => "struct".len(),
+            Token::EnumKw(_) => "enum".len(),
+            Token::TerminalKw(_) => "terminal".len(),
+            Token::Colon(_) => ":".len(),
+            Token::DoubleColon(_) => "::".len(),
+            Token::Comma(_) => ",".len(),
+            Token::LParen(_) => "(".len(),
+            Token::RParen(_) => ")".len(),
+            Token::LCurly(_) => "{".len(),
+            Token::RCurly(_) => "}".len(),
+            Token::LAngle(_) => "<".len(),
+            Token::RAngle(_) => ">".len(),
+        }
     }
 }
