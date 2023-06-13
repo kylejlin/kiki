@@ -316,7 +316,10 @@ impl {node_enum_name} {{
             .map(|nonterminal| match nonterminal {
                 Nonterminal::Struct(s) => {
                     let nonterminal_name = &s.name.name;
-                    let fieldset = self.get_fieldset_src_with_semicolon_if_unnamed(&s.fieldset);
+                    let fieldset = self.get_fieldset_src(&s.fieldset, GetFieldsetSrcOptions {
+                        use_semicolon_if_unnamed: true,
+                        use_pub_on_named_fields: true,
+                    });
                     format!("{NONTERMINAL_DERIVE_CLAUSE}\npub struct {nonterminal_name}{fieldset}")
                 },
                 Nonterminal::Enum(e) => {
@@ -325,7 +328,10 @@ impl {node_enum_name} {{
                         .iter()
                         .map(|variant| {
                             let variant_name = &variant.name.name;
-                            let variant_fieldset = self.get_fieldset_src_without_semicolon(&variant.fieldset);
+                            let variant_fieldset = self.get_fieldset_src(&variant.fieldset, GetFieldsetSrcOptions {
+                                use_semicolon_if_unnamed: false,
+                                use_pub_on_named_fields: false,
+                            });
                             format!("{variant_name}{variant_fieldset},")
                         })
                         .collect::<Vec<_>>()
@@ -338,26 +344,21 @@ impl {node_enum_name} {{
             .join("\n\n")
     }
 
-    fn get_fieldset_src_with_semicolon_if_unnamed(&self, fieldset: &Fieldset) -> String {
-        self.get_fieldset_src(fieldset, true)
-    }
-
-    fn get_fieldset_src_without_semicolon(&self, fieldset: &Fieldset) -> String {
-        self.get_fieldset_src(fieldset, false)
-    }
-
-    fn get_fieldset_src(&self, fieldset: &Fieldset, use_semicolon_if_unnamed: bool) -> String {
+    fn get_fieldset_src(&self, fieldset: &Fieldset, options: GetFieldsetSrcOptions) -> String {
         match fieldset {
-            Fieldset::Empty => self.get_empty_fieldset_src(use_semicolon_if_unnamed),
+            Fieldset::Empty => self.get_empty_fieldset_src(options),
             Fieldset::Named(fieldset) => self.get_named_fieldset_src(fieldset),
-            Fieldset::Tuple(fieldset) => {
-                self.get_tuple_fieldset_src(fieldset, use_semicolon_if_unnamed)
-            }
+            Fieldset::Tuple(fieldset) => self.get_tuple_fieldset_src(fieldset, options),
         }
     }
 
-    fn get_empty_fieldset_src(&self, use_semicolon: bool) -> String {
-        if use_semicolon { ";" } else { "" }.to_owned()
+    fn get_empty_fieldset_src(&self, options: GetFieldsetSrcOptions) -> String {
+        if options.use_semicolon_if_unnamed {
+            ";"
+        } else {
+            ""
+        }
+        .to_owned()
     }
 
     fn get_named_fieldset_src(&self, fieldset: &NamedFieldset) -> String {
@@ -387,7 +388,11 @@ impl {node_enum_name} {{
         format!(" {{\n{fields_indent_1}\n}}")
     }
 
-    fn get_tuple_fieldset_src(&self, fieldset: &TupleFieldset, use_semicolon: bool) -> String {
+    fn get_tuple_fieldset_src(
+        &self,
+        fieldset: &TupleFieldset,
+        options: GetFieldsetSrcOptions,
+    ) -> String {
         let fields_indent_1 = fieldset
             .fields
             .iter()
@@ -406,7 +411,11 @@ impl {node_enum_name} {{
             .collect::<Vec<_>>()
             .join("\n")
             .indent(1);
-        let possible_semicolon = if use_semicolon { ";" } else { "" };
+        let possible_semicolon = if options.use_semicolon_if_unnamed {
+            ";"
+        } else {
+            ""
+        };
         format!("(\n{fields_indent_1}\n){possible_semicolon}")
     }
 
@@ -793,6 +802,12 @@ states.truncate(states.len() - {num_fields});
             .collect::<Vec<_>>()
             .join("\n\n")
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct GetFieldsetSrcOptions {
+    use_semicolon_if_unnamed: bool,
+    use_pub_on_named_fields: bool,
 }
 
 fn create_unique_identifier(preferred_name: &str, used: &mut HashSet<String>) -> String {
