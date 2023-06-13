@@ -18,6 +18,13 @@ mod should_succeed {
     }
 
     #[test]
+    fn kinonempty_unitlike_fieldsetki() {
+        let src = include_str!("examples/nonempty_unitlike_fieldset.kiki");
+        let rust_src = generate(src).expect("should generate Rust code");
+        insta::assert_debug_snapshot!(rust_src);
+    }
+
+    #[test]
     fn balanced_parens() {
         let src = include_str!("examples/balanced_parens.kiki");
         let rust_src = generate(src).expect("should generate Rust code");
