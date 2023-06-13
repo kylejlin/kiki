@@ -30,6 +30,13 @@ mod should_succeed {
         let rust_src = generate(src).expect("should generate Rust code");
         insta::assert_debug_snapshot!(rust_src);
     }
+
+    #[test]
+    fn balanced_parens_with_comments() {
+        let src = include_str!("examples/balanced_parens_with_comments.kiki");
+        let rust_src = generate(src).expect("should generate Rust code");
+        insta::assert_debug_snapshot!(rust_src);
+    }
 }
 
 mod should_fail {
