@@ -42,18 +42,14 @@ impl Tokenizer<'_> {
     fn handle_char(&mut self, current: char, current_index: ByteIndex) -> Result<(), KikiErr> {
         match self.state {
             State::Main => self.handle_char_given_state_is_whitespace(current, current_index),
-            State::Slash(start) => {
-                self.handle_char_given_state_is_slash(current, current_index, start)
-            }
+            State::Slash(start) => self.handle_char_given_state_is_slash(current, start),
             State::SingleLineComment => {
-                self.handle_char_given_state_is_single_line_comment(current, current_index)
+                self.handle_char_given_state_is_single_line_comment(current)
             }
             State::Ident(start, end) => {
                 self.handle_char_given_state_is_ident(current, current_index, start, end)
             }
-            State::Dollar(start) => {
-                self.handle_char_given_state_is_dollar(current, current_index, start)
-            }
+            State::Dollar(start) => self.handle_char_given_state_is_dollar(current, start),
             State::TerminalIdent(start, end) => {
                 self.handle_char_given_state_is_terminal_ident(current, current_index, start, end)
             }
@@ -97,7 +93,6 @@ impl Tokenizer<'_> {
     fn handle_char_given_state_is_slash(
         &mut self,
         current: char,
-        current_index: ByteIndex,
         existing_slash_index: ByteIndex,
     ) -> Result<(), KikiErr> {
         if current == '/' {
@@ -111,7 +106,6 @@ impl Tokenizer<'_> {
     fn handle_char_given_state_is_single_line_comment(
         &mut self,
         current: char,
-        current_index: ByteIndex,
     ) -> Result<(), KikiErr> {
         if current == '\n' {
             self.state = State::Main;
@@ -139,7 +133,6 @@ impl Tokenizer<'_> {
     fn handle_char_given_state_is_dollar(
         &mut self,
         current: char,
-        current_index: ByteIndex,
         dollar_index: ByteIndex,
     ) -> Result<(), KikiErr> {
         if current.is_ascii_alphabetic() || current == '_' {
