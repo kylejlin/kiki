@@ -347,7 +347,7 @@ impl {node_enum_name} {{
     fn get_fieldset_src(&self, fieldset: &Fieldset, options: GetFieldsetSrcOptions) -> String {
         match fieldset {
             Fieldset::Empty => self.get_empty_fieldset_src(options),
-            Fieldset::Named(fieldset) => self.get_named_fieldset_src(fieldset),
+            Fieldset::Named(fieldset) => self.get_named_fieldset_src(fieldset, options),
             Fieldset::Tuple(fieldset) => self.get_tuple_fieldset_src(fieldset, options),
         }
     }
@@ -361,7 +361,16 @@ impl {node_enum_name} {{
         .to_owned()
     }
 
-    fn get_named_fieldset_src(&self, fieldset: &NamedFieldset) -> String {
+    fn get_named_fieldset_src(
+        &self,
+        fieldset: &NamedFieldset,
+        options: GetFieldsetSrcOptions,
+    ) -> String {
+        let pub_ = if options.use_pub_on_named_fields {
+            "pub "
+        } else {
+            ""
+        };
         let fields_indent_1 = fieldset
             .fields
             .iter()
@@ -370,7 +379,7 @@ impl {node_enum_name} {{
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_name = &field_name.name;
                     let field_type_name = &field_type.name;
-                    Some(format!("{field_name}: Box<{field_type_name}>,"))
+                    Some(format!("{pub_}{field_name}: Box<{field_type_name}>,"))
                 }
                 (
                     IdentOrUnderscore::Ident(field_name),
@@ -379,7 +388,7 @@ impl {node_enum_name} {{
                     let field_name = &field_name.name;
                     let field_type_name =
                         self.file.terminal_enum.get_type(&field_type.name).unwrap();
-                    Some(format!("{field_name}: {field_type_name},"))
+                    Some(format!("{pub_}{field_name}: {field_type_name},"))
                 }
             })
             .collect::<Vec<_>>()
