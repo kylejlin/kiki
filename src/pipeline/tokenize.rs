@@ -33,6 +33,9 @@ impl Tokenizer<'_> {
         for (c_index, c) in self.src.char_indices() {
             self.handle_char(c, ByteIndex(c_index))?;
         }
+
+        self.push_pending_token_and_reset_state(None, ByteIndex(self.src.len()))?;
+
         Ok(self.out)
     }
 
@@ -82,6 +85,10 @@ impl Tokenizer<'_> {
         } else if current == ':' {
             self.state = State::Colon(current_index);
             Ok(())
+        } else if let Some(kind) = get_single_char_punctuation_kind(current) {
+            self.out
+                .push(get_single_char_punctuation_token(kind, current_index));
+            Ok(())
         } else {
             Err(KikiErr::Lex(current_index, Some(current)))
         }
@@ -108,10 +115,9 @@ impl Tokenizer<'_> {
     ) -> Result<(), KikiErr> {
         if current == '\n' {
             self.state = State::Main;
-            Ok(())
-        } else {
-            Ok(())
         }
+
+        Ok(())
     }
 
     fn handle_char_given_state_is_ident(
@@ -125,12 +131,7 @@ impl Tokenizer<'_> {
             self.state = State::Ident(start, ByteIndex(end.0 + current.len_utf8()));
             Ok(())
         } else {
-            let name = self.src[start.0..end.0].to_string();
-            self.out.push(Token::Ident(Ident {
-                name,
-                position: start,
-            }));
-            self.state = State::Main;
+            self.push_pending_token_and_reset_state(Some(current), current_index)?;
             self.handle_char(current, current_index)
         }
     }
@@ -161,13 +162,7 @@ impl Tokenizer<'_> {
             self.state = State::TerminalIdent(dollar_index, ByteIndex(end.0 + current.len_utf8()));
             Ok(())
         } else {
-            let name = DollarlessTerminalName::remove_dollars(&self.src[dollar_index.0..end.0]);
-            let dollarless_position = ByteIndex(dollar_index.0 + "$".len());
-            self.out.push(Token::TerminalIdent(TerminalIdent {
-                name,
-                dollarless_position,
-            }));
-            self.state = State::Main;
+            self.push_pending_token_and_reset_state(Some(current), current_index)?;
             self.handle_char(current, current_index)
         }
     }
@@ -183,10 +178,65 @@ impl Tokenizer<'_> {
             self.state = State::Main;
             Ok(())
         } else {
-            self.out.push(Token::Colon(start));
-            self.state = State::Main;
+            self.push_pending_token_and_reset_state(Some(current), current_index)?;
             self.handle_char(current, current_index)
         }
+    }
+
+    /// This function only resets the state if the pending token is valid.
+    fn push_pending_token_and_reset_state(
+        &mut self,
+        current: Option<char>,
+        current_index: ByteIndex,
+    ) -> Result<(), KikiErr> {
+        match self.state {
+            State::Main => Ok(()),
+
+            State::Slash(slash_index) => Err(KikiErr::Lex(slash_index, Some('/'))),
+
+            State::SingleLineComment => Ok(()),
+
+            State::Ident(start, end) => {
+                let name = &self.src[start.0..end.0];
+
+                if let Some(kind) = get_reserved_word_kind(name) {
+                    self.out.push(get_reserved_word_token(kind, start));
+                } else {
+                    self.out.push(Token::Ident(Ident {
+                        name: name.to_string(),
+                        position: start,
+                    }));
+                }
+
+                Ok(())
+            }
+
+            State::Dollar(dollar_index) => Err(KikiErr::Lex(dollar_index, Some('$'))),
+
+            State::TerminalIdent(start, end) => {
+                let name = DollarlessTerminalName::remove_dollars(&self.src[start.0..end.0]);
+
+                if get_reserved_word_kind(name.raw()).is_some() {
+                    return Err(KikiErr::Lex(current_index, current));
+                }
+
+                let dollarless_position = ByteIndex(start.0 + "$".len());
+                self.out.push(Token::TerminalIdent(TerminalIdent {
+                    name,
+                    dollarless_position,
+                }));
+                Ok(())
+            }
+
+            State::Colon(colon_index) => {
+                self.out.push(Token::Colon(colon_index));
+                self.state = State::Main;
+                Ok(())
+            }
+        }?;
+
+        self.state = State::Main;
+        Ok(())
     }
 }
 
@@ -201,41 +251,68 @@ enum State {
     Colon(ByteIndex),
 }
 
-// match {
-//     r"//[^\n]*" => {},
-//     r"\s+" => {}
-// } else {
-//     _
-// }
+#[derive(Debug, Clone, Copy)]
+enum ReservedWordKind {
+    Start,
+    Struct,
+    Enum,
+    Terminal,
+}
 
-// pub StartKw: () = "start" => ();
-// pub StructKw: () = "struct" => ();
-// pub EnumKw: () = "enum" => ();
-// pub TerminalKw: () = "terminal" => ();
+#[derive(Debug, Clone, Copy)]
+enum SingleCharPunctuationKind {
+    Colon,
+    Comma,
+    LParen,
+    RParen,
+    LCurly,
+    RCurly,
+    LAngle,
+    RAngle,
+}
 
-// pub DoubleColon: () = "::" => ();
-// pub Colon: () = ":" => ();
-// pub Comma: () = "," => ();
+fn get_reserved_word_kind(s: &str) -> Option<ReservedWordKind> {
+    match s {
+        "start" => Some(ReservedWordKind::Start),
+        "struct" => Some(ReservedWordKind::Struct),
+        "enum" => Some(ReservedWordKind::Enum),
+        "terminal" => Some(ReservedWordKind::Terminal),
+        _ => None,
+    }
+}
 
-// pub LParen: () = "(" => ();
-// pub RParen: () = ")" => ();
-// pub LCurly: () = "{" => ();
-// pub RCurly: () = "}" => ();
-// pub LAngle: () = "<" => ();
-// pub RAngle: () = ">" => ();
+fn get_reserved_word_token(kind: ReservedWordKind, index: ByteIndex) -> Token {
+    match kind {
+        ReservedWordKind::Start => Token::StartKw(index),
+        ReservedWordKind::Struct => Token::StructKw(index),
+        ReservedWordKind::Enum => Token::EnumKw(index),
+        ReservedWordKind::Terminal => Token::TerminalKw(index),
+    }
+}
 
-// pub Underscore: () = "_" => ();
+fn get_single_char_punctuation_kind(c: char) -> Option<SingleCharPunctuationKind> {
+    match c {
+        ':' => Some(SingleCharPunctuationKind::Colon),
+        ',' => Some(SingleCharPunctuationKind::Comma),
+        '(' => Some(SingleCharPunctuationKind::LParen),
+        ')' => Some(SingleCharPunctuationKind::RParen),
+        '{' => Some(SingleCharPunctuationKind::LCurly),
+        '}' => Some(SingleCharPunctuationKind::RCurly),
+        '<' => Some(SingleCharPunctuationKind::LAngle),
+        '>' => Some(SingleCharPunctuationKind::RAngle),
+        _ => None,
+    }
+}
 
-// pub Ident: Ident = <s:r"[a-zA-Z_][a-zA-Z_0-9]*"> => Ident {
-//     name: s.to_owned(),
-//     // TODO
-//     position: ByteIndex(0),
-// };
-// pub TerminalIdent: TerminalIdent = <s:r"\$[a-zA-Z_][a-zA-Z_0-9]*"> => TerminalIdent {
-//     name: DollarlessTerminalName::remove_dollars(s),
-//     // TODO
-//     dollarless_position: ByteIndex(1),
-// };
-
-// #[inline]
-// Epsilon: () = ();
+fn get_single_char_punctuation_token(kind: SingleCharPunctuationKind, index: ByteIndex) -> Token {
+    match kind {
+        SingleCharPunctuationKind::Colon => Token::Colon(index),
+        SingleCharPunctuationKind::Comma => Token::Comma(index),
+        SingleCharPunctuationKind::LParen => Token::LParen(index),
+        SingleCharPunctuationKind::RParen => Token::RParen(index),
+        SingleCharPunctuationKind::LCurly => Token::LCurly(index),
+        SingleCharPunctuationKind::RCurly => Token::RCurly(index),
+        SingleCharPunctuationKind::LAngle => Token::LAngle(index),
+        SingleCharPunctuationKind::RAngle => Token::RAngle(index),
+    }
+}
