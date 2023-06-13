@@ -13,6 +13,14 @@ pub use oset::*;
 
 #[derive(Debug)]
 pub enum KikiErr {
+    Lex(
+        ByteIndex,
+        /// If the lexer encounters an unexpected character `c`,
+        /// this is `Some(c)`.
+        /// If the lexer encounters an unexpected end of input,
+        /// this is `None`.
+        Option<char>,
+    ),
     Parse(ByteIndex, String, ByteIndex),
     NoStartSymbol,
     MultipleStartSymbols(Vec<ByteIndex>),
