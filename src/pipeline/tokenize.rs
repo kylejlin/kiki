@@ -143,8 +143,10 @@ impl Tokenizer<'_> {
         dollar_index: ByteIndex,
     ) -> Result<(), KikiErr> {
         if current.is_ascii_alphabetic() || current == '_' {
-            self.state =
-                State::TerminalIdent(dollar_index, ByteIndex(dollar_index.0 + current.len_utf8()));
+            self.state = State::TerminalIdent(
+                dollar_index,
+                ByteIndex(dollar_index.0 + '$'.len_utf8() + current.len_utf8()),
+            );
             Ok(())
         } else {
             Err(KikiErr::Lex(dollar_index, Some('$')))
@@ -253,6 +255,7 @@ enum State {
 
 #[derive(Debug, Clone, Copy)]
 enum ReservedWordKind {
+    Underscore,
     Start,
     Struct,
     Enum,
@@ -273,6 +276,7 @@ enum SingleCharPunctuationKind {
 
 fn get_reserved_word_kind(s: &str) -> Option<ReservedWordKind> {
     match s {
+        "_" => Some(ReservedWordKind::Underscore),
         "start" => Some(ReservedWordKind::Start),
         "struct" => Some(ReservedWordKind::Struct),
         "enum" => Some(ReservedWordKind::Enum),
@@ -283,6 +287,7 @@ fn get_reserved_word_kind(s: &str) -> Option<ReservedWordKind> {
 
 fn get_reserved_word_token(kind: ReservedWordKind, index: ByteIndex) -> Token {
     match kind {
+        ReservedWordKind::Underscore => Token::Underscore(index),
         ReservedWordKind::Start => Token::StartKw(index),
         ReservedWordKind::Struct => Token::StructKw(index),
         ReservedWordKind::Enum => Token::EnumKw(index),
