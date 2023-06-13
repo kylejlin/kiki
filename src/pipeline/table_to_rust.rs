@@ -366,6 +366,10 @@ impl {node_enum_name} {{
         fieldset: &NamedFieldset,
         options: GetFieldsetSrcOptions,
     ) -> String {
+        if !fieldset.has_used_field() {
+            return self.get_empty_fieldset_src(options);
+        }
+
         let pub_ = if options.use_pub_on_named_fields {
             "pub "
         } else {
@@ -402,6 +406,10 @@ impl {node_enum_name} {{
         fieldset: &TupleFieldset,
         options: GetFieldsetSrcOptions,
     ) -> String {
+        if !fieldset.has_used_field() {
+            return self.get_empty_fieldset_src(options);
+        }
+
         let fields_indent_1 = fieldset
             .fields
             .iter()
@@ -556,6 +564,10 @@ impl {node_enum_name} {{
         constructor_name: ConstructorName,
         fields: &[NamedField],
     ) -> String {
+        if !fields.iter().any(NamedField::is_used) {
+            return self.get_empty_fieldset_rule_reduction_src(constructor_name);
+        }
+
         let node_enum_name = &self.node_enum_name;
         let nonterminal_kind_enum_name = &self.nonterminal_kind_enum_name;
         let parent_type_name = constructor_name.type_name();
@@ -613,6 +625,10 @@ states.truncate(states.len() - {num_fields});
         constructor_name: ConstructorName,
         fields: &[TupleField],
     ) -> String {
+        if !fields.iter().any(TupleField::is_used) {
+            return self.get_empty_fieldset_rule_reduction_src(constructor_name);
+        }
+
         const ANONYMOUS_FIELD_PREFIX: &str = "t";
         let node_enum_name = &self.node_enum_name;
         let nonterminal_kind_enum_name = &self.nonterminal_kind_enum_name;

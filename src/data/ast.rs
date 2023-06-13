@@ -63,10 +63,24 @@ pub struct NamedFieldset {
     pub fields: Vec<NamedField>,
 }
 
+impl NamedFieldset {
+    pub fn has_used_field(&self) -> bool {
+        self.fields.iter().any(NamedField::is_used)
+    }
+}
 #[derive(Clone, Debug)]
 pub struct NamedField {
     pub name: IdentOrUnderscore,
     pub symbol: IdentOrTerminalIdent,
+}
+
+impl NamedField {
+    pub fn is_used(&self) -> bool {
+        match self.name {
+            IdentOrUnderscore::Ident(_) => true,
+            IdentOrUnderscore::Underscore(_) => false,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -74,10 +88,25 @@ pub struct TupleFieldset {
     pub fields: Vec<TupleField>,
 }
 
+impl TupleFieldset {
+    pub fn has_used_field(&self) -> bool {
+        self.fields.iter().any(TupleField::is_used)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum TupleField {
     Used(IdentOrTerminalIdent),
     Skipped(IdentOrTerminalIdent),
+}
+
+impl TupleField {
+    pub fn is_used(&self) -> bool {
+        match self {
+            TupleField::Used(_) => true,
+            TupleField::Skipped(_) => false,
+        }
+    }
 }
 
 impl TupleField {
