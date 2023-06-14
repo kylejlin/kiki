@@ -1,9 +1,10 @@
 [package]
 name = "kiki"
-version = "5.0.0"
+version = "6.0.0"
 edition = "2021"
 authors = ["Kyle Lin <kylejlin.us@gmail.com>"]
 license = "MIT"
+build = "build.rs"
 description = "A minimalist parser generator for Rust."
 homepage = "https://github.com/kylejlin/kiki"
 repository = "https://github.com/kylejlin/kiki"
@@ -15,6 +16,7 @@ sha256 = "1.1.4"
 
 [build-dependencies]
 walkdir = "2.3.3"
+kiki = "5.0.0"
 sha256 = "1.1.4"
 
 [dev-dependencies]

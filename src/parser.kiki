@@ -1,0 +1,187 @@
+start File
+
+struct File {
+    items: OptItems
+}
+
+enum OptItems {
+    Nil
+    Cons(
+        OptItems
+        FileItem
+    )
+}
+
+enum FileItem {
+    Start(
+        _: $StartKw
+        $Ident
+    )
+    Struct(Struct)
+    Enum(Enum)
+    Terminal(TerminalEnum)
+}
+
+struct Struct {
+    _: $StructKw
+    name: $Ident
+    fieldset: Fieldset
+}
+
+struct Enum {
+    _: $EnumKw
+    name: $Ident
+    _: $LCurly
+    variants: OptEnumVariants
+    _: $RCurly
+}
+
+struct TerminalEnum {
+    _: $TerminalKw
+    name: $Ident
+    _: $LCurly
+    variants: OptTerminalEnumVariants
+    _: $RCurly
+}
+
+enum Fieldset {
+    Empty
+    Named(NamedFieldset)
+    Tuple(TupleFieldset)
+}
+
+struct NamedFieldset {
+    _: $LCurly
+    fields: NamedFields
+    _: $RCurly
+}
+
+enum NamedFields {
+    One(NamedField)
+    Cons (
+        NamedFields
+        NamedField
+    )
+}
+
+struct NamedField {
+    name: IdentOrUnderscore
+    _: $Colon
+    symbol: IdentOrTerminalIdent
+}
+
+struct TupleFieldset {
+    _: $LParen
+    fields: TupleFields
+    _: $RParen
+}
+
+enum TupleFields {
+    One(TupleField)
+    Cons (
+        TupleFields
+        TupleField
+    )
+}
+
+enum TupleField {
+    Used(IdentOrTerminalIdent)
+    Skipped(
+        _: $Underscore
+        _: $Colon
+        IdentOrTerminalIdent
+    )
+}
+
+enum OptEnumVariants {
+    Nil
+    Cons (
+        OptEnumVariants
+        EnumVariant
+    )
+}
+
+struct EnumVariant {
+    name: $Ident
+    fieldset: Fieldset
+}
+
+enum OptTerminalEnumVariants {
+    Nil
+    Cons (
+        OptTerminalEnumVariants
+        TerminalEnumVariant
+    )
+}
+
+struct TerminalEnumVariant {
+    name: $TerminalIdent
+    _: $Colon
+    type_: Type
+}
+
+enum Type {
+    Unit(
+        _: $LParen
+        _: $RParen
+    )
+    Path(Path)
+    Complex(ComplexType)
+}
+
+enum Path {
+    One($Ident)
+    Cons (
+        Path
+        _: $DoubleColon
+        $Ident
+    )
+}
+
+struct ComplexType {
+    callee: Path
+    _: $LAngle
+    args: CommaSeparatedTypes
+    _: $RAngle
+}
+
+enum CommaSeparatedTypes {
+    One(Type)
+    Cons (
+        CommaSeparatedTypes
+        _: $Comma
+        Type
+    )
+}
+
+enum IdentOrUnderscore {
+    Ident($Ident)
+    Underscore($Underscore)
+}
+
+enum IdentOrTerminalIdent {
+    Ident($Ident)
+    Terminal($TerminalIdent)
+}
+
+terminal Token {
+    $Underscore: crate::data::ByteIndex
+    $Ident: crate::data::token::Ident
+    $TerminalIdent: crate::data::token::TerminalIdent
+
+    $StartKw: crate::data::ByteIndex
+    $StructKw: crate::data::ByteIndex
+    $EnumKw: crate::data::ByteIndex
+    $TerminalKw: crate::data::ByteIndex
+
+    $Colon: crate::data::ByteIndex
+    $DoubleColon: crate::data::ByteIndex
+    $Comma: crate::data::ByteIndex
+
+    $LParen: crate::data::ByteIndex
+    $RParen: crate::data::ByteIndex
+    $LCurly: crate::data::ByteIndex
+    $RCurly: crate::data::ByteIndex
+    $LAngle: crate::data::ByteIndex
+    $RAngle: crate::data::ByteIndex
+}
