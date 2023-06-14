@@ -9,6 +9,14 @@ expression: rust_src
 // This code was generated from a grammar with the following hash:
 // @sha256 25ca8e28fd01ed600ed0fefeada5c1bf5a206d793903395854c5ab3836eff5f5
 
+// Since this code is automatically generated,
+// some parts may be unidiomatic.
+// The linter often complains about these parts.
+// However, these warnings are not useful.
+// Therefore, we disable certain lints for this file.
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+
 #[derive(Debug)]
 pub enum Token {
     LParen(()),

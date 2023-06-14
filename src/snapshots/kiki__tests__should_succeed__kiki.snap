@@ -9,6 +9,14 @@ expression: rust_src
 // This code was generated from a grammar with the following hash:
 // @sha256 79a758b6b021a6d22dd7aeecbb54844efa5042f0aff2e668e4364a4c1a27bec6
 
+// Since this code is automatically generated,
+// some parts may be unidiomatic.
+// The linter often complains about these parts.
+// However, these warnings are not useful.
+// Therefore, we disable certain lints for this file.
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+
 #[derive(Debug)]
 pub enum Token {
     Underscore(crate::data::ByteIndex),

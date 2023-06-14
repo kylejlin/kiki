@@ -146,6 +146,14 @@ impl SrcBuilder<'_> {
 // This code was generated from a grammar with the following hash:
 // @sha256 {grammar_sha256}
 
+// Since this code is automatically generated,
+// some parts may be unidiomatic.
+// The linter often complains about these parts.
+// However, these warnings are not useful.
+// Therefore, we disable certain lints for this file.
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+
 #[derive(Debug)]
 pub enum {terminal_enum_name} {{
 {terminal_enum_variants_indent_1}
