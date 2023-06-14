@@ -978,7 +978,7 @@ mod tests {
         let grammar_src = include_str!("../examples/balanced_parens.kiki");
 
         let RustSrc(rust_src) = table_to_rust(&table, &file, grammar_src);
-        insta::assert_debug_snapshot!(rust_src);
+        insta::assert_display_snapshot!(rust_src);
     }
 
     #[test]
@@ -1071,7 +1071,7 @@ mod tests {
         let grammar_src = include_str!("../examples/balanced_parens_esoteric.kiki");
 
         let RustSrc(rust_src) = table_to_rust(&table, &file, grammar_src);
-        insta::assert_debug_snapshot!(rust_src);
+        insta::assert_display_snapshot!(rust_src);
     }
 
     fn positionless_ident(s: &str) -> Ident {
