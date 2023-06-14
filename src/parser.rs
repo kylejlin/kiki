@@ -8,6 +8,10 @@
 // TODO: We had to manually add the `pub`, due to a bug.
 // We will have to regenerate this once we fix the bug.
 
+// TODO: We had to manually add the `allow` attributes below.
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+
 #[derive(Debug)]
 pub enum Token {
     Underscore(crate::data::ByteIndex),
