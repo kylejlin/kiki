@@ -1,6 +1,6 @@
 # Kiki
 
-![crates.io](https://img.shields.io/crates/v/kiki.svg)
+[![crates.io](https://img.shields.io/crates/v/kiki.svg)](https://crates.io/crates/kiki)
 
 Kiki is a minimalist parser generator for Rust.
 
