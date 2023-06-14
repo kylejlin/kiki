@@ -564,10 +564,6 @@ impl {node_enum_name} {{
         constructor_name: ConstructorName,
         fields: &[NamedField],
     ) -> String {
-        if !fields.iter().any(NamedField::is_used) {
-            return self.get_empty_fieldset_rule_reduction_src(constructor_name);
-        }
-
         let node_enum_name = &self.node_enum_name;
         let nonterminal_kind_enum_name = &self.nonterminal_kind_enum_name;
         let parent_type_name = constructor_name.type_name();
@@ -606,16 +602,23 @@ impl {node_enum_name} {{
             .collect::<Vec<_>>()
             .join("\n")
             .indent(2);
+        let empty_str_or_curly_enclosed_fields = if fields.iter().any(NamedField::is_used) {
+            format!(
+                r#" {{
+{parent_fields_indent_2}
+    }}"#
+            )
+        } else {
+            "".to_owned()
+        };
 
         format!(
             r#"{child_vars}
 states.truncate(states.len() - {num_fields});
 
 (
-    {node_enum_name}::{parent_type_name}({constructor_name} {{
-{parent_fields_indent_2}
-    }}),
-    {nonterminal_kind_enum_name}::{parent_type_name}
+    {node_enum_name}::{parent_type_name}({constructor_name}{empty_str_or_curly_enclosed_fields}),
+    {nonterminal_kind_enum_name}::{parent_type_name},
 )"#
         )
     }
@@ -625,10 +628,6 @@ states.truncate(states.len() - {num_fields});
         constructor_name: ConstructorName,
         fields: &[TupleField],
     ) -> String {
-        if !fields.iter().any(TupleField::is_used) {
-            return self.get_empty_fieldset_rule_reduction_src(constructor_name);
-        }
-
         const ANONYMOUS_FIELD_PREFIX: &str = "t";
         let node_enum_name = &self.node_enum_name;
         let nonterminal_kind_enum_name = &self.nonterminal_kind_enum_name;
@@ -663,16 +662,23 @@ states.truncate(states.len() - {num_fields});
             .collect::<Vec<_>>()
             .join("\n")
             .indent(2);
+        let empty_str_or_parenthesized_fields = if fields.iter().any(TupleField::is_used) {
+            format!(
+                r#"(
+{parent_fields_indent_2}
+    )"#
+            )
+        } else {
+            "".to_owned()
+        };
 
         format!(
             r#"{child_vars}
 states.truncate(states.len() - {num_fields});
 
 (
-    {node_enum_name}::{parent_type_name}({constructor_name}(
-{parent_fields_indent_2}
-    )),
-    {nonterminal_kind_enum_name}::{parent_type_name}
+    {node_enum_name}::{parent_type_name}({constructor_name}{empty_str_or_parenthesized_fields}),
+    {nonterminal_kind_enum_name}::{parent_type_name},
 )"#
         )
     }

@@ -153,12 +153,20 @@ enum RuleKind {
 fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: RuleKind) -> (Node, NonterminalKind) {
     match rule_kind {
         RuleKind::R0 => {
+            nodes.pop().unwrap();
+            
+            states.truncate(states.len() - 1);
+            
             (
                 Node::Foo(Foo::Empty),
                 NonterminalKind::Foo,
             )
         }
         RuleKind::R1 => {
+            nodes.pop().unwrap();
+            
+            states.truncate(states.len() - 1);
+            
             (
                 Node::Foo(Foo::Number),
                 NonterminalKind::Foo,
@@ -173,7 +181,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Foo(Foo::Pair {
                     val: val_0,
                 }),
-                NonterminalKind::Foo
+                NonterminalKind::Foo,
             )
         }
         RuleKind::R3 => {
@@ -191,7 +199,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Pair(Pair::StringPair(
                     t0,
                 )),
-                NonterminalKind::Pair
+                NonterminalKind::Pair,
             )
         }
         RuleKind::R5 => {
@@ -203,16 +211,26 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Pair(Pair::NumberPair(
                     t0,
                 )),
-                NonterminalKind::Pair
+                NonterminalKind::Pair,
             )
         }
         RuleKind::R6 => {
+            nodes.pop().unwrap();
+            nodes.pop().unwrap();
+            
+            states.truncate(states.len() - 2);
+            
             (
                 Node::StringPair(StringPair),
                 NonterminalKind::StringPair,
             )
         }
         RuleKind::R7 => {
+            nodes.pop().unwrap();
+            nodes.pop().unwrap();
+            
+            states.truncate(states.len() - 2);
+            
             (
                 Node::NumberPair(NumberPair),
                 NonterminalKind::NumberPair,

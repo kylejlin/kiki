@@ -132,7 +132,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                     inner: inner_1,
                     right: right_2,
                 }),
-                NonterminalKind::Expr
+                NonterminalKind::Expr,
             )
         }
     }

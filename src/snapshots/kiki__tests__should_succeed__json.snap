@@ -271,7 +271,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Json(Json::Obj(
                     t0,
                 )),
-                NonterminalKind::Json
+                NonterminalKind::Json,
             )
         }
         RuleKind::R1 => {
@@ -283,7 +283,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Json(Json::Arr(
                     t0,
                 )),
-                NonterminalKind::Json
+                NonterminalKind::Json,
             )
         }
         RuleKind::R2 => {
@@ -297,7 +297,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Obj(Obj {
                     entries: entries_1,
                 }),
-                NonterminalKind::Obj
+                NonterminalKind::Obj,
             )
         }
         RuleKind::R3 => {
@@ -315,7 +315,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::OptEntries(OptEntries::Some(
                     t0,
                 )),
-                NonterminalKind::OptEntries
+                NonterminalKind::OptEntries,
             )
         }
         RuleKind::R5 => {
@@ -327,7 +327,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Entries(Entries::One(
                     t0,
                 )),
-                NonterminalKind::Entries
+                NonterminalKind::Entries,
             )
         }
         RuleKind::R6 => {
@@ -342,7 +342,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                     t0,
                     t2,
                 )),
-                NonterminalKind::Entries
+                NonterminalKind::Entries,
             )
         }
         RuleKind::R7 => {
@@ -357,7 +357,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                     key: key_0,
                     val: val_2,
                 }),
-                NonterminalKind::Entry
+                NonterminalKind::Entry,
             )
         }
         RuleKind::R8 => {
@@ -369,7 +369,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Expr(Expr::Obj(
                     t0,
                 )),
-                NonterminalKind::Expr
+                NonterminalKind::Expr,
             )
         }
         RuleKind::R9 => {
@@ -381,7 +381,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Expr(Expr::Arr(
                     t0,
                 )),
-                NonterminalKind::Expr
+                NonterminalKind::Expr,
             )
         }
         RuleKind::R10 => {
@@ -393,7 +393,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Expr(Expr::String(
                     t0,
                 )),
-                NonterminalKind::Expr
+                NonterminalKind::Expr,
             )
         }
         RuleKind::R11 => {
@@ -405,7 +405,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Expr(Expr::Num(
                     t0,
                 )),
-                NonterminalKind::Expr
+                NonterminalKind::Expr,
             )
         }
         RuleKind::R12 => {
@@ -417,7 +417,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Expr(Expr::Bool(
                     t0,
                 )),
-                NonterminalKind::Expr
+                NonterminalKind::Expr,
             )
         }
         RuleKind::R13 => {
@@ -431,7 +431,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Arr(Arr {
                     elements: elements_1,
                 }),
-                NonterminalKind::Arr
+                NonterminalKind::Arr,
             )
         }
         RuleKind::R14 => {
@@ -449,7 +449,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::OptElements(OptElements::Some(
                     t0,
                 )),
-                NonterminalKind::OptElements
+                NonterminalKind::OptElements,
             )
         }
         RuleKind::R16 => {
@@ -461,7 +461,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                 Node::Elements(Elements::One(
                     t0,
                 )),
-                NonterminalKind::Elements
+                NonterminalKind::Elements,
             )
         }
         RuleKind::R17 => {
@@ -476,7 +476,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
                     t0,
                     t2,
                 )),
-                NonterminalKind::Elements
+                NonterminalKind::Elements,
             )
         }
     }
