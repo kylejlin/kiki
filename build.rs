@@ -21,7 +21,10 @@ fn main() {
             let file_contents = fs::read_to_string(entry.path()).unwrap();
             let file_hash = sha256::digest(&*file_contents);
 
-            let rs_path = Path::new("./src")
+            let rs_path = entry
+                .path()
+                .parent()
+                .unwrap()
                 .join(Path::new(entry.path().file_stem().unwrap()).with_extension("rs"));
             if let Ok(rs_contents) = fs::read_to_string(&rs_path) {
                 let rs_contents = RustSrcRef(&rs_contents);
@@ -47,7 +50,7 @@ fn main() {
     }
 }
 
-const IGNORE_LIST: [&str; 1] = ["./src/examples"];
+const IGNORE_LIST: [&str; 1] = ["./src/examples/should_fail"];
 
 fn is_ignored(path: &Path) -> bool {
     IGNORE_LIST.iter().any(|ignored| path.starts_with(ignored))

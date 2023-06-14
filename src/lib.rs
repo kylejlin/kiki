@@ -8,6 +8,9 @@ mod parser;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+mod examples;
+
 pub use data::*;
 
 use pipeline::prelude::*;
