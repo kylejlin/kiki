@@ -195,7 +195,7 @@ impl From<cst::TerminalEnumVariant> for ast::TerminalEnumVariant {
 impl From<cst::Type> for ast::Type {
     fn from(cst: cst::Type) -> Self {
         match cst {
-            cst::Type::Unit() => ast::Type::Unit,
+            cst::Type::Unit => ast::Type::Unit,
             cst::Type::Path(path) => ast::Type::Path((*path).into()),
             cst::Type::Complex(complex_type) => {
                 ast::Type::Complex(Box::new((*complex_type).into()))
