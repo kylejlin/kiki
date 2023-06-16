@@ -4,9 +4,10 @@
 
 Kiki is a minimalist parser generator for Rust.
 
-## Table of Contents
+## Table of contents
 
 - [Why use Kiki](#why-use-kiki)
+- [Kiki's limitation](#kikis-limitations)
 - [Example](#example)
 - [Guide](#guide)
 - [Contributing](#contributing)
@@ -25,6 +26,14 @@ Kiki is a minimalist parser generator for Rust.
 - **Easy to read.**
   Kiki has a minimalist syntax.
   This makes it easy to learn, and easy to read.
+
+## Kiki's limitations
+
+- Kiki only supports LALR(1) grammars.
+- Kiki parses token sequences, not strings.
+  - In other words, you must provide your own lexer.
+    You can either implement the lexer by hand,
+    or use a lexer generator (e.g., [logos](https://crates.io/crates/logos)).
 
 ## Example
 
