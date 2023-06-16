@@ -1,7 +1,9 @@
 use super::*;
 
+mod get_grammar_hash_tests;
+
 mod rust_src_snapshot;
 
-mod get_grammar_hash_tests;
+mod e2e;
 
 mod should_fail;
