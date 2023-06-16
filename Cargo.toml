@@ -1,6 +1,6 @@
 [package]
 name = "kiki"
-version = "6.0.1"
+version = "6.0.2"
 edition = "2021"
 authors = ["Kyle Lin <kylejlin.us@gmail.com>"]
 license = "MIT"
@@ -8,7 +8,7 @@ build = "build.rs"
 description = "A minimalist parser generator for Rust."
 homepage = "https://github.com/kylejlin/kiki"
 repository = "https://github.com/kylejlin/kiki"
-keywords = ["parser", "generator", "LR", "LALR", "grammar"]
+keywords = ["parser", "generator", "LALR", "grammar"]
 categories = ["parsing"]
 
 [dependencies]
