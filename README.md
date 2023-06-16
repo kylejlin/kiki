@@ -7,7 +7,7 @@ Kiki is a minimalist parser generator for Rust.
 ## Table of contents
 
 - [Why use Kiki](#why-use-kiki)
-- [Kiki's limitation](#kikis-limitations)
+- [Kiki's limitations](#kikis-limitations)
 - [Example](#example)
 - [Guide](#guide)
 - [Contributing](#contributing)
