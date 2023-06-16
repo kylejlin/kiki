@@ -199,8 +199,11 @@ Kiki infers the grammar and semantic action from the type definition.
 ## Guide
 
 You can read the user guide [here](./USER_GUIDE.md).
-The example from the previous section omits many details.
-The user guide explains these details.
+The guide explains Kiki in detail.
+It is _not_ a fast read.
+
+If your goal is to grok Kiki as quickly as possible,
+click [here](./SPEED_RUN_TUTORIAL.md).
 
 ## Contributing
 
