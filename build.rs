@@ -50,7 +50,15 @@ fn main() {
     }
 }
 
-const IGNORE_LIST: [&str; 1] = ["./src/examples/should_fail"];
+const IGNORE_LIST: [&str; 2] = [
+    "./src/examples/should_fail",
+    // We ignore `kiki.kiki` because we don't need it
+    // for end-to-end testing.
+    // We don't perform end-to-end testing on `kiki.kiki`
+    // because this whole project, being self-hosted,
+    // _is_ the end-to-end test.
+    "./src/examples/kiki.kiki",
+];
 
 fn is_ignored(path: &Path) -> bool {
     IGNORE_LIST.iter().any(|ignored| path.starts_with(ignored))
