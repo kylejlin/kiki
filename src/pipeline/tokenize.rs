@@ -314,3 +314,215 @@ fn get_single_char_punctuation_token(kind: SingleCharPunctuationKind, index: Byt
         SingleCharPunctuationKind::RAngle => Token::RAngle(index),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use pretty_assertions::assert_eq;
+
+    // ## Lexing should succeed
+
+    #[test]
+    fn finish_ident() {
+        let src = "foo";
+        let actual = tokenize(src).unwrap();
+        let expected = vec![Token::Ident(Ident {
+            name: "foo".to_string(),
+            position: ByteIndex(0),
+        })];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn finish_terminal_ident() {
+        let src = "$foo";
+        let actual = tokenize(src).unwrap();
+        let expected = vec![Token::TerminalIdent(TerminalIdent {
+            name: DollarlessTerminalName::remove_dollars("foo"),
+            dollarless_position: ByteIndex(1),
+        })];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn double_double_single_colon() {
+        let src = ":::::";
+        let actual = tokenize(src).unwrap();
+        let expected = vec![
+            Token::DoubleColon(ByteIndex(0)),
+            Token::DoubleColon(ByteIndex(2)),
+            Token::Colon(ByteIndex(4)),
+        ];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn single_colons() {
+        let src = ": : : : :";
+        let actual = tokenize(src).unwrap();
+        let expected = vec![
+            Token::Colon(ByteIndex(0)),
+            Token::Colon(ByteIndex(2)),
+            Token::Colon(ByteIndex(4)),
+            Token::Colon(ByteIndex(6)),
+            Token::Colon(ByteIndex(8)),
+        ];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn finish_colon() {
+        let src = ":";
+        let actual = tokenize(src).unwrap();
+        let expected = vec![Token::Colon(ByteIndex(0))];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn empty_comment() {
+        let src = "//";
+        let actual = tokenize(src).unwrap();
+        let expected: Vec<Token> = vec![];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn whitespace_only_comment() {
+        let src = "// ";
+        let actual = tokenize(src).unwrap();
+        let expected: Vec<Token> = vec![];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn comment() {
+        let src = "// Hello world!";
+        let actual = tokenize(src).unwrap();
+        let expected: Vec<Token> = vec![];
+        assert_eq!(expected, actual);
+    }
+
+    // ## Lexing should fail
+
+    #[test]
+    fn slash() {
+        let src = "/";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('/'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn slash_space() {
+        let src = "/ /";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('/'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn slash_alpha() {
+        let src = "/hello";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('/'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn slash_dollar() {
+        let src = "/$foo";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('/'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn slash_lcurly() {
+        let src = "/{";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('/'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn slash_rcurly() {
+        let src = "/}";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('/'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn dollar() {
+        let src = "$";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('$'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn dollar_dollar() {
+        let src = "$$";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('$'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn dollar_comma() {
+        let src = "$,";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('$'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn dollar_lcurly() {
+        let src = "${";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('$'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn dollar_number() {
+        let src = "$9";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('$'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn number() {
+        let src = "4";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('4'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn number_letters() {
+        let src = "4ever";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(0), Some('4'));
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn dollar_keyword() {
+        let src = "$start";
+        let actual = tokenize(src).unwrap_err().lex_err().unwrap();
+        let expected = (ByteIndex(src.len()), None);
+        assert_eq!(expected, actual);
+    }
+
+    impl KikiErr {
+        fn lex_err(self) -> Option<(ByteIndex, Option<char>)> {
+            match self {
+                KikiErr::Lex(i, c) => Some((i, c)),
+                _ => None,
+            }
+        }
+    }
+}
