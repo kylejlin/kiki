@@ -4,63 +4,31 @@
 
 Kiki is a minimalist parser generator for Rust.
 
+## Table of Contents
+
+- [Why use Kiki](#why-use-kiki)
+- [Example](#example)
+- [Guide](#guide)
+- [Contributing](#contributing)
+
 ## Why use Kiki?
 
 - **Easy to learn.**
   If you've used other parser generators before (e.g., Bison/yacc),
-  you can learn Kiki in _under 10 minutes_.
+  you can learn Kiki in under 10 minutes.
 - **Easy to write.**
-  Tools like Bison or lalrpop often force you to write boilerplate.
-  Specifically, you must code the data structures
-  (i.e., the abstract the syntax tree), in addition to coding the grammar.
-  Kiki is based on _concrete_ syntax trees, which eliminates
-  the need for this boilerplate.
+  Tools like Bison or lalrpop force you to write
+  a grammar, semantic actions, and syntax tree type definitions.
+  Kiki lets you write only the type definitions.
+  Kiki infers the grammar and semantic actions from the
+  type definitions.
 - **Easy to read.**
-  Kiki's has a minimalist syntax.
+  Kiki has a minimalist syntax.
   This makes it easy to learn, and easy to read.
 
-## Why _not_ use Kiki?
+## Example
 
-There are a few cases where you probably should _not_ use Kiki:
-
-- **Your grammar is not LALR(1).**
-  Kiki only supports LALR(1) grammars.
-  While this is perfectly fine for 90% of use cases,
-  it's sometimes insufficient for some particularly complex
-  or poorly written grammars.
-- **You want an _abstract_ syntax tree (AST)**.
-  Kiki does One Thing Well™: parsing.
-
-  Syntax analysis often requires at least 2 jobs.
-  The first is to parse the input.
-  The second is to convert the parse tree (i.e., the concrete syntax tree)
-  into a more developer-friendly form (i.e., the abstract syntax tree).
-
-  Many tools, like Bison, handle both of these jobs in one pass.
-  This sometimes leads to better performance.
-  However, this comes at the cost of greater tool complexity,
-  and weaker separation of concerns.
-
-  Kiki _only_ produces the parse tree.
-  If the developer wants to transform that tree
-  into another form (i.e., an AST), they must
-  implement that code themselves.
-
-- **You want a built-in lexer.**
-  As stated above, Kiki does One Thing Well™: parsing.
-
-## Quasi-tutorial
-
-The fastest way to learn is by example.
-In this section, we translate
-a Bison file into Kiki.
-We don't give detailed explanations,
-which is why it's a _quasi_ tutorial.
-We will save the explanation for future sections.
-
-### A toy parser
-
-Let's build a toy parser that
+In this section, we build a toy parser that
 recognizes the arithmetic expressions.
 For example:
 
@@ -69,7 +37,7 @@ For example:
 - `29 + (893 * 7)`
 
 For simplicity, this language does not have operator precedence.
-That is, you must explicitly use parentheses (e.g., `29 + (893 * 7)`).
+Instead, you must use parentheses (e.g., `29 + (893 * 7)`).
 
 Let's compare how we build the parser using Bison and Kiki.
 
@@ -164,10 +132,11 @@ term
 ;
 ```
 
-Observe that you must write separate code for the...
+Observe that there are _three_ things you must write:
 
-- syntax tree data structure (i.e., `enum Expr {...}`)
-- and the grammar (i.e., `expr : term ...;`, `term : NUM ...;`).
+1. The grammar (i.e., `expr : term ...;` and `term : NUM ...;`).
+2. The semantic actions (e.g., `$$ = Expr::Op {...};`).
+3. The syntax tree type definitions (i.e., `enum Expr {...}` and `enum OpKind {...}`).
 
 ### With Kiki
 
@@ -212,12 +181,20 @@ enum Term {
 }
 ```
 
-Observe this code is much simpler.
-The same code defines both the data structures and the grammar.
-This powerful simplification is only possible because
-Kiki parsers produce _concrete_ syntax trees.
+Observe this code is much simpler and shorter.
+Instead of having to write the
+grammar, semantic actions, and syntax tree type definition,
+**you only need to write the syntax tree type definition.**
+Kiki infers the grammar and semantic action from the type definition.
 
-This limitation is a double-edged sword.
-On one hand, it greatly simplifies the code.
-On the other hand, it prevents you from having a
-different tree structure than the grammar.
+## Guide
+
+You can read the user guide [here](./USER_GUIDE.md).
+The example from the previous section omits many details.
+The user guide explains these details.
+
+## Contributing
+
+Contributions are welcome.
+Simply open a [new issue](https://github.com/kylejlin/kiki/issues/new) or pull request, and I'll take a look.
+All forms of contribution (e.g., bugfixes, tests, documentation, typo correction) are helpful.
