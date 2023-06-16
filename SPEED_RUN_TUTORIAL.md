@@ -4,10 +4,16 @@ You can learn Kiki in under ten minutes.
 The fastest way is just to look at Kiki code
 side-by-side with the resulting Rust code.
 
+This tutorial does not explain anything.
+The whole idea is that it's faster to learn by example.
+However, if you want an explanation,
+read the [user guide](./USER_GUIDE.md).
+
 ## Table of contents
 
 - [`json_parser.kiki`](#json_parserkiki)
 - [`json_parser.rs`](#json_parserrs)
+- [Epilogue](#epilogue)
 
 ## `json_parser.kiki`
 
@@ -159,3 +165,11 @@ where S: IntoIterator<Item = Token> {
     // ...
 }
 ```
+
+## Epilogue
+
+That's all folks!
+If you're still confused,
+you can read the [guide](./USER_GUIDE.md).
+After that, if you still have questions, feel free to
+open an issue.
