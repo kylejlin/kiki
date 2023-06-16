@@ -4,9 +4,6 @@ You can learn Kiki in under ten minutes.
 The fastest way is just to look at Kiki code
 side-by-side with the resulting Rust code.
 
-In the Rust code, we omit the `#[derive(...)]` and `pub` clauses,
-in order to make it easier to read.
-
 ## Table of contents
 
 - [`json_parser.kiki`](#json_parserkiki)
@@ -90,6 +87,11 @@ terminal Token {
 ```
 
 ## `json_parser.rs`
+
+The following Rust code is a simplified version
+of what Kiki generates using the above grammar.
+We omit the `#[derive(...)]` and `pub` clauses,
+in order to make the code easier to read.
 
 ```rust
 enum Token {
