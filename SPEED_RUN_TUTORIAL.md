@@ -1,13 +1,15 @@
-# Kiki tutorial
+# Kiki "speed run" tutorial
 
 You can learn Kiki in under ten minutes.
 The fastest way is just to look at Kiki code
 side-by-side with the resulting Rust code.
 
 This tutorial does not explain anything.
-The whole idea is that it's faster to learn by example.
+The whole idea is that **it's faster to learn by example**.
 However, if you want an explanation,
 read the [user guide](./USER_GUIDE.md).
+
+Having said that, let's get started!
 
 ## Table of contents
 
