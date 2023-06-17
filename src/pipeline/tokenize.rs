@@ -235,7 +235,7 @@ impl Tokenizer<'_> {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 enum State {
     Main,
     Slash(ByteIndex),
