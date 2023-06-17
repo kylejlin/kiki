@@ -39,3 +39,9 @@ pub struct TerminalIdent {
     pub name: DollarlessTerminalName,
     pub dollarless_position: ByteIndex,
 }
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct Attribute {
+    pub src: String,
+    pub position: ByteIndex,
+}
