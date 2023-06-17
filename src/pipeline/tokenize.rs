@@ -1,11 +1,13 @@
 use crate::{
     data::{
         token::Token,
-        token::{Ident, TerminalIdent},
+        token::{Attribute, Ident, TerminalIdent},
         ByteIndex, KikiErr,
     },
     DollarlessTerminalName,
 };
+
+use std::num::NonZeroUsize;
 
 pub fn tokenize(src: &str) -> Result<Vec<Token>, KikiErr> {
     let tokenizer = Tokenizer::new(src);
@@ -41,7 +43,7 @@ impl Tokenizer<'_> {
 
     fn handle_char(&mut self, current: char, current_index: ByteIndex) -> Result<(), KikiErr> {
         match self.state {
-            State::Main => self.handle_char_given_state_is_whitespace(current, current_index),
+            State::Main => self.handle_char_given_state_is_main(current, current_index),
             State::Slash(start) => self.handle_char_given_state_is_slash(current, start),
             State::SingleLineComment => {
                 self.handle_char_given_state_is_single_line_comment(current)
@@ -56,10 +58,21 @@ impl Tokenizer<'_> {
             State::Colon(start) => {
                 self.handle_char_given_state_is_colon(current, current_index, start)
             }
+            State::Pound(start) => {
+                self.handle_char_given_state_is_pound(current, current_index, start)
+            }
+            State::OuterAttribute(start, left_count, end) => self
+                .handle_char_given_state_is_outer_attribute(
+                    current,
+                    current_index,
+                    start,
+                    left_count,
+                    end,
+                ),
         }
     }
 
-    fn handle_char_given_state_is_whitespace(
+    fn handle_char_given_state_is_main(
         &mut self,
         current: char,
         current_index: ByteIndex,
@@ -80,6 +93,9 @@ impl Tokenizer<'_> {
             Ok(())
         } else if current == ':' {
             self.state = State::Colon(current_index);
+            Ok(())
+        } else if current == '#' {
+            self.state = State::Pound(current_index);
             Ok(())
         } else if let Some(kind) = get_single_char_punctuation_kind(current) {
             self.out
@@ -178,6 +194,103 @@ impl Tokenizer<'_> {
         }
     }
 
+    fn handle_char_given_state_is_pound(
+        &mut self,
+        current: char,
+        current_index: ByteIndex,
+        start: ByteIndex,
+    ) -> Result<(), KikiErr> {
+        if current == '[' {
+            self.state = State::OuterAttribute(
+                start,
+                LeftBracketCount(NonZeroUsize::new(1).unwrap()),
+                ByteIndex(current_index.0 + "[".len()),
+            );
+            Ok(())
+        } else {
+            self.push_pending_token_and_reset_state(Some(current), current_index)?;
+            self.handle_char(current, current_index)
+        }
+    }
+
+    fn handle_char_given_state_is_outer_attribute(
+        &mut self,
+        current: char,
+        current_index: ByteIndex,
+        start: ByteIndex,
+        left_count: LeftBracketCount,
+        end: ByteIndex,
+    ) -> Result<(), KikiErr> {
+        match current {
+            '(' | '[' | '{' => {
+                self.state = State::OuterAttribute(
+                    start,
+                    LeftBracketCount(left_count.0.saturating_add(1)),
+                    ByteIndex(end.0 + current.len_utf8()),
+                );
+                Ok(())
+            }
+
+            ')' | ']' | '}' => {
+                if left_count.0.get() == 1 {
+                    let end = ByteIndex(end.0 + current.len_utf8());
+                    return self.finish_outer_attribute(start, end);
+                }
+
+                self.state = State::OuterAttribute(
+                    start,
+                    LeftBracketCount(NonZeroUsize::new(left_count.0.get() - 1).unwrap()),
+                    ByteIndex(end.0 + current.len_utf8()),
+                );
+                Ok(())
+            }
+
+            '\n' => Err(KikiErr::Lex(current_index, Some(current))),
+
+            _ => {
+                self.state = State::OuterAttribute(start, left_count, ByteIndex(end.0 + 1));
+                Ok(())
+            }
+        }
+    }
+
+    fn finish_outer_attribute(&mut self, start: ByteIndex, end: ByteIndex) -> Result<(), KikiErr> {
+        let mut stack = Vec::new();
+        let bracket_start = ByteIndex(start.0 + "#".len());
+        for (current_index, current) in self.src[bracket_start.0..end.0].char_indices() {
+            match current {
+                '(' | '[' | '{' => {
+                    stack.push(current);
+                }
+
+                ')' | ']' | '}' => {
+                    let Some(top) = stack.pop() else {
+                        return Err(KikiErr::Lex(
+                            ByteIndex(current_index),
+                            Some(current),
+                        ));
+                    };
+                    match (top, current) {
+                        ('(', ')') | ('[', ']') | ('{', '}') => {}
+
+                        _ => {
+                            return Err(KikiErr::Lex(ByteIndex(current_index), Some(current)));
+                        }
+                    }
+                }
+
+                _ => {}
+            }
+        }
+
+        self.state = State::Main;
+        self.out.push(Token::OuterAttribute(Attribute {
+            src: self.src[start.0..end.0].to_string(),
+            position: start,
+        }));
+        Ok(())
+    }
+
     /// This function only resets the state if the pending token is valid.
     fn push_pending_token_and_reset_state(
         &mut self,
@@ -228,6 +341,10 @@ impl Tokenizer<'_> {
                 self.state = State::Main;
                 Ok(())
             }
+
+            State::Pound(start) => Err(KikiErr::Lex(start, Some('#'))),
+
+            State::OuterAttribute(start, _, end) => self.finish_outer_attribute(start, end),
         }?;
 
         self.state = State::Main;
@@ -244,7 +361,12 @@ enum State {
     Dollar(ByteIndex),
     TerminalIdent(ByteIndex, ByteIndex),
     Colon(ByteIndex),
+    Pound(ByteIndex),
+    OuterAttribute(ByteIndex, LeftBracketCount, ByteIndex),
 }
+
+#[derive(Debug, Clone, Copy)]
+struct LeftBracketCount(NonZeroUsize);
 
 #[derive(Debug, Clone, Copy)]
 enum ReservedWordKind {
