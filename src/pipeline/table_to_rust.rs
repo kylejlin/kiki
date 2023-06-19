@@ -1,7 +1,6 @@
 use crate::data::{table::*, validated_file::*, DollarlessTerminalName, RustSrc};
 use std::collections::{HashMap, HashSet};
 
-const NONTERMINAL_DERIVE_CLAUSE: &str = "#[derive(Clone, Debug)]";
 const STATE_VARIANT_PREFIX: &str = "S";
 const RULE_KIND_VARIANT_PREFIX: &str = "R";
 const ACTION_SHIFT_VARIANT_NAME: &str = "Shift";
@@ -319,34 +318,44 @@ impl {node_enum_name} {{
     }
 
     fn get_nonterminal_type_defs_src(&self) -> String {
-        self.file.nonterminals
+        self.file
+            .nonterminals
             .iter()
             .map(|nonterminal| match nonterminal {
                 Nonterminal::Struct(s) => {
+                    let attributes = concatenate_attributes_and_add_trailing_newline(&s.attributes);
                     let nonterminal_name = &s.name.name;
-                    let fieldset = self.get_fieldset_src(&s.fieldset, GetFieldsetSrcOptions {
-                        use_semicolon_if_unnamed: true,
-                        use_pub_on_named_fields: true,
-                    });
-                    format!("{NONTERMINAL_DERIVE_CLAUSE}\npub struct {nonterminal_name}{fieldset}")
-                },
+                    let fieldset = self.get_fieldset_src(
+                        &s.fieldset,
+                        GetFieldsetSrcOptions {
+                            use_semicolon_if_unnamed: true,
+                            use_pub_on_named_fields: true,
+                        },
+                    );
+                    format!("{attributes}pub struct {nonterminal_name}{fieldset}")
+                }
                 Nonterminal::Enum(e) => {
+                    let attributes = concatenate_attributes_and_add_trailing_newline(&e.attributes);
                     let nonterminal_name = &e.name.name;
-                    let variants_indent_1 = e.variants
+                    let variants_indent_1 = e
+                        .variants
                         .iter()
                         .map(|variant| {
                             let variant_name = &variant.name.name;
-                            let variant_fieldset = self.get_fieldset_src(&variant.fieldset, GetFieldsetSrcOptions {
-                                use_semicolon_if_unnamed: false,
-                                use_pub_on_named_fields: false,
-                            });
+                            let variant_fieldset = self.get_fieldset_src(
+                                &variant.fieldset,
+                                GetFieldsetSrcOptions {
+                                    use_semicolon_if_unnamed: false,
+                                    use_pub_on_named_fields: false,
+                                },
+                            );
                             format!("{variant_name}{variant_fieldset},")
                         })
                         .collect::<Vec<_>>()
                         .join("\n")
                         .indent(1);
-                    format!("{NONTERMINAL_DERIVE_CLAUSE}\npub enum {nonterminal_name} {{\n{variants_indent_1}\n}}")
-                },
+                    format!("{attributes}pub enum {nonterminal_name} {{\n{variants_indent_1}\n}}")
+                }
             })
             .collect::<Vec<_>>()
             .join("\n\n")
@@ -903,6 +912,10 @@ fn pascal_to_snake_case(s: &str) -> String {
     out
 }
 
+fn concatenate_attributes_and_add_trailing_newline(attributes: &[Attribute]) -> String {
+    attributes.iter().map(|a| format!("{}\n", &a.src)).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -959,6 +972,7 @@ mod tests {
                 ],
             },
             nonterminals: vec![Nonterminal::Enum(Enum {
+                attributes: vec![positionless_attribute("#[derive(Clone, Debug)]")],
                 name: positionless_ident("Expr"),
                 variants: vec![
                     EnumVariant {
@@ -1045,6 +1059,7 @@ mod tests {
                 ],
             },
             nonterminals: vec![Nonterminal::Enum(Enum {
+                attributes: vec![positionless_attribute("#[derive(Clone, Debug)]")],
                 name: positionless_ident("Expr"),
                 variants: vec![
                     EnumVariant {
@@ -1099,6 +1114,13 @@ mod tests {
         TerminalIdent {
             name: s.clone(),
             dollarless_position: ByteIndex(1),
+        }
+    }
+
+    fn positionless_attribute(s: &str) -> Attribute {
+        Attribute {
+            src: s.to_owned(),
+            position: ByteIndex(0),
         }
     }
 

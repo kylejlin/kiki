@@ -23,7 +23,6 @@ pub enum Token {
     Number(isize),
 }
 
-#[derive(Clone, Debug)]
 pub enum Foo {
     Empty,
     Number,
@@ -32,10 +31,8 @@ pub enum Foo {
     },
 }
 
-#[derive(Clone, Debug)]
 pub struct Epsilon;
 
-#[derive(Clone, Debug)]
 pub enum Pair {
     StringPair(
         Box<StringPair>,
@@ -45,10 +42,8 @@ pub enum Pair {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct StringPair;
 
-#[derive(Clone, Debug)]
 pub struct NumberPair;
 
 /// If the parser encounters an unexpected token `t`, it will return `Err(Some(t))`.

@@ -28,6 +28,7 @@ pub fn balanced_parens_input() -> File {
             ],
         },
         nonterminals: vec![Nonterminal::Enum(Enum {
+            attributes: vec![positionless_attribute("#[derive(Clone, Debug)]")],
             name: positionless_ident("Expr"),
             variants: vec![
                 EnumVariant {
@@ -206,6 +207,7 @@ fn balanced_parens_esoteric_input() -> File {
             ],
         },
         nonterminals: vec![Nonterminal::Enum(Enum {
+            attributes: vec![positionless_attribute("#[derive(Clone, Debug)]")],
             name: positionless_ident("Expr"),
             variants: vec![
                 EnumVariant {
@@ -264,5 +266,12 @@ fn positionless_terminal_ident(s: &DollarlessTerminalName) -> TerminalIdent {
     TerminalIdent {
         name: s.clone(),
         dollarless_position: ByteIndex(1),
+    }
+}
+
+fn positionless_attribute(s: &str) -> Attribute {
+    Attribute {
+        src: s.to_owned(),
+        position: ByteIndex(0),
     }
 }

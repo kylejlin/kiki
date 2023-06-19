@@ -13,21 +13,26 @@ pub enum FileItem {
 
 #[derive(Clone, Debug)]
 pub struct Struct {
+    pub attributes: Vec<Attribute>,
     pub name: Ident,
     pub fieldset: Fieldset,
 }
 
 #[derive(Clone, Debug)]
 pub struct Enum {
+    pub attributes: Vec<Attribute>,
     pub name: Ident,
     pub variants: Vec<EnumVariant>,
 }
 
 #[derive(Clone, Debug)]
 pub struct TerminalEnum {
+    pub attributes: Vec<Attribute>,
     pub name: Ident,
     pub variants: Vec<TerminalEnumVariant>,
 }
+
+pub use crate::data::token::Attribute;
 
 #[derive(Clone, Debug)]
 pub enum Fieldset {

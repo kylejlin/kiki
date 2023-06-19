@@ -38,12 +38,10 @@ pub enum Token {
     RAngle(crate::data::ByteIndex),
 }
 
-#[derive(Clone, Debug)]
 pub struct File {
     pub items: Box<OptItems>,
 }
 
-#[derive(Clone, Debug)]
 pub enum OptItems {
     Nil,
     Cons(
@@ -52,7 +50,6 @@ pub enum OptItems {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum FileItem {
     Start(
         crate::data::token::Ident,
@@ -68,28 +65,24 @@ pub enum FileItem {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct Struct {
     pub attributes: Box<OptOuterAttributes>,
     pub name: crate::data::token::Ident,
     pub fieldset: Box<Fieldset>,
 }
 
-#[derive(Clone, Debug)]
 pub struct Enum {
     pub attributes: Box<OptOuterAttributes>,
     pub name: crate::data::token::Ident,
     pub variants: Box<OptEnumVariants>,
 }
 
-#[derive(Clone, Debug)]
 pub struct TerminalEnum {
     pub attributes: Box<OptOuterAttributes>,
     pub name: crate::data::token::Ident,
     pub variants: Box<OptTerminalEnumVariants>,
 }
 
-#[derive(Clone, Debug)]
 pub enum OptOuterAttributes {
     Nil,
     Cons(
@@ -98,7 +91,6 @@ pub enum OptOuterAttributes {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum Fieldset {
     Empty,
     Named(
@@ -109,12 +101,10 @@ pub enum Fieldset {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct NamedFieldset {
     pub fields: Box<NamedFields>,
 }
 
-#[derive(Clone, Debug)]
 pub enum NamedFields {
     One(
         Box<NamedField>,
@@ -125,18 +115,15 @@ pub enum NamedFields {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct NamedField {
     pub name: Box<IdentOrUnderscore>,
     pub symbol: Box<IdentOrTerminalIdent>,
 }
 
-#[derive(Clone, Debug)]
 pub struct TupleFieldset {
     pub fields: Box<TupleFields>,
 }
 
-#[derive(Clone, Debug)]
 pub enum TupleFields {
     One(
         Box<TupleField>,
@@ -147,7 +134,6 @@ pub enum TupleFields {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum TupleField {
     Used(
         Box<IdentOrTerminalIdent>,
@@ -157,7 +143,6 @@ pub enum TupleField {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum OptEnumVariants {
     Nil,
     Cons(
@@ -166,13 +151,11 @@ pub enum OptEnumVariants {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct EnumVariant {
     pub name: crate::data::token::Ident,
     pub fieldset: Box<Fieldset>,
 }
 
-#[derive(Clone, Debug)]
 pub enum OptTerminalEnumVariants {
     Nil,
     Cons(
@@ -181,13 +164,11 @@ pub enum OptTerminalEnumVariants {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct TerminalEnumVariant {
     pub name: crate::data::token::TerminalIdent,
     pub type_: Box<Type>,
 }
 
-#[derive(Clone, Debug)]
 pub enum Type {
     Unit,
     Path(
@@ -198,7 +179,6 @@ pub enum Type {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum Path {
     One(
         crate::data::token::Ident,
@@ -209,13 +189,11 @@ pub enum Path {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct ComplexType {
     pub callee: Box<Path>,
     pub args: Box<CommaSeparatedTypes>,
 }
 
-#[derive(Clone, Debug)]
 pub enum CommaSeparatedTypes {
     One(
         Box<Type>,
@@ -226,7 +204,6 @@ pub enum CommaSeparatedTypes {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum IdentOrUnderscore {
     Ident(
         crate::data::token::Ident,
@@ -236,7 +213,6 @@ pub enum IdentOrUnderscore {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum IdentOrTerminalIdent {
     Ident(
         crate::data::token::Ident,

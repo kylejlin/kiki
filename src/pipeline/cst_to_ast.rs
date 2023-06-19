@@ -52,6 +52,7 @@ impl From<cst::FileItem> for ast::FileItem {
 impl From<cst::Struct> for ast::Struct {
     fn from(cst: cst::Struct) -> Self {
         ast::Struct {
+            attributes: (*cst.attributes).into(),
             name: cst.name.into(),
             fieldset: (*cst.fieldset).into(),
         }
@@ -61,6 +62,7 @@ impl From<cst::Struct> for ast::Struct {
 impl From<cst::Enum> for ast::Enum {
     fn from(cst: cst::Enum) -> Self {
         ast::Enum {
+            attributes: (*cst.attributes).into(),
             name: cst.name.into(),
             variants: (*cst.variants).into(),
         }
@@ -70,8 +72,22 @@ impl From<cst::Enum> for ast::Enum {
 impl From<cst::TerminalEnum> for ast::TerminalEnum {
     fn from(cst: cst::TerminalEnum) -> Self {
         ast::TerminalEnum {
+            attributes: (*cst.attributes).into(),
             name: cst.name.into(),
             variants: (*cst.variants).into(),
+        }
+    }
+}
+
+impl From<cst::OptOuterAttributes> for Vec<ast::Attribute> {
+    fn from(cst: cst::OptOuterAttributes) -> Self {
+        match cst {
+            cst::OptOuterAttributes::Nil => vec![],
+            cst::OptOuterAttributes::Cons(left, right) => {
+                let mut attributes: Vec<ast::Attribute> = (*left).into();
+                attributes.push(right);
+                attributes
+            }
         }
     }
 }

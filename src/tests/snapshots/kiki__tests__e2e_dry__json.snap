@@ -30,7 +30,6 @@ pub enum Token {
     Comma(String),
 }
 
-#[derive(Clone, Debug)]
 pub enum Json {
     Obj(
         Box<Obj>,
@@ -40,12 +39,10 @@ pub enum Json {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct Obj {
     pub entries: Box<OptEntries>,
 }
 
-#[derive(Clone, Debug)]
 pub enum OptEntries {
     None,
     Some(
@@ -53,7 +50,6 @@ pub enum OptEntries {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum Entries {
     One(
         Box<Entry>,
@@ -64,13 +60,11 @@ pub enum Entries {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct Entry {
     pub key: String,
     pub val: Box<Expr>,
 }
 
-#[derive(Clone, Debug)]
 pub enum Expr {
     Obj(
         Box<Obj>,
@@ -89,12 +83,10 @@ pub enum Expr {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct Arr {
     pub elements: Box<OptElements>,
 }
 
-#[derive(Clone, Debug)]
 pub enum OptElements {
     None,
     Some(
@@ -102,7 +94,6 @@ pub enum OptElements {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum Elements {
     One(
         Box<Expr>,

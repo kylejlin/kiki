@@ -23,7 +23,7 @@ pub enum Token {
     RParen(()),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Expr {
     Empty,
     Wrap(

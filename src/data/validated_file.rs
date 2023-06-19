@@ -139,7 +139,7 @@ impl Nonterminal {
 }
 
 pub use crate::data::ast::{
-    ComplexType, Enum, EnumVariant, Fieldset, NamedField, NamedFieldset, Struct, TupleField,
-    TupleFieldset, Type,
+    Attribute, ComplexType, Enum, EnumVariant, Fieldset, NamedField, NamedFieldset, Struct,
+    TupleField, TupleFieldset, Type,
 };
 pub use crate::data::ast::{Ident, IdentOrTerminalIdent, IdentOrUnderscore, TerminalIdent, Token};
