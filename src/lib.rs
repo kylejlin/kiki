@@ -9,6 +9,9 @@ mod parser;
 mod tests;
 
 #[cfg(test)]
+mod test_utils;
+
+#[cfg(test)]
 mod examples;
 
 pub use data::*;

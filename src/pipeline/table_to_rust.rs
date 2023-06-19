@@ -920,7 +920,7 @@ fn concatenate_attributes_and_add_trailing_newline(attributes: &[Attribute]) -> 
 mod tests {
     use super::*;
 
-    use crate::data::ByteIndex;
+    use crate::{data::ByteIndex, test_utils::*};
 
     #[test]
     fn balanced_parens() {
@@ -1101,27 +1101,6 @@ mod tests {
 
         let RustSrc(rust_src) = table_to_rust(&table, &file, grammar_src);
         insta::assert_display_snapshot!(rust_src);
-    }
-
-    fn positionless_ident(s: &str) -> Ident {
-        Ident {
-            name: s.to_owned(),
-            position: ByteIndex(0),
-        }
-    }
-
-    fn positionless_terminal_ident(s: &DollarlessTerminalName) -> TerminalIdent {
-        TerminalIdent {
-            name: s.clone(),
-            dollarless_position: ByteIndex(1),
-        }
-    }
-
-    fn positionless_attribute(s: &str) -> Attribute {
-        Attribute {
-            src: s.to_owned(),
-            position: ByteIndex(0),
-        }
     }
 
     const fn shift(i: usize) -> Action {
