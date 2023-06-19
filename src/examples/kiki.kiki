@@ -23,12 +23,14 @@ enum FileItem {
 }
 
 struct Struct {
+    attributes: OptOuterAttributes
     _: $StructKw
     name: $Ident
     fieldset: Fieldset
 }
 
 struct Enum {
+    attributes: OptOuterAttributes
     _: $EnumKw
     name: $Ident
     _: $LCurly
@@ -37,11 +39,20 @@ struct Enum {
 }
 
 struct TerminalEnum {
+    attributes: OptOuterAttributes
     _: $TerminalKw
     name: $Ident
     _: $LCurly
     variants: OptTerminalEnumVariants
     _: $RCurly
+}
+
+enum OptOuterAttributes {
+    Nil
+    Cons (
+        OptOuterAttributes
+        $OuterAttribute
+    )
 }
 
 enum Fieldset {
@@ -139,7 +150,7 @@ enum Path {
 }
 
 struct ComplexType {
-    callee: Type
+    callee: Path
     _: $LAngle
     args: CommaSeparatedTypes
     _: $RAngle
@@ -168,6 +179,8 @@ terminal Token {
     $Underscore: crate::data::ByteIndex
     $Ident: crate::data::token::Ident
     $TerminalIdent: crate::data::token::TerminalIdent
+
+    $OuterAttribute: crate::data::token::Attribute
 
     $StartKw: crate::data::ByteIndex
     $StructKw: crate::data::ByteIndex
