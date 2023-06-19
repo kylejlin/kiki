@@ -41,3 +41,10 @@ fn balanced_parens_with_comments() {
     let RustSrc(rust_src) = generate(src).expect("should generate Rust code");
     insta::assert_display_snapshot!(rust_src);
 }
+
+#[test]
+fn balanced_parens_outer_attributes() {
+    let src = include_str!("../examples/balanced_parens_outer_attributes.kiki");
+    let RustSrc(rust_src) = generate(src).expect("should generate Rust code");
+    insta::assert_display_snapshot!(rust_src);
+}
