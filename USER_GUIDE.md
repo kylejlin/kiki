@@ -123,6 +123,65 @@ terminal Token {
 
 Custom types must use fully qualified syntax (i.e., `crate::foo::bar::...`).
 
+### Outer attributes
+
+You can write zero or more _outer_ attributes
+before the terminal enum declaration.
+An outer attribute has the form `#[...]`,
+where `...` is a _balanced bracket string_.
+We explain what a balanced bracket string is later.
+
+But first, let's see an example of adding
+an outer attribute to a struct:
+
+```kiki
+#[derive(Clone, Copy, Debug)] // <-- This is the outer attribute
+terminal Token {
+    $LParen: ()
+    $RParen: ()
+}
+```
+
+The above code results in the Rust code below:
+
+```rs
+#[derive(Clone, Copy, Debug)]
+pub enum Token {
+    LParen(()),
+    RParen(()),
+}
+```
+
+Observe that the outer attribute
+(i.e., `#[derive(Clone, Copy, Debug)]`)
+gets copied verbatim into the generated Rust code.
+
+#### Balanced bracket strings
+
+A balanced bracket string consists of
+balanced brackets (i.e., `()`, `[]`, `{}`).
+A balanced bracket string may also
+include non-bracket characters.
+However, the non-bracket characters do not influence
+a string's balancedness status.
+
+Here are some examples.
+
+The following strings _are_ balanced:
+
+- `"hello world"`
+- `"()"`
+- `"hel(lo world)"`
+- `"derive(Debug, Clone, Foo { target = Bar })"`
+- `""` (the empty string)
+- `([{}], {} {[]}, ())`
+
+The following strings are **not** balanced:
+
+- `(` (reason: expected `)` but got end of input)
+- `)` (reason: unexpected `)`)
+- `([)]` (reason: expected `]` but got `)`)
+
 ## `struct` declarations
 
 Suppose we have the following grammar rule
@@ -235,6 +294,30 @@ The above Kiki generates the following Rust:
 struct Epsilon;
 ```
 
+### Outer attributes before structs
+
+You can write zero or more _outer_ attributes
+before a struct.
+You use the same syntax as when you write [outer attributes before a terminal enum declaration](#outer-attributes).
+
+Example:
+
+```kiki
+#[derive(Clone, Debug)]
+struct ReturnStatement(
+    _: $ReturnKw
+    Expr
+    _: $Semicolon
+)
+```
+
+The above code results in the Rust code below:
+
+```rs
+#[derive(Clone, Debug)]
+pub struct ReturnStatement(Box<Expr>);
+```
+
 ## `enum` declarations
 
 Up until now, we've only considered nonterminals
@@ -338,13 +421,9 @@ enum OneOrMoreNumbers {
 An enum variant can use unit-like syntax, just like in Rust:
 
 ```kiki
-enum ZeroOrOneNumber {
+enum ZeroOrOneComma {
     None
-    One(_: $NumLit)
-}
-
-terminal Token {
-    $NumLit: isize
+    One(_: $Comma)
 }
 ```
 
@@ -353,7 +432,33 @@ This results in :
 ```rs
 enum ZeroOrOneComma {
     None,
-    One(isize),
+    One,
+}
+```
+
+### Outer attributes before enums
+
+You can write zero or more _outer_ attributes
+before a struct.
+You use the same syntax as when you write [outer attributes before a terminal enum declaration](#outer-attributes).
+
+Example:
+
+```kiki
+#[derive(Clone, Copy, Debug)]
+enum ZeroOrOneComma {
+    None
+    One(_: $Comma)
+}
+```
+
+The above code results in the Rust code below:
+
+```rs
+#[derive(Clone, Copy, Debug)]
+enum ZeroOrOneComma {
+    None,
+    One,
 }
 ```
 
