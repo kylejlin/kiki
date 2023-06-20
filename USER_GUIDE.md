@@ -3,7 +3,7 @@
 This guide is meant to be a (mostly) comprehensive reference.
 It is not meant to be a quick read.
 If you want to learn Kiki quickly as possible,
-click [here](./SPEED_RUN_TUTORIAL.md).
+click [here](./QUICKSTART.md).
 
 This guide is incomplete.
 It is full of inconsistencies, typos, and grammar mistakes.

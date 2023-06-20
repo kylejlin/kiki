@@ -6,17 +6,22 @@ Kiki is a minimalist parser generator for Rust.
 
 ## Table of contents
 
+- [How to use Kiki](#how-to-use-kiki)
 - [Why use Kiki](#why-use-kiki)
 - [Kiki's limitations](#kikis-limitations)
 - [Example](#example)
 - [Guide](#guide)
 - [Contributing](#contributing)
 
+## How to use Kiki?
+
+Read the [quickstart](./QUICKSTART.md).
+
 ## Why use Kiki?
 
 - **Easy to learn.**
   If you've used other parser generators before (e.g., Bison/yacc),
-  you can [learn Kiki in under 10 minutes](./SPEED_RUN_TUTORIAL.md).
+  you can [learn Kiki in under 10 minutes](./QUICKSTART.md).
 - **Easy to write.**
   Tools like Bison or lalrpop force you to write
   a grammar, semantic actions, and syntax tree type definitions.
@@ -203,7 +208,7 @@ The guide explains Kiki in detail.
 It is _not_ a fast read.
 
 If your goal is to grok Kiki as quickly as possible,
-click [here](./SPEED_RUN_TUTORIAL.md).
+click [here](./QUICKSTART.md).
 
 ## Contributing
 
