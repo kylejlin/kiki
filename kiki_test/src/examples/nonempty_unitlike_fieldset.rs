@@ -13,13 +13,11 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-#[derive(Debug)]
 pub enum Token {
     String(String),
     Number(isize),
 }
 
-#[derive(Clone, Debug)]
 pub enum Foo {
     Empty,
     Number,
@@ -28,10 +26,8 @@ pub enum Foo {
     },
 }
 
-#[derive(Clone, Debug)]
 pub struct Epsilon;
 
-#[derive(Clone, Debug)]
 pub enum Pair {
     StringPair(
         Box<StringPair>,
@@ -41,10 +37,8 @@ pub enum Pair {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct StringPair;
 
-#[derive(Clone, Debug)]
 pub struct NumberPair;
 
 /// If the parser encounters an unexpected token `t`, it will return `Err(Some(t))`.
@@ -77,7 +71,7 @@ where S: IntoIterator<Item = Token> {
             }
 
             Action::Accept => {
-                return Ok(Foo::try_from(nodes.pop().unwrap()).unwrap());
+                return Ok(Foo::try_from(nodes.pop().unwrap()).ok().unwrap());
             }
 
             Action::Err => {
@@ -87,7 +81,6 @@ where S: IntoIterator<Item = Token> {
     }
 }
 
-#[derive(Debug)]
 enum Quasiterminal {
     Terminal(Token),
     Eof,
@@ -123,7 +116,6 @@ enum State {
     S9 = 9,
 }
 
-#[derive(Debug)]
 enum Node {
     Foo(Foo),
     Epsilon(Epsilon),
@@ -177,7 +169,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R2 => {
-            let val_0 = Box::new(Pair::try_from(nodes.pop().unwrap()).unwrap());
+            let val_0 = Box::new(Pair::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -195,7 +187,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R4 => {
-            let t0 = Box::new(StringPair::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(StringPair::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -207,7 +199,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R5 => {
-            let t0 = Box::new(NumberPair::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(NumberPair::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             

@@ -7,6 +7,4 @@ mod get_grammar_hash_tests;
 /// but we don't actually test said generated parser.
 mod e2e_dry;
 
-mod e2e;
-
 mod should_fail;

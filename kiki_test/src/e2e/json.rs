@@ -2,9 +2,9 @@ use crate::examples::json::{
     parse, Arr, Elements, Entries, Entry, Expr, Json, Obj, OptElements, OptEntries, Token,
 };
 
-use std::fmt::Debug;
-
 use pretty_assertions::assert_eq;
+
+use std::fmt::Debug;
 
 #[test]
 fn empty_obj() {

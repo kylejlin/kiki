@@ -4,6 +4,8 @@ use crate::examples::nonempty_unitlike_fieldset::{
 
 use pretty_assertions::assert_eq;
 
+use std::fmt::Debug;
+
 #[test]
 fn empty() {
     let actual = parse([]).unwrap();
@@ -109,5 +111,45 @@ impl PartialEq for Token {
             (Token::Number(a), Token::Number(b)) => a == b,
             _ => false,
         }
+    }
+}
+
+impl Debug for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Token::String(s) => f.debug_tuple("String").field(s).finish(),
+            Token::Number(n) => f.debug_tuple("Number").field(n).finish(),
+        }
+    }
+}
+
+impl Debug for Foo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Foo::Empty => f.debug_tuple("Empty").finish(),
+            Foo::Number => f.debug_tuple("Number").finish(),
+            Foo::Pair { val } => f.debug_struct("Pair").field("val", val).finish(),
+        }
+    }
+}
+
+impl Debug for Pair {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Pair::StringPair(val) => f.debug_tuple("StringPair").field(val).finish(),
+            Pair::NumberPair(val) => f.debug_tuple("NumberPair").field(val).finish(),
+        }
+    }
+}
+
+impl Debug for StringPair {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("StringPair")
+    }
+}
+
+impl Debug for NumberPair {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("NumberPair")
     }
 }

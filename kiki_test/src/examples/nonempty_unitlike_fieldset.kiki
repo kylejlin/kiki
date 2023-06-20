@@ -1,0 +1,33 @@
+start Foo
+
+enum Foo {
+    Empty(_: Epsilon)
+    Number {
+        _: $Number
+    }
+    Pair {
+        val: Pair
+    }
+}
+
+struct Epsilon
+
+enum Pair {
+    StringPair(StringPair)
+    NumberPair(NumberPair)
+}
+
+struct StringPair {
+    _: $String
+    _: $String
+}
+
+struct NumberPair(
+    _: $Number
+    _: $Number
+)
+
+terminal Token {
+    $String: String
+    $Number: isize
+}
