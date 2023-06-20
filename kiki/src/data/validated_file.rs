@@ -104,6 +104,7 @@ impl File {
 
 #[derive(Debug, Clone)]
 pub struct TerminalEnum {
+    pub attributes: Vec<Attribute>,
     pub name: String,
     pub variants: Vec<TerminalVariant>,
 }

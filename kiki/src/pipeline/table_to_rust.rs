@@ -109,6 +109,8 @@ impl SrcBuilder<'_> {
         } = self;
 
         let StateIndex(start_state_index) = table.start;
+        let terminal_enum_attributes =
+            get_attributes_src_with_newline_after_each_attribute(&file.terminal_enum.attributes);
         let terminal_enum_variants_indent_1 = self.get_terminal_enum_variants_src().indent(1);
         let nonterminal_type_defs = self.get_nonterminal_type_defs_src();
         let terminal_kind_enum_variants_indent_1 =
@@ -153,8 +155,7 @@ impl SrcBuilder<'_> {
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-#[derive(Debug)]
-pub enum {terminal_enum_name} {{
+{terminal_enum_attributes}pub enum {terminal_enum_name} {{
 {terminal_enum_variants_indent_1}
 }}
 
@@ -190,7 +191,7 @@ where S: IntoIterator<Item = {terminal_enum_name}> {{
             }}
 
             {action_enum_name}::{ACTION_ACCEPT_VARIANT_NAME} => {{
-                return Ok({start_type_name}::try_from(nodes.pop().unwrap()).unwrap());
+                return Ok({start_type_name}::try_from(nodes.pop().unwrap()).ok().unwrap());
             }}
 
             {action_enum_name}::{ACTION_ERR_VARIANT_NAME} => {{
@@ -200,7 +201,6 @@ where S: IntoIterator<Item = {terminal_enum_name}> {{
     }}
 }}
 
-#[derive(Debug)]
 enum {quasiterminal_enum_name} {{
     Terminal({terminal_enum_name}),
     {eof_variant_name},
@@ -222,7 +222,6 @@ enum {state_enum_name} {{
 {state_enum_variants_indent_1}
 }}
 
-#[derive(Debug)]
 enum {node_enum_name} {{
 {node_enum_variants_indent_1}
 }}
@@ -323,7 +322,8 @@ impl {node_enum_name} {{
             .iter()
             .map(|nonterminal| match nonterminal {
                 Nonterminal::Struct(s) => {
-                    let attributes = concatenate_attributes_and_add_trailing_newline(&s.attributes);
+                    let attributes =
+                        get_attributes_src_with_newline_after_each_attribute(&s.attributes);
                     let nonterminal_name = &s.name.name;
                     let fieldset = self.get_fieldset_src(
                         &s.fieldset,
@@ -335,7 +335,8 @@ impl {node_enum_name} {{
                     format!("{attributes}pub struct {nonterminal_name}{fieldset}")
                 }
                 Nonterminal::Enum(e) => {
-                    let attributes = concatenate_attributes_and_add_trailing_newline(&e.attributes);
+                    let attributes =
+                        get_attributes_src_with_newline_after_each_attribute(&e.attributes);
                     let nonterminal_name = &e.name.name;
                     let variants_indent_1 = e
                         .variants
@@ -594,12 +595,12 @@ impl {node_enum_name} {{
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_name = &field_name.name;
                     let field_type_name = &field_type.name;
-                    format!("let {field_name}_{field_index} = Box::new({field_type_name}::try_from(nodes.pop().unwrap()).unwrap());\n")
+                    format!("let {field_name}_{field_index} = Box::new({field_type_name}::try_from(nodes.pop().unwrap()).ok().unwrap());\n")
                 },
                 (IdentOrUnderscore::Ident(field_name), IdentOrTerminalIdent::Terminal(field_type)) => {
                     let field_name = &field_name.name;
                     let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
-                    format!("let {field_name}_{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
+                    format!("let {field_name}_{field_index} = nodes.pop().unwrap().{try_into_method_name}().ok().unwrap();\n")
                 }
             })
             .collect();
@@ -658,11 +659,11 @@ states.truncate(states.len() - {num_fields});
                 TupleField::Skipped(_) => "nodes.pop().unwrap();\n".to_owned(),
                 TupleField::Used(IdentOrTerminalIdent::Ident(field_type)) => {
                     let field_type_name = &field_type.name;
-                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = Box::new({field_type_name}::try_from(nodes.pop().unwrap()).unwrap());\n")
+                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = Box::new({field_type_name}::try_from(nodes.pop().unwrap()).ok().unwrap());\n")
                 },
                 TupleField::Used(IdentOrTerminalIdent::Terminal(field_type)) => {
                     let try_into_method_name = self.node_to_terminal_method_names.get(&field_type.name).unwrap();
-                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().unwrap();\n")
+                    format!("let {ANONYMOUS_FIELD_PREFIX}{field_index} = nodes.pop().unwrap().{try_into_method_name}().ok().unwrap();\n")
                 },
             })
             .collect();
@@ -912,7 +913,7 @@ fn pascal_to_snake_case(s: &str) -> String {
     out
 }
 
-fn concatenate_attributes_and_add_trailing_newline(attributes: &[Attribute]) -> String {
+fn get_attributes_src_with_newline_after_each_attribute(attributes: &[Attribute]) -> String {
     attributes.iter().map(|a| format!("{}\n", &a.src)).collect()
 }
 
@@ -959,6 +960,7 @@ mod tests {
         let file = File {
             start: "Expr".to_owned(),
             terminal_enum: TerminalEnum {
+                attributes: vec![positionless_attribute("#[derive(Clone, Debug)]")],
                 name: "Token".to_string(),
                 variants: vec![
                     TerminalVariant {
@@ -1046,6 +1048,7 @@ mod tests {
         let file = File {
             start: "Expr".to_owned(),
             terminal_enum: TerminalEnum {
+                attributes: vec![positionless_attribute("#[derive(Clone, Debug)]")],
                 name: "Token".to_string(),
                 variants: vec![
                     TerminalVariant {

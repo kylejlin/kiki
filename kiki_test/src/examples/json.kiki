@@ -1,0 +1,72 @@
+start Json
+
+enum Json {
+    Obj(Obj)
+    Arr(Arr)
+}
+
+struct Obj {
+    _: $LCurly
+    entries: OptEntries
+    _: $RCurly
+}
+
+enum OptEntries {
+    None
+    Some(Entries)
+}
+
+enum Entries {
+    One(Entry)
+    Many(
+        Entries
+        _: $Comma
+        Entry
+    )
+}
+
+struct Entry {
+    key: $String
+    _: $Colon
+    val: Expr
+}
+
+enum Expr {
+    Obj(Obj)
+    Arr(Arr)
+    String($String)
+    Num($Num)
+    Bool($Bool)
+}
+
+struct Arr {
+    _: $LSquare
+    elements: OptElements
+    _: $RSquare
+}
+
+enum OptElements {
+    None
+    Some(Elements)
+}
+
+enum Elements {
+    One(Expr)
+    Many(
+        Elements
+        _: $Comma
+        Expr
+    )
+}
+
+terminal Token {
+    $String: String
+    $Num: String
+    $Bool: String
+    $LCurly: String
+    $RCurly: String
+    $LSquare: String
+    $RSquare: String
+    $Colon: String
+    $Comma: String
+}

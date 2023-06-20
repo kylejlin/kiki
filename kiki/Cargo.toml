@@ -15,9 +15,9 @@ categories = ["parsing"]
 sha256 = "1.1.4"
 
 [build-dependencies]
-walkdir = "2.3.3"
-kiki = "5.0.0"
-sha256 = "1.1.4"
+walkdir = "2"
+kiki = "5"
+sha256 = "1"
 
 [dev-dependencies]
 insta = "1.26.0"

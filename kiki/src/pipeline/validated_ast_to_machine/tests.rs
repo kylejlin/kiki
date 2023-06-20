@@ -15,6 +15,7 @@ pub fn balanced_parens_input() -> File {
     File {
         start: "Expr".to_owned(),
         terminal_enum: TerminalEnum {
+            attributes: vec![positionless_attribute("#[derive(Clone, Debug)]")],
             name: "Token".to_string(),
             variants: vec![
                 TerminalVariant {
@@ -194,6 +195,7 @@ fn balanced_parens_esoteric_input() -> File {
     File {
         start: "Expr".to_owned(),
         terminal_enum: TerminalEnum {
+            attributes: vec![positionless_attribute("#[derive(Clone, Debug)]")],
             name: "Token".to_string(),
             variants: vec![
                 TerminalVariant {

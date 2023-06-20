@@ -45,9 +45,14 @@ pub fn get_unvalidated_terminal_enum(file: &File) -> Result<&TerminalEnum, KikiE
 }
 
 fn validate_terminal_def(def: &TerminalEnum) -> Result<validated::TerminalEnum, KikiErr> {
+    let attributes = def.attributes.clone();
     let name = validate_ident_uppercase_start(&def.name)?.to_string();
     let variants = validate_terminal_variants(def)?;
-    Ok(validated::TerminalEnum { name, variants })
+    Ok(validated::TerminalEnum {
+        attributes,
+        name,
+        variants,
+    })
 }
 
 fn validate_terminal_variants(
