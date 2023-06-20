@@ -3,7 +3,7 @@
 // You can read more at https://crates.io/crates/kiki
 //
 // This code was generated from a grammar with the following hash:
-// @sha256 3b0c6d95bf9ed2401c0c232cb4ceae4a1a53a76ec96e2a1ffe4562bd82462984
+// @sha256 f5515a070bee39f2c4814f2939108a718e489e1940112ade895b72e1cba7887f
 
 // Since this code is automatically generated,
 // some parts may be unidiomatic.
@@ -13,7 +13,7 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
     Underscore(crate::data::ByteIndex),
     Ident(crate::data::token::Ident),
@@ -34,12 +34,10 @@ pub enum Token {
     RAngle(crate::data::ByteIndex),
 }
 
-#[derive(Clone, Debug)]
 pub struct File {
     pub items: Box<OptItems>,
 }
 
-#[derive(Clone, Debug)]
 pub enum OptItems {
     Nil,
     Cons(
@@ -48,7 +46,6 @@ pub enum OptItems {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum FileItem {
     Start(
         crate::data::token::Ident,
@@ -64,28 +61,24 @@ pub enum FileItem {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct Struct {
     pub attributes: Box<OptOuterAttributes>,
     pub name: crate::data::token::Ident,
     pub fieldset: Box<Fieldset>,
 }
 
-#[derive(Clone, Debug)]
 pub struct Enum {
     pub attributes: Box<OptOuterAttributes>,
     pub name: crate::data::token::Ident,
     pub variants: Box<OptEnumVariants>,
 }
 
-#[derive(Clone, Debug)]
 pub struct TerminalEnum {
     pub attributes: Box<OptOuterAttributes>,
     pub name: crate::data::token::Ident,
     pub variants: Box<OptTerminalEnumVariants>,
 }
 
-#[derive(Clone, Debug)]
 pub enum OptOuterAttributes {
     Nil,
     Cons(
@@ -94,7 +87,6 @@ pub enum OptOuterAttributes {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum Fieldset {
     Empty,
     Named(
@@ -105,12 +97,10 @@ pub enum Fieldset {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct NamedFieldset {
     pub fields: Box<NamedFields>,
 }
 
-#[derive(Clone, Debug)]
 pub enum NamedFields {
     One(
         Box<NamedField>,
@@ -121,18 +111,15 @@ pub enum NamedFields {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct NamedField {
     pub name: Box<IdentOrUnderscore>,
     pub symbol: Box<IdentOrTerminalIdent>,
 }
 
-#[derive(Clone, Debug)]
 pub struct TupleFieldset {
     pub fields: Box<TupleFields>,
 }
 
-#[derive(Clone, Debug)]
 pub enum TupleFields {
     One(
         Box<TupleField>,
@@ -143,7 +130,6 @@ pub enum TupleFields {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum TupleField {
     Used(
         Box<IdentOrTerminalIdent>,
@@ -153,7 +139,6 @@ pub enum TupleField {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum OptEnumVariants {
     Nil,
     Cons(
@@ -162,13 +147,11 @@ pub enum OptEnumVariants {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct EnumVariant {
     pub name: crate::data::token::Ident,
     pub fieldset: Box<Fieldset>,
 }
 
-#[derive(Clone, Debug)]
 pub enum OptTerminalEnumVariants {
     Nil,
     Cons(
@@ -177,13 +160,11 @@ pub enum OptTerminalEnumVariants {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct TerminalEnumVariant {
     pub name: crate::data::token::TerminalIdent,
     pub type_: Box<Type>,
 }
 
-#[derive(Clone, Debug)]
 pub enum Type {
     Unit,
     Path(
@@ -194,7 +175,6 @@ pub enum Type {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub enum Path {
     One(
         crate::data::token::Ident,
@@ -205,13 +185,11 @@ pub enum Path {
     ),
 }
 
-#[derive(Clone, Debug)]
 pub struct ComplexType {
     pub callee: Box<Path>,
     pub args: Box<CommaSeparatedTypes>,
 }
 
-#[derive(Clone, Debug)]
 pub enum CommaSeparatedTypes {
     One(
         Box<Type>,
@@ -222,7 +200,7 @@ pub enum CommaSeparatedTypes {
     ),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IdentOrUnderscore {
     Ident(
         crate::data::token::Ident,
@@ -232,7 +210,7 @@ pub enum IdentOrUnderscore {
     ),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IdentOrTerminalIdent {
     Ident(
         crate::data::token::Ident,
@@ -272,7 +250,7 @@ where S: IntoIterator<Item = Token> {
             }
 
             Action::Accept => {
-                return Ok(File::try_from(nodes.pop().unwrap()).unwrap());
+                return Ok(File::try_from(nodes.pop().unwrap()).ok().unwrap());
             }
 
             Action::Err => {
@@ -282,7 +260,6 @@ where S: IntoIterator<Item = Token> {
     }
 }
 
-#[derive(Debug)]
 enum Quasiterminal {
     Terminal(Token),
     Eof,
@@ -409,7 +386,6 @@ enum State {
     S66 = 66,
 }
 
-#[derive(Debug)]
 enum Node {
     File(File),
     OptItems(OptItems),
@@ -511,7 +487,7 @@ enum RuleKind {
 fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: RuleKind) -> (Node, NonterminalKind) {
     match rule_kind {
         RuleKind::R0 => {
-            let items_0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).unwrap());
+            let items_0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -529,8 +505,8 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R2 => {
-            let t1 = Box::new(FileItem::try_from(nodes.pop().unwrap()).unwrap());
-            let t0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).unwrap());
+            let t1 = Box::new(FileItem::try_from(nodes.pop().unwrap()).ok().unwrap());
+            let t0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 2);
             
@@ -543,7 +519,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R3 => {
-            let t1 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let t1 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             nodes.pop().unwrap();
             
             states.truncate(states.len() - 2);
@@ -556,7 +532,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R4 => {
-            let t0 = Box::new(Struct::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(Struct::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -568,7 +544,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R5 => {
-            let t0 = Box::new(Enum::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(Enum::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -580,7 +556,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R6 => {
-            let t0 = Box::new(TerminalEnum::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(TerminalEnum::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -592,10 +568,10 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R7 => {
-            let fieldset_3 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).unwrap());
-            let name_2 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let fieldset_3 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
+            let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             nodes.pop().unwrap();
-            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).unwrap());
+            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 4);
             
@@ -610,11 +586,11 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R8 => {
             nodes.pop().unwrap();
-            let variants_4 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).unwrap());
+            let variants_4 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            let name_2 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             nodes.pop().unwrap();
-            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).unwrap());
+            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 6);
             
@@ -629,11 +605,11 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R9 => {
             nodes.pop().unwrap();
-            let variants_4 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).unwrap());
+            let variants_4 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            let name_2 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             nodes.pop().unwrap();
-            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).unwrap());
+            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 6);
             
@@ -653,8 +629,8 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R11 => {
-            let t1 = nodes.pop().unwrap().try_into_outer_attribute_3().unwrap();
-            let t0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).unwrap());
+            let t1 = nodes.pop().unwrap().try_into_outer_attribute_3().ok().unwrap();
+            let t0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 2);
             
@@ -673,7 +649,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R13 => {
-            let t0 = Box::new(NamedFieldset::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(NamedFieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -685,7 +661,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R14 => {
-            let t0 = Box::new(TupleFieldset::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(TupleFieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -698,7 +674,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R15 => {
             nodes.pop().unwrap();
-            let fields_1 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).unwrap());
+            let fields_1 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
             
             states.truncate(states.len() - 3);
@@ -711,7 +687,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R16 => {
-            let t0 = Box::new(NamedField::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(NamedField::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -723,8 +699,8 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R17 => {
-            let t1 = Box::new(NamedField::try_from(nodes.pop().unwrap()).unwrap());
-            let t0 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).unwrap());
+            let t1 = Box::new(NamedField::try_from(nodes.pop().unwrap()).ok().unwrap());
+            let t0 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 2);
             
@@ -737,9 +713,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R18 => {
-            let symbol_2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).unwrap());
+            let symbol_2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            let name_0 = Box::new(IdentOrUnderscore::try_from(nodes.pop().unwrap()).unwrap());
+            let name_0 = Box::new(IdentOrUnderscore::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 3);
             
@@ -753,7 +729,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R19 => {
             nodes.pop().unwrap();
-            let fields_1 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).unwrap());
+            let fields_1 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
             
             states.truncate(states.len() - 3);
@@ -766,7 +742,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R20 => {
-            let t0 = Box::new(TupleField::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(TupleField::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -778,8 +754,8 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R21 => {
-            let t1 = Box::new(TupleField::try_from(nodes.pop().unwrap()).unwrap());
-            let t0 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).unwrap());
+            let t1 = Box::new(TupleField::try_from(nodes.pop().unwrap()).ok().unwrap());
+            let t0 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 2);
             
@@ -792,7 +768,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R22 => {
-            let t0 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -804,7 +780,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R23 => {
-            let t2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).unwrap());
+            let t2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
             nodes.pop().unwrap();
             
@@ -824,8 +800,8 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R25 => {
-            let t1 = Box::new(EnumVariant::try_from(nodes.pop().unwrap()).unwrap());
-            let t0 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).unwrap());
+            let t1 = Box::new(EnumVariant::try_from(nodes.pop().unwrap()).ok().unwrap());
+            let t0 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 2);
             
@@ -838,8 +814,8 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R26 => {
-            let fieldset_1 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).unwrap());
-            let name_0 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let fieldset_1 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
+            let name_0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             
             states.truncate(states.len() - 2);
             
@@ -858,8 +834,8 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R28 => {
-            let t1 = Box::new(TerminalEnumVariant::try_from(nodes.pop().unwrap()).unwrap());
-            let t0 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).unwrap());
+            let t1 = Box::new(TerminalEnumVariant::try_from(nodes.pop().unwrap()).ok().unwrap());
+            let t0 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 2);
             
@@ -872,9 +848,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R29 => {
-            let type__2 = Box::new(Type::try_from(nodes.pop().unwrap()).unwrap());
+            let type__2 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            let name_0 = nodes.pop().unwrap().try_into_terminal_ident_2().unwrap();
+            let name_0 = nodes.pop().unwrap().try_into_terminal_ident_2().ok().unwrap();
             
             states.truncate(states.len() - 3);
             
@@ -898,7 +874,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R31 => {
-            let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -910,7 +886,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R32 => {
-            let t0 = Box::new(ComplexType::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(ComplexType::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -922,7 +898,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R33 => {
-            let t0 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             
             states.truncate(states.len() - 1);
             
@@ -934,9 +910,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R34 => {
-            let t2 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let t2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             nodes.pop().unwrap();
-            let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 3);
             
@@ -950,9 +926,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R35 => {
             nodes.pop().unwrap();
-            let args_2 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).unwrap());
+            let args_2 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            let callee_0 = Box::new(Path::try_from(nodes.pop().unwrap()).unwrap());
+            let callee_0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 4);
             
@@ -965,7 +941,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R36 => {
-            let t0 = Box::new(Type::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 1);
             
@@ -977,9 +953,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R37 => {
-            let t2 = Box::new(Type::try_from(nodes.pop().unwrap()).unwrap());
+            let t2 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            let t0 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).unwrap());
+            let t0 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).ok().unwrap());
             
             states.truncate(states.len() - 3);
             
@@ -992,7 +968,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R38 => {
-            let t0 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             
             states.truncate(states.len() - 1);
             
@@ -1004,7 +980,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R39 => {
-            let t0 = nodes.pop().unwrap().try_into_underscore_0().unwrap();
+            let t0 = nodes.pop().unwrap().try_into_underscore_0().ok().unwrap();
             
             states.truncate(states.len() - 1);
             
@@ -1016,7 +992,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R40 => {
-            let t0 = nodes.pop().unwrap().try_into_ident_1().unwrap();
+            let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
             
             states.truncate(states.len() - 1);
             
@@ -1028,7 +1004,7 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             )
         }
         RuleKind::R41 => {
-            let t0 = nodes.pop().unwrap().try_into_terminal_ident_2().unwrap();
+            let t0 = nodes.pop().unwrap().try_into_terminal_ident_2().ok().unwrap();
             
             states.truncate(states.len() - 1);
             

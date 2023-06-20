@@ -165,16 +165,19 @@ enum CommaSeparatedTypes {
     )
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum IdentOrUnderscore {
     Ident($Ident)
     Underscore($Underscore)
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum IdentOrTerminalIdent {
     Ident($Ident)
     Terminal($TerminalIdent)
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 terminal Token {
     $Underscore: crate::data::ByteIndex
     $Ident: crate::data::token::Ident

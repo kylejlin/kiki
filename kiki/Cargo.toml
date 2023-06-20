@@ -1,6 +1,6 @@
 [package]
 name = "kiki"
-version = "6.1.1"
+version = "7.0.0"
 edition = "2021"
 authors = ["Kyle Lin <kylejlin.us@gmail.com>"]
 license = "MIT"
@@ -17,7 +17,7 @@ sha256 = "1.1.4"
 
 [build-dependencies]
 walkdir = "2"
-kiki = "5"
+kiki = "6"
 sha256 = "1"
 
 [dev-dependencies]
