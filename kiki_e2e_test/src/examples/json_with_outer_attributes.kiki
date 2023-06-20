@@ -1,0 +1,82 @@
+start Json
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum Json {
+    Obj(Obj)
+    Arr(Arr)
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct Obj {
+    _: $LCurly
+    entries: OptEntries
+    _: $RCurly
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum OptEntries {
+    None
+    Some(Entries)
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum Entries {
+    One(Entry)
+    Many(
+        Entries
+        _: $Comma
+        Entry
+    )
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct Entry {
+    key: $String
+    _: $Colon
+    val: Expr
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum Expr {
+    Obj(Obj)
+    Arr(Arr)
+    String($String)
+    Num($Num)
+    Bool($Bool)
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct Arr {
+    _: $LSquare
+    elements: OptElements
+    _: $RSquare
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum OptElements {
+    None
+    Some(Elements)
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum Elements {
+    One(Expr)
+    Many(
+        Elements
+        _: $Comma
+        Expr
+    )
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+terminal Token {
+    $String: String
+    $Num: String
+    $Bool: String
+    $LCurly: String
+    $RCurly: String
+    $LSquare: String
+    $RSquare: String
+    $Colon: String
+    $Comma: String
+}
