@@ -3,7 +3,7 @@
 // You can read more at https://crates.io/crates/kiki
 //
 // This code was generated from a grammar with the following hash:
-// @sha256 a8adfadb01bf546cb524f949df75df40408c2bdcc47debbd874254079620b2aa
+// @sha256 876e5f0d706564f3dd2c5c89078878fc13e2448843503831698d38fe188744c5
 
 // Since this code is automatically generated,
 // some parts may be unidiomatic.
@@ -13,7 +13,8 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Hash)]
 pub enum Token {
     LParen(()),
     RParen(()),
