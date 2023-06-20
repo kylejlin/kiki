@@ -1,6 +1,6 @@
 [package]
 name = "kiki"
-version = "6.1.0"
+version = "6.1.1"
 edition = "2021"
 authors = ["Kyle Lin <kylejlin.us@gmail.com>"]
 license = "MIT"
@@ -10,6 +10,7 @@ homepage = "https://github.com/kylejlin/kiki"
 repository = "https://github.com/kylejlin/kiki"
 keywords = ["parser", "generator", "LALR", "grammar"]
 categories = ["parsing"]
+readme = "../README.md"
 
 [dependencies]
 sha256 = "1.1.4"
