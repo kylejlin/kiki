@@ -20,6 +20,19 @@ Having said that, let's get started!
 ## `json_parser.kiki`
 
 ```kiki
+#[derive(Debug, Clone)]
+terminal Token {
+    $String: String
+    $Num: String
+    $Bool: String
+    $LCurly: String
+    $RCurly: String
+    $LSquare: String
+    $RSquare: String
+    $Colon: String
+    $Comma: String
+}
+
 start Json
 
 enum Json {
@@ -80,29 +93,13 @@ enum Elements {
         Expr
     )
 }
-
-terminal Token {
-    $String: String
-    $Num: String
-    $Bool: String
-    $LCurly: String
-    $RCurly: String
-    $LSquare: String
-    $RSquare: String
-    $Colon: String
-    $Comma: String
-}
 ```
 
 ## `json_parser.rs`
 
-The following Rust code is a simplified version
-of what Kiki generates using the above grammar.
-We omit the `#[derive(...)]` and `pub` clauses,
-in order to make the code easier to read.
-
 ```rust
-enum Token {
+#[derive(Debug, Clone)]
+pub enum Token {
     String(String),
     Num(String),
     Bool(String),
@@ -114,31 +111,31 @@ enum Token {
     Comma(String),
 }
 
-enum Json {
+pub enum Json {
     Obj(Box<Obj>),
     Arr(Box<Arr>),
 }
 
-struct Obj {
-    entries: Box<OptEntries>,
+pub struct Obj {
+    pub entries: Box<OptEntries>,
 }
 
-enum OptEntries {
+pub enum OptEntries {
     None,
     Some(Box<Entries>),
 }
 
-enum Entries {
+pub enum Entries {
     One(Box<Entry>),
     Many(Box<Entries>, Box<Entry>),
 }
 
-struct Entry {
-    key: String,
-    val: Box<Expr>,
+pub struct Entry {
+    pub key: String,
+    pub val: Box<Expr>,
 }
 
-enum Expr {
+pub enum Expr {
     Obj(Box<Obj>),
     Arr(Box<Arr>),
     String(String),
@@ -146,23 +143,23 @@ enum Expr {
     Bool(String),
 }
 
-struct Arr {
-    elements: Box<OptElements>,
+pub struct Arr {
+    pub elements: Box<OptElements>,
 }
 
-enum OptElements {
+pub enum OptElements {
     None,
     Some(Box<Elements>),
 }
 
-enum Elements {
+pub enum Elements {
     One(Box<Expr>),
     Many(Box<Elements>, Box<Expr>),
 }
 
 /// If the parser encounters an unexpected token `t`, it will return `Err(Some(t))`.
 /// If the parser encounters an unexpected end of input, it will return `Err(None)`.
-fn parse<S>(src: S) -> Result<Json, Option<Token>>
+pub fn parse<S>(src: S) -> Result<Json, Option<Token>>
 where S: IntoIterator<Item = Token> {
     // ...
 }
