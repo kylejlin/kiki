@@ -44,24 +44,7 @@ fn main() {
     }
 }
 
-const IGNORE_LIST: [&str; 3] = [
-    "./src/examples/should_fail",
-    // We ignore `kiki.kiki` because we don't need it
-    // for end-to-end testing.
-    // We don't perform end-to-end testing on `kiki.kiki`
-    // because this whole project, being self-hosted,
-    // _is_ the end-to-end test.
-    "./src/examples/kiki.kiki",
-    // TODO: Remove this.
-    // This build script uses the latest release of Kiki on crates.io.
-    // It does _not_ use the version of Kiki in this repo.
-    // Since the latest release of Kiki on crates.io
-    // does not yet support outer attributes,
-    // we must omit this file from the build script.
-    // Once we release a version of Kiki that supports outer attributes,
-    // we should remove this line.
-    "./src/examples/balanced_parens_outer_attributes.kiki",
-];
+const IGNORE_LIST: [&str; 0] = [];
 
 fn is_ignored(path: &Path) -> bool {
     IGNORE_LIST.iter().any(|ignored| path.starts_with(ignored))
