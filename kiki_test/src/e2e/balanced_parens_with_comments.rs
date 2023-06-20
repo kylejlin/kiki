@@ -2,6 +2,8 @@ use crate::examples::balanced_parens_with_comments::{parse, Expr, Token};
 
 use pretty_assertions::assert_eq;
 
+use std::fmt::Debug;
+
 #[test]
 fn empty() {
     let actual = parse([]).unwrap();
@@ -68,6 +70,24 @@ impl PartialEq for Token {
             (Token::LParen(()), Token::LParen(())) => true,
             (Token::RParen(()), Token::RParen(())) => true,
             _ => false,
+        }
+    }
+}
+
+impl Debug for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Token::LParen(()) => write!(f, "LParen"),
+            Token::RParen(()) => write!(f, "RParen"),
+        }
+    }
+}
+
+impl Debug for Expr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Expr::Empty => write!(f, "Empty"),
+            Expr::Wrap(inner) => f.debug_tuple("Wrap").field(inner).finish(),
         }
     }
 }

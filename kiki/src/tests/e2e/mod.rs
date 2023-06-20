@@ -1,2 +1,1 @@
-mod balanced_parens_with_comments;
 mod nonempty_unitlike_fieldset;

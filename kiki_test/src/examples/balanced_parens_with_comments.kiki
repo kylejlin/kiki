@@ -1,0 +1,19 @@
+// Hello
+start Expr // world
+
+enum Expr { // }
+// struct
+    Empty
+    Wrap(
+        _: $LParen
+        Expr
+        _: // $LParen
+            $RParen
+    )
+}
+
+terminal Token {
+    $LParen: // ()
+        ()
+    $RParen: ()
+}
