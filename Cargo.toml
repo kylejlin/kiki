@@ -2,5 +2,5 @@
 
 members = [
     "kiki",
-    "kiki_test",
+    "kiki_e2e_test",
 ]

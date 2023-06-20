@@ -1,5 +1,5 @@
 [package]
-name = "kiki_test"
+name = "kiki_e2e_test"
 version = "0.1.0"
 edition = "2021"
 publish = false
