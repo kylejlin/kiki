@@ -1,0 +1,17 @@
+start Expr
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum Expr {
+    Empty
+    Wrap(
+        _: $LParen
+        Expr
+        _: $RParen
+    )
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+terminal Token {
+    $LParen: ()
+    $RParen: ()
+}
