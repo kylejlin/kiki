@@ -28,6 +28,7 @@ struct SrcBuilder<'a> {
     node_enum_name: String,
     action_enum_name: String,
     rule_kind_enum_name: String,
+    reduce_fn_prefix: String,
     action_table_name: String,
     goto_table_name: String,
 
@@ -49,6 +50,7 @@ impl SrcBuilder<'_> {
         let node_enum_name = create_unique_identifier("Node", used_identifiers);
         let action_enum_name = create_unique_identifier("Action", used_identifiers);
         let rule_kind_enum_name = create_unique_identifier("RuleKind", used_identifiers);
+        let reduce_fn_prefix = create_unique_identifier("reduce", used_identifiers);
         let action_table_name = create_unique_identifier("ACTION_TABLE", used_identifiers);
         let goto_table_name = create_unique_identifier("GOTO_TABLE", used_identifiers);
 
@@ -79,6 +81,7 @@ impl SrcBuilder<'_> {
             node_enum_name,
             action_enum_name,
             rule_kind_enum_name,
+            reduce_fn_prefix,
             action_table_name,
             goto_table_name,
             node_to_terminal_method_names,
@@ -103,6 +106,7 @@ impl SrcBuilder<'_> {
             node_enum_name,
             action_enum_name,
             rule_kind_enum_name,
+            reduce_fn_prefix: _,
             action_table_name,
             goto_table_name,
             ..
@@ -122,6 +126,7 @@ impl SrcBuilder<'_> {
         let node_enum_variants_indent_1 = self.get_node_enum_variants_src().indent(1);
         let rule_kind_enum_variants_indent_1 = self.get_rule_kind_enum_variants_src().indent(1);
         let pop_and_reduce_match_arms_indent_2 = self.get_pop_and_reduce_match_arms_src().indent(2);
+        let reduce_fns = self.get_reduce_fns_src();
         let quasiterminal_kind_from_terminal_match_arms_indent_3 = self
             .get_quasiterminal_kind_from_terminal_match_arms_src()
             .indent(3);
@@ -244,6 +249,8 @@ fn pop_and_reduce(states: &mut Vec<{state_enum_name}>, nodes: &mut Vec<{node_enu
 {pop_and_reduce_match_arms_indent_2}
     }}
 }}
+
+{reduce_fns}
 
 impl {quasiterminal_kind_enum_name} {{
     fn from_quasiterminal(quasiterminal: &{quasiterminal_enum_name}) -> Self {{
@@ -521,6 +528,21 @@ impl {node_enum_name} {{
     }
 
     fn get_pop_and_reduce_match_arms_src(&self) -> String {
+        let rule_kind_enum_name = &self.rule_kind_enum_name;
+        self.file
+            .get_rules()
+            .enumerate()
+            .map(|(rule_index, _)| {
+                let reduce_fn_name = self.get_reduce_fn_name(rule_index);
+                format!(
+                    "{rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index} => {reduce_fn_name}(states, nodes),"
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    fn get_reduce_fns_src(&self) -> String {
         self.file
             .get_rules()
             .enumerate()
@@ -532,20 +554,20 @@ impl {node_enum_name} {{
                         fieldset,
                     },
                 )| {
-                    self.get_rule_reduction_src(rule_index, constructor_name, fieldset)
+                    self.get_reduce_fn_src(rule_index, constructor_name, fieldset)
                 },
             )
             .collect::<Vec<_>>()
-            .join("\n")
+            .join("\n\n")
     }
 
-    fn get_rule_reduction_src(
+    fn get_reduce_fn_src(
         &self,
         rule_index: usize,
         constructor_name: ConstructorName,
         fieldset: &Fieldset,
     ) -> String {
-        let reduction_code_indent_1: String = match fieldset {
+        let reduction_code_indent_1 = match fieldset {
             Fieldset::Empty => self.get_empty_fieldset_rule_reduction_src(constructor_name),
             Fieldset::Named(NamedFieldset { fields }) => {
                 self.get_named_fieldset_rule_reduction_src(constructor_name, fields)
@@ -555,12 +577,24 @@ impl {node_enum_name} {{
             }
         }
         .indent(1);
-        let rule_kind_enum_name = &self.rule_kind_enum_name;
+        let state_enum_name = &self.state_enum_name;
+        let node_enum_name = &self.node_enum_name;
+        let nonterminal_kind_enum_name = &self.nonterminal_kind_enum_name;
+        let reduce_fn_name = self.get_reduce_fn_name(rule_index);
+        let (states_param_name, nodes_param_name) = match fieldset {
+            Fieldset::Empty => ("_states", "_nodes"),
+            Fieldset::Named(_) | Fieldset::Tuple(_) => ("states", "nodes"),
+        };
+
         format!(
-            r#"{rule_kind_enum_name}::{RULE_KIND_VARIANT_PREFIX}{rule_index} => {{
+            r#"fn {reduce_fn_name}({states_param_name}: &mut Vec<{state_enum_name}>, {nodes_param_name}: &mut Vec<{node_enum_name}>) -> ({node_enum_name}, {nonterminal_kind_enum_name}) {{
 {reduction_code_indent_1}
 }}"#
         )
+    }
+
+    fn get_reduce_fn_name(&self, rule_index: usize) -> String {
+        format!("{}_r{rule_index}", self.reduce_fn_prefix)
     }
 
     fn get_empty_fieldset_rule_reduction_src(&self, constructor_name: ConstructorName) -> String {

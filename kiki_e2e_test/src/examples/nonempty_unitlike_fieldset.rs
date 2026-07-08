@@ -148,91 +148,107 @@ enum RuleKind {
 
 fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: RuleKind) -> (Node, NonterminalKind) {
     match rule_kind {
-        RuleKind::R0 => {
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Foo(Foo::Empty),
-                NonterminalKind::Foo,
-            )
-        }
-        RuleKind::R1 => {
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Foo(Foo::Number),
-                NonterminalKind::Foo,
-            )
-        }
-        RuleKind::R2 => {
-            let val_0 = Box::new(Pair::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Foo(Foo::Pair {
-                    val: val_0,
-                }),
-                NonterminalKind::Foo,
-            )
-        }
-        RuleKind::R3 => {
-            (
-                Node::Epsilon(Epsilon),
-                NonterminalKind::Epsilon,
-            )
-        }
-        RuleKind::R4 => {
-            let t0 = Box::new(StringPair::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Pair(Pair::StringPair(
-                    t0,
-                )),
-                NonterminalKind::Pair,
-            )
-        }
-        RuleKind::R5 => {
-            let t0 = Box::new(NumberPair::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Pair(Pair::NumberPair(
-                    t0,
-                )),
-                NonterminalKind::Pair,
-            )
-        }
-        RuleKind::R6 => {
-            nodes.pop().unwrap();
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::StringPair(StringPair),
-                NonterminalKind::StringPair,
-            )
-        }
-        RuleKind::R7 => {
-            nodes.pop().unwrap();
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::NumberPair(NumberPair),
-                NonterminalKind::NumberPair,
-            )
-        }
+        RuleKind::R0 => reduce_r0(states, nodes),
+        RuleKind::R1 => reduce_r1(states, nodes),
+        RuleKind::R2 => reduce_r2(states, nodes),
+        RuleKind::R3 => reduce_r3(states, nodes),
+        RuleKind::R4 => reduce_r4(states, nodes),
+        RuleKind::R5 => reduce_r5(states, nodes),
+        RuleKind::R6 => reduce_r6(states, nodes),
+        RuleKind::R7 => reduce_r7(states, nodes),
     }
+}
+
+fn reduce_r0(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Foo(Foo::Empty),
+        NonterminalKind::Foo,
+    )
+}
+
+fn reduce_r1(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Foo(Foo::Number),
+        NonterminalKind::Foo,
+    )
+}
+
+fn reduce_r2(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let val_0 = Box::new(Pair::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Foo(Foo::Pair {
+            val: val_0,
+        }),
+        NonterminalKind::Foo,
+    )
+}
+
+fn reduce_r3(_states: &mut Vec<State>, _nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    (
+        Node::Epsilon(Epsilon),
+        NonterminalKind::Epsilon,
+    )
+}
+
+fn reduce_r4(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(StringPair::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Pair(Pair::StringPair(
+            t0,
+        )),
+        NonterminalKind::Pair,
+    )
+}
+
+fn reduce_r5(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(NumberPair::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Pair(Pair::NumberPair(
+            t0,
+        )),
+        NonterminalKind::Pair,
+    )
+}
+
+fn reduce_r6(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::StringPair(StringPair),
+        NonterminalKind::StringPair,
+    )
+}
+
+fn reduce_r7(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::NumberPair(NumberPair),
+        NonterminalKind::NumberPair,
+    )
 }
 
 impl QuasiterminalKind {

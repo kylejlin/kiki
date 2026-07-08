@@ -114,28 +114,32 @@ enum RuleKind {
 
 fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: RuleKind) -> (Node, NonterminalKind) {
     match rule_kind {
-        RuleKind::R0 => {
-            (
-                Node::Expr(Expr::Empty),
-                NonterminalKind::Expr,
-            )
-        }
-        RuleKind::R1 => {
-            let right_2 = nodes.pop().unwrap().try_into_r_paren_1().ok().unwrap();
-            let inner_1 = Box::new(Expr::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 3);
-
-            (
-                Node::Expr(Expr::Wrap {
-                    inner: inner_1,
-                    right: right_2,
-                }),
-                NonterminalKind::Expr,
-            )
-        }
+        RuleKind::R0 => reduce_r0(states, nodes),
+        RuleKind::R1 => reduce_r1(states, nodes),
     }
+}
+
+fn reduce_r0(_states: &mut Vec<State>, _nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    (
+        Node::Expr(Expr::Empty),
+        NonterminalKind::Expr,
+    )
+}
+
+fn reduce_r1(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let right_2 = nodes.pop().unwrap().try_into_r_paren_1().ok().unwrap();
+    let inner_1 = Box::new(Expr::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 3);
+
+    (
+        Node::Expr(Expr::Wrap {
+            inner: inner_1,
+            right: right_2,
+        }),
+        NonterminalKind::Expr,
+    )
 }
 
 impl QuasiterminalKind {

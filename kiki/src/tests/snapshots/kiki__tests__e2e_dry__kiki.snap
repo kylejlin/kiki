@@ -487,536 +487,620 @@ enum RuleKind {
 
 fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: RuleKind) -> (Node, NonterminalKind) {
     match rule_kind {
-        RuleKind::R0 => {
-            let items_0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::File(File {
-                    items: items_0,
-                }),
-                NonterminalKind::File,
-            )
-        }
-        RuleKind::R1 => {
-            (
-                Node::OptItems(OptItems::Nil),
-                NonterminalKind::OptItems,
-            )
-        }
-        RuleKind::R2 => {
-            let t1 = Box::new(FileItem::try_from(nodes.pop().unwrap()).ok().unwrap());
-            let t0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::OptItems(OptItems::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::OptItems,
-            )
-        }
-        RuleKind::R3 => {
-            let t1 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::FileItem(FileItem::Start(
-                    t1,
-                )),
-                NonterminalKind::FileItem,
-            )
-        }
-        RuleKind::R4 => {
-            let t0 = Box::new(Struct::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::FileItem(FileItem::Struct(
-                    t0,
-                )),
-                NonterminalKind::FileItem,
-            )
-        }
-        RuleKind::R5 => {
-            let t0 = Box::new(Enum::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::FileItem(FileItem::Enum(
-                    t0,
-                )),
-                NonterminalKind::FileItem,
-            )
-        }
-        RuleKind::R6 => {
-            let t0 = Box::new(TerminalEnum::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::FileItem(FileItem::Terminal(
-                    t0,
-                )),
-                NonterminalKind::FileItem,
-            )
-        }
-        RuleKind::R7 => {
-            let fieldset_3 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
-            let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-            nodes.pop().unwrap();
-            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 4);
-
-            (
-                Node::Struct(Struct {
-                    attributes: attributes_0,
-                    name: name_2,
-                    fieldset: fieldset_3,
-                }),
-                NonterminalKind::Struct,
-            )
-        }
-        RuleKind::R8 => {
-            nodes.pop().unwrap();
-            let variants_4 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-            let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-            nodes.pop().unwrap();
-            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 6);
-
-            (
-                Node::Enum(Enum {
-                    attributes: attributes_0,
-                    name: name_2,
-                    variants: variants_4,
-                }),
-                NonterminalKind::Enum,
-            )
-        }
-        RuleKind::R9 => {
-            nodes.pop().unwrap();
-            let variants_4 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-            let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-            nodes.pop().unwrap();
-            let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 6);
-
-            (
-                Node::TerminalEnum(TerminalEnum {
-                    attributes: attributes_0,
-                    name: name_2,
-                    variants: variants_4,
-                }),
-                NonterminalKind::TerminalEnum,
-            )
-        }
-        RuleKind::R10 => {
-            (
-                Node::OptOuterAttributes(OptOuterAttributes::Nil),
-                NonterminalKind::OptOuterAttributes,
-            )
-        }
-        RuleKind::R11 => {
-            let t1 = nodes.pop().unwrap().try_into_outer_attribute_3().ok().unwrap();
-            let t0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::OptOuterAttributes(OptOuterAttributes::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::OptOuterAttributes,
-            )
-        }
-        RuleKind::R12 => {
-            (
-                Node::Fieldset(Fieldset::Empty),
-                NonterminalKind::Fieldset,
-            )
-        }
-        RuleKind::R13 => {
-            let t0 = Box::new(NamedFieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Fieldset(Fieldset::Named(
-                    t0,
-                )),
-                NonterminalKind::Fieldset,
-            )
-        }
-        RuleKind::R14 => {
-            let t0 = Box::new(TupleFieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Fieldset(Fieldset::Tuple(
-                    t0,
-                )),
-                NonterminalKind::Fieldset,
-            )
-        }
-        RuleKind::R15 => {
-            nodes.pop().unwrap();
-            let fields_1 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 3);
-
-            (
-                Node::NamedFieldset(NamedFieldset {
-                    fields: fields_1,
-                }),
-                NonterminalKind::NamedFieldset,
-            )
-        }
-        RuleKind::R16 => {
-            let t0 = Box::new(NamedField::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::NamedFields(NamedFields::One(
-                    t0,
-                )),
-                NonterminalKind::NamedFields,
-            )
-        }
-        RuleKind::R17 => {
-            let t1 = Box::new(NamedField::try_from(nodes.pop().unwrap()).ok().unwrap());
-            let t0 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::NamedFields(NamedFields::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::NamedFields,
-            )
-        }
-        RuleKind::R18 => {
-            let symbol_2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-            let name_0 = Box::new(IdentOrUnderscore::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 3);
-
-            (
-                Node::NamedField(NamedField {
-                    name: name_0,
-                    symbol: symbol_2,
-                }),
-                NonterminalKind::NamedField,
-            )
-        }
-        RuleKind::R19 => {
-            nodes.pop().unwrap();
-            let fields_1 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 3);
-
-            (
-                Node::TupleFieldset(TupleFieldset {
-                    fields: fields_1,
-                }),
-                NonterminalKind::TupleFieldset,
-            )
-        }
-        RuleKind::R20 => {
-            let t0 = Box::new(TupleField::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::TupleFields(TupleFields::One(
-                    t0,
-                )),
-                NonterminalKind::TupleFields,
-            )
-        }
-        RuleKind::R21 => {
-            let t1 = Box::new(TupleField::try_from(nodes.pop().unwrap()).ok().unwrap());
-            let t0 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::TupleFields(TupleFields::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::TupleFields,
-            )
-        }
-        RuleKind::R22 => {
-            let t0 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::TupleField(TupleField::Used(
-                    t0,
-                )),
-                NonterminalKind::TupleField,
-            )
-        }
-        RuleKind::R23 => {
-            let t2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 3);
-
-            (
-                Node::TupleField(TupleField::Skipped(
-                    t2,
-                )),
-                NonterminalKind::TupleField,
-            )
-        }
-        RuleKind::R24 => {
-            (
-                Node::OptEnumVariants(OptEnumVariants::Nil),
-                NonterminalKind::OptEnumVariants,
-            )
-        }
-        RuleKind::R25 => {
-            let t1 = Box::new(EnumVariant::try_from(nodes.pop().unwrap()).ok().unwrap());
-            let t0 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::OptEnumVariants(OptEnumVariants::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::OptEnumVariants,
-            )
-        }
-        RuleKind::R26 => {
-            let fieldset_1 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
-            let name_0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::EnumVariant(EnumVariant {
-                    name: name_0,
-                    fieldset: fieldset_1,
-                }),
-                NonterminalKind::EnumVariant,
-            )
-        }
-        RuleKind::R27 => {
-            (
-                Node::OptTerminalEnumVariants(OptTerminalEnumVariants::Nil),
-                NonterminalKind::OptTerminalEnumVariants,
-            )
-        }
-        RuleKind::R28 => {
-            let t1 = Box::new(TerminalEnumVariant::try_from(nodes.pop().unwrap()).ok().unwrap());
-            let t0 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::OptTerminalEnumVariants(OptTerminalEnumVariants::Cons(
-                    t0,
-                    t1,
-                )),
-                NonterminalKind::OptTerminalEnumVariants,
-            )
-        }
-        RuleKind::R29 => {
-            let type__2 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-            let name_0 = nodes.pop().unwrap().try_into_terminal_ident_2().ok().unwrap();
-
-            states.truncate(states.len() - 3);
-
-            (
-                Node::TerminalEnumVariant(TerminalEnumVariant {
-                    name: name_0,
-                    type_: type__2,
-                }),
-                NonterminalKind::TerminalEnumVariant,
-            )
-        }
-        RuleKind::R30 => {
-            nodes.pop().unwrap();
-            nodes.pop().unwrap();
-
-            states.truncate(states.len() - 2);
-
-            (
-                Node::Type(Type::Unit),
-                NonterminalKind::Type,
-            )
-        }
-        RuleKind::R31 => {
-            let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Type(Type::Path(
-                    t0,
-                )),
-                NonterminalKind::Type,
-            )
-        }
-        RuleKind::R32 => {
-            let t0 = Box::new(ComplexType::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Type(Type::Complex(
-                    t0,
-                )),
-                NonterminalKind::Type,
-            )
-        }
-        RuleKind::R33 => {
-            let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::Path(Path::One(
-                    t0,
-                )),
-                NonterminalKind::Path,
-            )
-        }
-        RuleKind::R34 => {
-            let t2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-            nodes.pop().unwrap();
-            let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 3);
-
-            (
-                Node::Path(Path::Cons(
-                    t0,
-                    t2,
-                )),
-                NonterminalKind::Path,
-            )
-        }
-        RuleKind::R35 => {
-            nodes.pop().unwrap();
-            let args_2 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-            let callee_0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 4);
-
-            (
-                Node::ComplexType(ComplexType {
-                    callee: callee_0,
-                    args: args_2,
-                }),
-                NonterminalKind::ComplexType,
-            )
-        }
-        RuleKind::R36 => {
-            let t0 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::CommaSeparatedTypes(CommaSeparatedTypes::One(
-                    t0,
-                )),
-                NonterminalKind::CommaSeparatedTypes,
-            )
-        }
-        RuleKind::R37 => {
-            let t2 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
-            nodes.pop().unwrap();
-            let t0 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).ok().unwrap());
-
-            states.truncate(states.len() - 3);
-
-            (
-                Node::CommaSeparatedTypes(CommaSeparatedTypes::Cons(
-                    t0,
-                    t2,
-                )),
-                NonterminalKind::CommaSeparatedTypes,
-            )
-        }
-        RuleKind::R38 => {
-            let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::IdentOrUnderscore(IdentOrUnderscore::Ident(
-                    t0,
-                )),
-                NonterminalKind::IdentOrUnderscore,
-            )
-        }
-        RuleKind::R39 => {
-            let t0 = nodes.pop().unwrap().try_into_underscore_0().ok().unwrap();
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::IdentOrUnderscore(IdentOrUnderscore::Underscore(
-                    t0,
-                )),
-                NonterminalKind::IdentOrUnderscore,
-            )
-        }
-        RuleKind::R40 => {
-            let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::IdentOrTerminalIdent(IdentOrTerminalIdent::Ident(
-                    t0,
-                )),
-                NonterminalKind::IdentOrTerminalIdent,
-            )
-        }
-        RuleKind::R41 => {
-            let t0 = nodes.pop().unwrap().try_into_terminal_ident_2().ok().unwrap();
-
-            states.truncate(states.len() - 1);
-
-            (
-                Node::IdentOrTerminalIdent(IdentOrTerminalIdent::Terminal(
-                    t0,
-                )),
-                NonterminalKind::IdentOrTerminalIdent,
-            )
-        }
+        RuleKind::R0 => reduce_r0(states, nodes),
+        RuleKind::R1 => reduce_r1(states, nodes),
+        RuleKind::R2 => reduce_r2(states, nodes),
+        RuleKind::R3 => reduce_r3(states, nodes),
+        RuleKind::R4 => reduce_r4(states, nodes),
+        RuleKind::R5 => reduce_r5(states, nodes),
+        RuleKind::R6 => reduce_r6(states, nodes),
+        RuleKind::R7 => reduce_r7(states, nodes),
+        RuleKind::R8 => reduce_r8(states, nodes),
+        RuleKind::R9 => reduce_r9(states, nodes),
+        RuleKind::R10 => reduce_r10(states, nodes),
+        RuleKind::R11 => reduce_r11(states, nodes),
+        RuleKind::R12 => reduce_r12(states, nodes),
+        RuleKind::R13 => reduce_r13(states, nodes),
+        RuleKind::R14 => reduce_r14(states, nodes),
+        RuleKind::R15 => reduce_r15(states, nodes),
+        RuleKind::R16 => reduce_r16(states, nodes),
+        RuleKind::R17 => reduce_r17(states, nodes),
+        RuleKind::R18 => reduce_r18(states, nodes),
+        RuleKind::R19 => reduce_r19(states, nodes),
+        RuleKind::R20 => reduce_r20(states, nodes),
+        RuleKind::R21 => reduce_r21(states, nodes),
+        RuleKind::R22 => reduce_r22(states, nodes),
+        RuleKind::R23 => reduce_r23(states, nodes),
+        RuleKind::R24 => reduce_r24(states, nodes),
+        RuleKind::R25 => reduce_r25(states, nodes),
+        RuleKind::R26 => reduce_r26(states, nodes),
+        RuleKind::R27 => reduce_r27(states, nodes),
+        RuleKind::R28 => reduce_r28(states, nodes),
+        RuleKind::R29 => reduce_r29(states, nodes),
+        RuleKind::R30 => reduce_r30(states, nodes),
+        RuleKind::R31 => reduce_r31(states, nodes),
+        RuleKind::R32 => reduce_r32(states, nodes),
+        RuleKind::R33 => reduce_r33(states, nodes),
+        RuleKind::R34 => reduce_r34(states, nodes),
+        RuleKind::R35 => reduce_r35(states, nodes),
+        RuleKind::R36 => reduce_r36(states, nodes),
+        RuleKind::R37 => reduce_r37(states, nodes),
+        RuleKind::R38 => reduce_r38(states, nodes),
+        RuleKind::R39 => reduce_r39(states, nodes),
+        RuleKind::R40 => reduce_r40(states, nodes),
+        RuleKind::R41 => reduce_r41(states, nodes),
     }
+}
+
+fn reduce_r0(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let items_0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::File(File {
+            items: items_0,
+        }),
+        NonterminalKind::File,
+    )
+}
+
+fn reduce_r1(_states: &mut Vec<State>, _nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    (
+        Node::OptItems(OptItems::Nil),
+        NonterminalKind::OptItems,
+    )
+}
+
+fn reduce_r2(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t1 = Box::new(FileItem::try_from(nodes.pop().unwrap()).ok().unwrap());
+    let t0 = Box::new(OptItems::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::OptItems(OptItems::Cons(
+            t0,
+            t1,
+        )),
+        NonterminalKind::OptItems,
+    )
+}
+
+fn reduce_r3(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t1 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::FileItem(FileItem::Start(
+            t1,
+        )),
+        NonterminalKind::FileItem,
+    )
+}
+
+fn reduce_r4(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(Struct::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::FileItem(FileItem::Struct(
+            t0,
+        )),
+        NonterminalKind::FileItem,
+    )
+}
+
+fn reduce_r5(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(Enum::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::FileItem(FileItem::Enum(
+            t0,
+        )),
+        NonterminalKind::FileItem,
+    )
+}
+
+fn reduce_r6(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(TerminalEnum::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::FileItem(FileItem::Terminal(
+            t0,
+        )),
+        NonterminalKind::FileItem,
+    )
+}
+
+fn reduce_r7(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let fieldset_3 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
+    let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+    nodes.pop().unwrap();
+    let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 4);
+
+    (
+        Node::Struct(Struct {
+            attributes: attributes_0,
+            name: name_2,
+            fieldset: fieldset_3,
+        }),
+        NonterminalKind::Struct,
+    )
+}
+
+fn reduce_r8(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+    let variants_4 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+    let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+    nodes.pop().unwrap();
+    let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 6);
+
+    (
+        Node::Enum(Enum {
+            attributes: attributes_0,
+            name: name_2,
+            variants: variants_4,
+        }),
+        NonterminalKind::Enum,
+    )
+}
+
+fn reduce_r9(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+    let variants_4 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+    let name_2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+    nodes.pop().unwrap();
+    let attributes_0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 6);
+
+    (
+        Node::TerminalEnum(TerminalEnum {
+            attributes: attributes_0,
+            name: name_2,
+            variants: variants_4,
+        }),
+        NonterminalKind::TerminalEnum,
+    )
+}
+
+fn reduce_r10(_states: &mut Vec<State>, _nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    (
+        Node::OptOuterAttributes(OptOuterAttributes::Nil),
+        NonterminalKind::OptOuterAttributes,
+    )
+}
+
+fn reduce_r11(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t1 = nodes.pop().unwrap().try_into_outer_attribute_3().ok().unwrap();
+    let t0 = Box::new(OptOuterAttributes::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::OptOuterAttributes(OptOuterAttributes::Cons(
+            t0,
+            t1,
+        )),
+        NonterminalKind::OptOuterAttributes,
+    )
+}
+
+fn reduce_r12(_states: &mut Vec<State>, _nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    (
+        Node::Fieldset(Fieldset::Empty),
+        NonterminalKind::Fieldset,
+    )
+}
+
+fn reduce_r13(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(NamedFieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Fieldset(Fieldset::Named(
+            t0,
+        )),
+        NonterminalKind::Fieldset,
+    )
+}
+
+fn reduce_r14(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(TupleFieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Fieldset(Fieldset::Tuple(
+            t0,
+        )),
+        NonterminalKind::Fieldset,
+    )
+}
+
+fn reduce_r15(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+    let fields_1 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 3);
+
+    (
+        Node::NamedFieldset(NamedFieldset {
+            fields: fields_1,
+        }),
+        NonterminalKind::NamedFieldset,
+    )
+}
+
+fn reduce_r16(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(NamedField::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::NamedFields(NamedFields::One(
+            t0,
+        )),
+        NonterminalKind::NamedFields,
+    )
+}
+
+fn reduce_r17(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t1 = Box::new(NamedField::try_from(nodes.pop().unwrap()).ok().unwrap());
+    let t0 = Box::new(NamedFields::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::NamedFields(NamedFields::Cons(
+            t0,
+            t1,
+        )),
+        NonterminalKind::NamedFields,
+    )
+}
+
+fn reduce_r18(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let symbol_2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+    let name_0 = Box::new(IdentOrUnderscore::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 3);
+
+    (
+        Node::NamedField(NamedField {
+            name: name_0,
+            symbol: symbol_2,
+        }),
+        NonterminalKind::NamedField,
+    )
+}
+
+fn reduce_r19(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+    let fields_1 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 3);
+
+    (
+        Node::TupleFieldset(TupleFieldset {
+            fields: fields_1,
+        }),
+        NonterminalKind::TupleFieldset,
+    )
+}
+
+fn reduce_r20(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(TupleField::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::TupleFields(TupleFields::One(
+            t0,
+        )),
+        NonterminalKind::TupleFields,
+    )
+}
+
+fn reduce_r21(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t1 = Box::new(TupleField::try_from(nodes.pop().unwrap()).ok().unwrap());
+    let t0 = Box::new(TupleFields::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::TupleFields(TupleFields::Cons(
+            t0,
+            t1,
+        )),
+        NonterminalKind::TupleFields,
+    )
+}
+
+fn reduce_r22(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::TupleField(TupleField::Used(
+            t0,
+        )),
+        NonterminalKind::TupleField,
+    )
+}
+
+fn reduce_r23(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t2 = Box::new(IdentOrTerminalIdent::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 3);
+
+    (
+        Node::TupleField(TupleField::Skipped(
+            t2,
+        )),
+        NonterminalKind::TupleField,
+    )
+}
+
+fn reduce_r24(_states: &mut Vec<State>, _nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    (
+        Node::OptEnumVariants(OptEnumVariants::Nil),
+        NonterminalKind::OptEnumVariants,
+    )
+}
+
+fn reduce_r25(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t1 = Box::new(EnumVariant::try_from(nodes.pop().unwrap()).ok().unwrap());
+    let t0 = Box::new(OptEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::OptEnumVariants(OptEnumVariants::Cons(
+            t0,
+            t1,
+        )),
+        NonterminalKind::OptEnumVariants,
+    )
+}
+
+fn reduce_r26(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let fieldset_1 = Box::new(Fieldset::try_from(nodes.pop().unwrap()).ok().unwrap());
+    let name_0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::EnumVariant(EnumVariant {
+            name: name_0,
+            fieldset: fieldset_1,
+        }),
+        NonterminalKind::EnumVariant,
+    )
+}
+
+fn reduce_r27(_states: &mut Vec<State>, _nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    (
+        Node::OptTerminalEnumVariants(OptTerminalEnumVariants::Nil),
+        NonterminalKind::OptTerminalEnumVariants,
+    )
+}
+
+fn reduce_r28(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t1 = Box::new(TerminalEnumVariant::try_from(nodes.pop().unwrap()).ok().unwrap());
+    let t0 = Box::new(OptTerminalEnumVariants::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::OptTerminalEnumVariants(OptTerminalEnumVariants::Cons(
+            t0,
+            t1,
+        )),
+        NonterminalKind::OptTerminalEnumVariants,
+    )
+}
+
+fn reduce_r29(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let type__2 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+    let name_0 = nodes.pop().unwrap().try_into_terminal_ident_2().ok().unwrap();
+
+    states.truncate(states.len() - 3);
+
+    (
+        Node::TerminalEnumVariant(TerminalEnumVariant {
+            name: name_0,
+            type_: type__2,
+        }),
+        NonterminalKind::TerminalEnumVariant,
+    )
+}
+
+fn reduce_r30(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+    nodes.pop().unwrap();
+
+    states.truncate(states.len() - 2);
+
+    (
+        Node::Type(Type::Unit),
+        NonterminalKind::Type,
+    )
+}
+
+fn reduce_r31(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Type(Type::Path(
+            t0,
+        )),
+        NonterminalKind::Type,
+    )
+}
+
+fn reduce_r32(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(ComplexType::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Type(Type::Complex(
+            t0,
+        )),
+        NonterminalKind::Type,
+    )
+}
+
+fn reduce_r33(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::Path(Path::One(
+            t0,
+        )),
+        NonterminalKind::Path,
+    )
+}
+
+fn reduce_r34(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t2 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+    nodes.pop().unwrap();
+    let t0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 3);
+
+    (
+        Node::Path(Path::Cons(
+            t0,
+            t2,
+        )),
+        NonterminalKind::Path,
+    )
+}
+
+fn reduce_r35(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    nodes.pop().unwrap();
+    let args_2 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+    let callee_0 = Box::new(Path::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 4);
+
+    (
+        Node::ComplexType(ComplexType {
+            callee: callee_0,
+            args: args_2,
+        }),
+        NonterminalKind::ComplexType,
+    )
+}
+
+fn reduce_r36(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::CommaSeparatedTypes(CommaSeparatedTypes::One(
+            t0,
+        )),
+        NonterminalKind::CommaSeparatedTypes,
+    )
+}
+
+fn reduce_r37(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t2 = Box::new(Type::try_from(nodes.pop().unwrap()).ok().unwrap());
+    nodes.pop().unwrap();
+    let t0 = Box::new(CommaSeparatedTypes::try_from(nodes.pop().unwrap()).ok().unwrap());
+
+    states.truncate(states.len() - 3);
+
+    (
+        Node::CommaSeparatedTypes(CommaSeparatedTypes::Cons(
+            t0,
+            t2,
+        )),
+        NonterminalKind::CommaSeparatedTypes,
+    )
+}
+
+fn reduce_r38(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::IdentOrUnderscore(IdentOrUnderscore::Ident(
+            t0,
+        )),
+        NonterminalKind::IdentOrUnderscore,
+    )
+}
+
+fn reduce_r39(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = nodes.pop().unwrap().try_into_underscore_0().ok().unwrap();
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::IdentOrUnderscore(IdentOrUnderscore::Underscore(
+            t0,
+        )),
+        NonterminalKind::IdentOrUnderscore,
+    )
+}
+
+fn reduce_r40(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = nodes.pop().unwrap().try_into_ident_1().ok().unwrap();
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::IdentOrTerminalIdent(IdentOrTerminalIdent::Ident(
+            t0,
+        )),
+        NonterminalKind::IdentOrTerminalIdent,
+    )
+}
+
+fn reduce_r41(states: &mut Vec<State>, nodes: &mut Vec<Node>) -> (Node, NonterminalKind) {
+    let t0 = nodes.pop().unwrap().try_into_terminal_ident_2().ok().unwrap();
+
+    states.truncate(states.len() - 1);
+
+    (
+        Node::IdentOrTerminalIdent(IdentOrTerminalIdent::Terminal(
+            t0,
+        )),
+        NonterminalKind::IdentOrTerminalIdent,
+    )
 }
 
 impl QuasiterminalKind {
