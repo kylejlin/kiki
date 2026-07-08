@@ -1083,7 +1083,7 @@ impl Quasiterminal {
     }
 }
 
-const ACTION_TABLE: [[Action; 18]; 67] = [
+static ACTION_TABLE: [[Action; 18]; 67] = [
     [
         Action::Err,
         Action::Err,
@@ -2430,7 +2430,7 @@ fn get_action(top_state: State, next_quasiterminal_kind: QuasiterminalKind) -> A
     ACTION_TABLE[top_state as usize][next_quasiterminal_kind as usize]
 }
 
-const GOTO_TABLE: [[Option<State>; 24]; 67] = [
+static GOTO_TABLE: [[Option<State>; 24]; 67] = [
     [
         Some(State::S66),
         Some(State::S1),

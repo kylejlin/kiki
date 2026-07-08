@@ -277,7 +277,7 @@ impl {quasiterminal_enum_name} {{
     }}
 }}
 
-const {action_table_name}: [[{action_enum_name}; {num_of_quasiterminal_kind_variants}]; {num_of_state_variants}] = [
+static {action_table_name}: [[{action_enum_name}; {num_of_quasiterminal_kind_variants}]; {num_of_state_variants}] = [
 {action_table_rows_indent_1}
 ];
 
@@ -285,7 +285,7 @@ fn get_action(top_state: {state_enum_name}, next_quasiterminal_kind: {quasitermi
     {action_table_name}[top_state as usize][next_quasiterminal_kind as usize]
 }}
 
-const {goto_table_name}: [[Option<{state_enum_name}>; {num_of_nonterminal_kind_variants}]; {num_of_state_variants}] = [
+static {goto_table_name}: [[Option<{state_enum_name}>; {num_of_nonterminal_kind_variants}]; {num_of_state_variants}] = [
 {goto_table_rows_indent_1}
 ];
 

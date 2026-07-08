@@ -269,7 +269,7 @@ impl Quasiterminal {
     }
 }
 
-const ACTION_TABLE: [[Action; 3]; 10] = [
+static ACTION_TABLE: [[Action; 3]; 10] = [
     [
         Action::Shift(State::S6),
         Action::Shift(State::S2),
@@ -326,7 +326,7 @@ fn get_action(top_state: State, next_quasiterminal_kind: QuasiterminalKind) -> A
     ACTION_TABLE[top_state as usize][next_quasiterminal_kind as usize]
 }
 
-const GOTO_TABLE: [[Option<State>; 5]; 10] = [
+static GOTO_TABLE: [[Option<State>; 5]; 10] = [
     [
         Some(State::S9),
         Some(State::S1),
