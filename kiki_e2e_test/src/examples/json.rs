@@ -256,9 +256,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
     match rule_kind {
         RuleKind::R0 => {
             let t0 = Box::new(Obj::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Json(Json::Obj(
                     t0,
@@ -268,9 +268,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R1 => {
             let t0 = Box::new(Arr::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Json(Json::Arr(
                     t0,
@@ -282,9 +282,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             nodes.pop().unwrap();
             let entries_1 = Box::new(OptEntries::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::Obj(Obj {
                     entries: entries_1,
@@ -300,9 +300,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R4 => {
             let t0 = Box::new(Entries::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::OptEntries(OptEntries::Some(
                     t0,
@@ -312,9 +312,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R5 => {
             let t0 = Box::new(Entry::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Entries(Entries::One(
                     t0,
@@ -326,9 +326,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             let t2 = Box::new(Entry::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
             let t0 = Box::new(Entries::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::Entries(Entries::Many(
                     t0,
@@ -341,9 +341,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             let val_2 = Box::new(Expr::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
             let key_0 = nodes.pop().unwrap().try_into_string_0().ok().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::Entry(Entry {
                     key: key_0,
@@ -354,9 +354,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R8 => {
             let t0 = Box::new(Obj::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Expr(Expr::Obj(
                     t0,
@@ -366,9 +366,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R9 => {
             let t0 = Box::new(Arr::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Expr(Expr::Arr(
                     t0,
@@ -378,9 +378,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R10 => {
             let t0 = nodes.pop().unwrap().try_into_string_0().ok().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Expr(Expr::String(
                     t0,
@@ -390,9 +390,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R11 => {
             let t0 = nodes.pop().unwrap().try_into_num_1().ok().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Expr(Expr::Num(
                     t0,
@@ -402,9 +402,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R12 => {
             let t0 = nodes.pop().unwrap().try_into_bool_2().ok().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Expr(Expr::Bool(
                     t0,
@@ -416,9 +416,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             nodes.pop().unwrap();
             let elements_1 = Box::new(OptElements::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::Arr(Arr {
                     elements: elements_1,
@@ -434,9 +434,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R15 => {
             let t0 = Box::new(Elements::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::OptElements(OptElements::Some(
                     t0,
@@ -446,9 +446,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R16 => {
             let t0 = Box::new(Expr::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Elements(Elements::One(
                     t0,
@@ -460,9 +460,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             let t2 = Box::new(Expr::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
             let t0 = Box::new(Elements::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::Elements(Elements::Many(
                     t0,
@@ -1240,56 +1240,56 @@ impl Node {
             _ => Err(self),
         }
     }
-    
+
     fn try_into_num_1(self) -> Result<String, Self> {
         match self {
             Self::Num(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_bool_2(self) -> Result<String, Self> {
         match self {
             Self::Bool(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_l_curly_3(self) -> Result<String, Self> {
         match self {
             Self::LCurly(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_r_curly_4(self) -> Result<String, Self> {
         match self {
             Self::RCurly(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_l_square_5(self) -> Result<String, Self> {
         match self {
             Self::LSquare(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_r_square_6(self) -> Result<String, Self> {
         match self {
             Self::RSquare(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_colon_7(self) -> Result<String, Self> {
         match self {
             Self::Colon(t) => Ok(t),
             _ => Err(self),
         }
     }
-    
+
     fn try_into_comma_8(self) -> Result<String, Self> {
         match self {
             Self::Comma(t) => Ok(t),

@@ -884,13 +884,16 @@ impl Indent for str {
     fn indent(&self, level: usize) -> String {
         let mut out = String::new();
         let indent = &"    ".repeat(level);
-        out.push_str(indent);
+        let mut at_line_start = true;
+
         for c in self.chars() {
-            out.push(c);
-            if c == '\n' {
+            if at_line_start && c != '\n' {
                 out.push_str(indent);
             }
+            out.push(c);
+            at_line_start = c == '\n';
         }
+
         out
     }
 }
@@ -922,6 +925,11 @@ mod tests {
     use super::*;
 
     use crate::{data::ByteIndex, test_utils::*};
+
+    #[test]
+    fn indent_leaves_empty_lines_empty() {
+        assert_eq!("    let bar = 32;\n\n    bar", "let bar = 32;\n\nbar".indent(1));
+    }
 
     #[test]
     fn balanced_parens() {

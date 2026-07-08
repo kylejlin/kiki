@@ -126,9 +126,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
             nodes.pop().unwrap();
             let t1 = Box::new(Expr::try_from(nodes.pop().unwrap()).ok().unwrap());
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 3);
-            
+
             (
                 Node::Expr(Expr::Wrap(
                     t1,
@@ -245,7 +245,7 @@ impl Node {
             _ => Err(self),
         }
     }
-    
+
     fn try_into_r_paren_1(self) -> Result<(), Self> {
         match self {
             Self::RParen(t) => Ok(t),

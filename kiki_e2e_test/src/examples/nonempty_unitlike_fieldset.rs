@@ -150,9 +150,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
     match rule_kind {
         RuleKind::R0 => {
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Foo(Foo::Empty),
                 NonterminalKind::Foo,
@@ -160,9 +160,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R1 => {
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Foo(Foo::Number),
                 NonterminalKind::Foo,
@@ -170,9 +170,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R2 => {
             let val_0 = Box::new(Pair::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Foo(Foo::Pair {
                     val: val_0,
@@ -188,9 +188,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R4 => {
             let t0 = Box::new(StringPair::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Pair(Pair::StringPair(
                     t0,
@@ -200,9 +200,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         }
         RuleKind::R5 => {
             let t0 = Box::new(NumberPair::try_from(nodes.pop().unwrap()).ok().unwrap());
-            
+
             states.truncate(states.len() - 1);
-            
+
             (
                 Node::Pair(Pair::NumberPair(
                     t0,
@@ -213,9 +213,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         RuleKind::R6 => {
             nodes.pop().unwrap();
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
                 Node::StringPair(StringPair),
                 NonterminalKind::StringPair,
@@ -224,9 +224,9 @@ fn pop_and_reduce(states: &mut Vec<State>, nodes: &mut Vec<Node>, rule_kind: Rul
         RuleKind::R7 => {
             nodes.pop().unwrap();
             nodes.pop().unwrap();
-            
+
             states.truncate(states.len() - 2);
-            
+
             (
                 Node::NumberPair(NumberPair),
                 NonterminalKind::NumberPair,
@@ -465,7 +465,7 @@ impl Node {
             _ => Err(self),
         }
     }
-    
+
     fn try_into_number_1(self) -> Result<isize, Self> {
         match self {
             Self::Number(t) => Ok(t),
