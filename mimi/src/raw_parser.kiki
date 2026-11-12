@@ -188,5 +188,25 @@ enum GrammarSymbol {
 #[derive(Debug, Clone, PartialEq, Eq)]
 terminal Token {
     $StartKw: crate::token::span_of::StartKw
-    // TODO: Add the rest
+    $StructKw: crate::token::span_of::StructKw
+    $EnumKw: crate::token::span_of::EnumKw
+    $CustomKw: crate::token::span_of::CustomKw
+    $TerminalKw: crate::token::span_of::TerminalKw
+
+    $Underscore: crate::token::span_of::Underscore
+    $LParen: crate::token::span_of::LParen
+    $RParen: crate::token::span_of::RParen
+    $LSquare: crate::token::span_of::LSquare
+    $RSquare: crate::token::span_of::RSquare
+    $LCurly: crate::token::span_of::LCurly
+    $RCurly: crate::token::span_of::RCurly
+    $Comma: crate::token::span_of::Comma
+    $DoubleColon: crate::token::span_of::DoubleColon
+    $Colon: crate::token::span_of::Colon
+    $Equal: crate::token::span_of::Equal
+    $Octothorpe: crate::token::span_of::Octothorpe
+
+    $UpperName: crate::token::span_of::UpperName
+    $LowerName: crate::token::span_of::LowerName
+    $DollarUpperName: crate::token::span_of::DollarUpperName
 }
