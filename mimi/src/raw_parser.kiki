@@ -30,7 +30,7 @@ struct Enum {
     _: $EnumKw
     name: $UpperName
     _: $LCurly
-    variants: OptEnumVariants
+    variants: EnumVariants
     _: $RCurly
 }
 
@@ -96,9 +96,9 @@ enum TupleField {
     Skipped($Underscore $Colon GrammarSymbol)
 }
 
-enum OptEnumVariants {
-    Zero
-    Snoc(OptEnumVariants EnumVariant)
+enum EnumVariants {
+    One(EnumVariant)
+    Snoc(EnumVariants EnumVariant)
 }
 
 struct EnumVariant {
@@ -113,9 +113,12 @@ enum OptManualVariants {
 
 struct ManualVariant {
     function: $AtLowerName
-    _: $LParen
-    inputs: TupleFields
-    _: $RParen
+    inputs: OptTupleFields
+}
+
+enum OptTupleFields {
+    None
+    Some(TupleFields)
 }
 
 enum OptTerminalEnumVariants {
