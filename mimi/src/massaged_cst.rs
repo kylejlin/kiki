@@ -79,26 +79,3 @@ pub struct TerminalEnumVariant {
 pub type Path = Vec<Name>;
 
 pub use crate::raw_parser::{GrammarSymbol, Name, UnderscoreOrLowerName};
-
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-pub struct SigilFreeStr<'a> {
-    raw: &'a str,
-}
-impl Debug for SigilFreeStr<'_> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.raw.fmt(f)
-    }
-}
-impl<'a> SigilFreeStr<'a> {
-    pub fn new(raw: &'a str) -> Option<Self> {
-        if raw.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
-            Some(Self { raw })
-        } else {
-            None
-        }
-    }
-
-    pub const fn raw(self) -> &'a str {
-        self.raw
-    }
-}
