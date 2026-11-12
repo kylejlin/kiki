@@ -7,4 +7,4 @@ pub use std::{
     ops::DerefMut,
 };
 
-pub(crate) use crate::{lexer::*, ntt::*, text_position::*, token::*};
+pub(crate) use crate::{lexer::*, massaged_cst as m, ntt::*, text_position::*, token::*};
