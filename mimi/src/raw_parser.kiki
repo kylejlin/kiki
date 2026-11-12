@@ -154,7 +154,7 @@ enum OptTerminalEnumVariants {
 }
 
 struct TerminalEnumVariant {
-    name: $TerminalIdent
+    name: $DollarUpperName
     _: $Equal
     type_: Path
 }
@@ -168,6 +168,7 @@ enum Path {
     )
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Name {
     Upper($UpperName)
     Lower($LowerName)

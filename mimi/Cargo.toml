@@ -17,6 +17,7 @@ version = "0.8.12"
 features = ["xxh3"]
 
 [build-dependencies]
+sha256 = "1.6.0"
 kiki = "7.1"
 walkdir = "2"
 
