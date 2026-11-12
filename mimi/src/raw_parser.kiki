@@ -37,7 +37,7 @@ struct Enum {
 struct Manual {
     _: $ManualKw
     name: $UpperName
-    override: OptEqualAtUpperName
+    override_: OptEqualAtUpperName
     _: $LCurly
     variants: OptManualVariants
     _: $RCurly
@@ -125,7 +125,7 @@ enum OptTerminalEnumVariants {
 
 struct TerminalEnumVariant {
     name: $DollarUpperName
-    override: OptEqualAtUpperName
+    override_: OptEqualAtUpperName
 }
 
 enum OptEqualAtUpperName {
@@ -163,6 +163,7 @@ terminal Token {
     $EnumKw: crate::token::span_of::EnumKw
     $ManualKw: crate::token::span_of::ManualKw
     $TerminalKw: crate::token::span_of::TerminalKw
+    $BridgeKw: crate::token::span_of::BridgeKw
 
     $Underscore: crate::token::span_of::Underscore
     $LParen: crate::token::span_of::LParen
@@ -180,6 +181,8 @@ terminal Token {
     $UpperName: crate::token::span_of::UpperName
     $LowerName: crate::token::span_of::LowerName
     $DollarUpperName: crate::token::span_of::DollarUpperName
+    $AtUpperName: crate::token::span_of::AtUpperName
+    $AtLowerName: crate::token::span_of::AtLowerName
 
     $RustStringLiteral: crate::token::span_of::RustStringLiteral
 }

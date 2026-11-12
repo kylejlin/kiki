@@ -10,6 +10,7 @@ pub enum FileItem {
     Enum(Enum),
     Manual(Manual),
     Terminal(TerminalEnum),
+    Bridge(Path),
 }
 
 pub struct Struct {
@@ -26,7 +27,7 @@ pub struct Enum {
 
 pub struct Manual {
     pub name: span_of::UpperName,
-    pub type_: Path,
+    pub override_: Option<span_of::AtUpperName>,
     pub variants: Vec<ManualVariant>,
 }
 
@@ -66,13 +67,13 @@ pub struct EnumVariant {
 }
 
 pub struct ManualVariant {
-    pub function: Path,
+    pub function: span_of::AtLowerName,
     pub inputs: Vec<TupleField>,
 }
 
 pub struct TerminalEnumVariant {
     pub name: span_of::DollarUpperName,
-    pub type_: Path,
+    pub override_: Option<span_of::AtUpperName>,
 }
 
 pub type Path = Vec<Name>;

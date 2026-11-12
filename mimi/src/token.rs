@@ -13,6 +13,7 @@ pub enum TokenKind {
     EnumKw,
     ManualKw,
     TerminalKw,
+    BridgeKw,
 
     Underscore,
     LParen,
@@ -30,6 +31,8 @@ pub enum TokenKind {
     UpperName,
     LowerName,
     DollarUpperName,
+    AtUpperName,
+    AtLowerName,
 
     RustStringLiteral,
 }
@@ -45,6 +48,7 @@ impl Token {
             TokenKind::EnumKw => TransposedToken::EnumKw(span_of::EnumKw::new(span)),
             TokenKind::ManualKw => TransposedToken::ManualKw(span_of::ManualKw::new(span)),
             TokenKind::TerminalKw => TransposedToken::TerminalKw(span_of::TerminalKw::new(span)),
+            TokenKind::BridgeKw => TransposedToken::BridgeKw(span_of::BridgeKw::new(span)),
             TokenKind::Underscore => TransposedToken::Underscore(span_of::Underscore::new(span)),
             TokenKind::LParen => TransposedToken::LParen(span_of::LParen::new(span)),
             TokenKind::RParen => TransposedToken::RParen(span_of::RParen::new(span)),
@@ -62,6 +66,8 @@ impl Token {
             TokenKind::DollarUpperName => {
                 TransposedToken::DollarUpperName(span_of::DollarUpperName::new(span))
             }
+            TokenKind::AtUpperName => TransposedToken::AtUpperName(span_of::AtUpperName::new(span)),
+            TokenKind::AtLowerName => TransposedToken::AtLowerName(span_of::AtLowerName::new(span)),
             TokenKind::RustStringLiteral => {
                 TransposedToken::RustStringLiteral(span_of::RustStringLiteral::new(span))
             }
@@ -95,6 +101,10 @@ impl TransposedToken {
             },
             Self::TerminalKw(span) => Token {
                 kind: TokenKind::TerminalKw,
+                span: span.raw,
+            },
+            Self::BridgeKw(span) => Token {
+                kind: TokenKind::BridgeKw,
                 span: span.raw,
             },
             Self::Underscore(span) => Token {
@@ -157,6 +167,14 @@ impl TransposedToken {
                 kind: TokenKind::DollarUpperName,
                 span: span.raw,
             },
+            Self::AtUpperName(span) => Token {
+                kind: TokenKind::AtUpperName,
+                span: span.raw,
+            },
+            Self::AtLowerName(span) => Token {
+                kind: TokenKind::AtLowerName,
+                span: span.raw,
+            },
             Self::RustStringLiteral(span) => Token {
                 kind: TokenKind::RustStringLiteral,
                 span: span.raw,
@@ -214,6 +232,7 @@ pub mod span_of {
     pub type EnumKw = TaggedSpan<ntt::EnumKw>;
     pub type ManualKw = TaggedSpan<ntt::ManualKw>;
     pub type TerminalKw = TaggedSpan<ntt::TerminalKw>;
+    pub type BridgeKw = TaggedSpan<ntt::BridgeKw>;
 
     pub type Underscore = TaggedSpan<ntt::Underscore>;
     pub type LParen = TaggedSpan<ntt::LParen>;
@@ -231,6 +250,8 @@ pub mod span_of {
     pub type UpperName = TaggedSpan<ntt::UpperName>;
     pub type LowerName = TaggedSpan<ntt::LowerName>;
     pub type DollarUpperName = TaggedSpan<ntt::DollarUpperName>;
+    pub type AtUpperName = TaggedSpan<ntt::AtUpperName>;
+    pub type AtLowerName = TaggedSpan<ntt::AtLowerName>;
 
     pub type RustStringLiteral = TaggedSpan<ntt::RustStringLiteral>;
 
@@ -240,6 +261,7 @@ pub mod span_of {
         pub struct EnumKw;
         pub struct ManualKw;
         pub struct TerminalKw;
+        pub struct BridgeKw;
 
         pub struct Underscore;
         pub struct LParen;
@@ -257,6 +279,8 @@ pub mod span_of {
         pub struct UpperName;
         pub struct LowerName;
         pub struct DollarUpperName;
+        pub struct AtUpperName;
+        pub struct AtLowerName;
 
         pub struct RustStringLiteral;
     }

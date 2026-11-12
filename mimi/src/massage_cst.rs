@@ -36,6 +36,7 @@ impl From<r::FileItem> for m::FileItem {
             r::FileItem::Enum(value) => Self::Enum((*value).into()),
             r::FileItem::Manual(value) => Self::Manual((*value).into()),
             r::FileItem::Terminal(value) => Self::Terminal((*value).into()),
+            r::FileItem::Bridge(_, path) => Self::Bridge((*path).into()),
         }
     }
 }
@@ -74,12 +75,12 @@ impl From<r::Manual> for m::Manual {
     fn from(value: r::Manual) -> Self {
         let r::Manual {
             name,
-            type_,
+            override_,
             variants,
         } = value;
         Self {
             name,
-            type_: (*type_).into(),
+            override_: (*override_).into(),
             variants: (*variants).into(),
         }
     }
@@ -244,7 +245,7 @@ impl From<r::ManualVariant> for m::ManualVariant {
     fn from(value: r::ManualVariant) -> Self {
         let r::ManualVariant { function, inputs } = value;
         Self {
-            function: (*function).into(),
+            function,
             inputs: (*inputs).into(),
         }
     }
@@ -269,10 +270,19 @@ impl From<r::OptTerminalEnumVariants> for Vec<m::TerminalEnumVariant> {
 
 impl From<r::TerminalEnumVariant> for m::TerminalEnumVariant {
     fn from(value: r::TerminalEnumVariant) -> Self {
-        let r::TerminalEnumVariant { name, type_ } = value;
+        let r::TerminalEnumVariant { name, override_ } = value;
         Self {
             name,
-            type_: (*type_).into(),
+            override_: (*override_).into(),
+        }
+    }
+}
+
+impl From<r::OptEqualAtUpperName> for Option<span_of::AtUpperName> {
+    fn from(value: r::OptEqualAtUpperName) -> Self {
+        match value {
+            r::OptEqualAtUpperName::None => None,
+            r::OptEqualAtUpperName::Some(_, name) => Some(name),
         }
     }
 }

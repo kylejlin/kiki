@@ -261,6 +261,10 @@ impl TryFrom<LogosToken> for Token {
                 kind: TokenKind::TerminalKw,
                 span,
             },
+            LogosToken::BridgeKw(span) => Token {
+                kind: TokenKind::BridgeKw,
+                span,
+            },
             LogosToken::Underscore(span) => Token {
                 kind: TokenKind::Underscore,
                 span,
@@ -321,6 +325,14 @@ impl TryFrom<LogosToken> for Token {
                 kind: TokenKind::DollarUpperName,
                 span,
             },
+            LogosToken::AtUpperName(span) => Token {
+                kind: TokenKind::AtUpperName,
+                span,
+            },
+            LogosToken::AtLowerName(span) => Token {
+                kind: TokenKind::AtLowerName,
+                span,
+            },
             LogosToken::RustStringLiteral(span) => Token {
                 kind: TokenKind::RustStringLiteral,
                 span,
@@ -349,10 +361,13 @@ mod lookarounds {
             | TokenKind::EnumKw
             | TokenKind::ManualKw
             | TokenKind::TerminalKw
+            | TokenKind::BridgeKw
             | TokenKind::Underscore
             | TokenKind::UpperName
             | TokenKind::LowerName
-            | TokenKind::DollarUpperName => {
+            | TokenKind::DollarUpperName
+            | TokenKind::AtUpperName
+            | TokenKind::AtLowerName => {
                 let prefix = &source[..span.start.byte_index];
                 let prev_char = prefix.chars().last();
                 if is_namelike_char(prev_char) {
@@ -392,6 +407,6 @@ mod lookarounds {
     }
 
     fn is_namelike_char(o: Option<char>) -> bool {
-        o.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
+        o.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$' || c == '@')
     }
 }
