@@ -227,13 +227,16 @@ impl From<r::EnumVariant> for m::EnumVariant {
     }
 }
 
-impl From<r::OptManualVariants> for Vec<m::ManualVariant> {
-    fn from(mut value: r::OptManualVariants) -> Self {
+impl From<r::ManualVariants> for Vec<m::ManualVariant> {
+    fn from(mut value: r::ManualVariants) -> Self {
         let mut out = Vec::new();
         loop {
             match value {
-                r::OptManualVariants::Zero => break,
-                r::OptManualVariants::Snoc(left, right) => {
+                r::ManualVariants::One(item) => {
+                    out.push((*item).into());
+                    break;
+                }
+                r::ManualVariants::Snoc(left, right) => {
                     out.push((*right).into());
                     value = *left;
                 }
@@ -254,11 +257,14 @@ impl From<r::ManualVariant> for m::ManualVariant {
     }
 }
 
-impl From<r::OptTupleFields> for Vec<m::TupleField> {
-    fn from(value: r::OptTupleFields) -> Self {
+impl From<r::OptTupleFieldset> for Vec<m::TupleField> {
+    fn from(value: r::OptTupleFieldset) -> Self {
         match value {
-            r::OptTupleFields::None => Vec::new(),
-            r::OptTupleFields::Some(fields) => (*fields).into(),
+            r::OptTupleFieldset::None => Vec::new(),
+            r::OptTupleFieldset::Some(fieldset) => {
+                let r::TupleFieldset { fields } = *fieldset;
+                (*fields).into()
+            }
         }
     }
 }

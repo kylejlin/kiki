@@ -39,7 +39,7 @@ struct Manual {
     name: $UpperName
     override_: OptEqualAtUpperName
     _: $LCurly
-    variants: OptManualVariants
+    variants: ManualVariants
     _: $RCurly
 }
 
@@ -106,19 +106,19 @@ struct EnumVariant {
     fieldset: Fieldset
 }
 
-enum OptManualVariants {
-    Zero
-    Snoc(OptManualVariants ManualVariant)
+enum ManualVariants {
+    One(ManualVariant)
+    Snoc(ManualVariants ManualVariant)
 }
 
 struct ManualVariant {
     function: $AtLowerName
-    inputs: OptTupleFields
+    inputs: OptTupleFieldset
 }
 
-enum OptTupleFields {
+enum OptTupleFieldset {
     None
-    Some(TupleFields)
+    Some(TupleFieldset)
 }
 
 enum OptTerminalEnumVariants {

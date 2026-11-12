@@ -22,8 +22,8 @@ pub struct PreflightCertificate<'a> {
 /// 3. No two items have the same name.
 /// 4. For any given `enum` or `terminal` item, no two variants have the same name.
 /// 5. For any given named field set, no two fields have the same name (obviously, underscores are exempt).
-/// 6. Every terminal grammar symbol occurrence (including the `start` item) is defined in the `terminal` item.
-/// 7. Every non-terminal grammar symbol occurrence is defined by a non-terminal item (i.e., `struct`, `enum`, or `manual`).
+/// 6. Every terminal grammar symbol occurrence is defined in the `terminal` item.
+/// 7. Every non-terminal grammar symbol occurrence (including the `start` symbol) is defined by a non-terminal item (i.e., `struct`, `enum`, or `manual`).
 pub fn preflight_check<'a>(
     source: &'a str,
     file: &'a m::File,
