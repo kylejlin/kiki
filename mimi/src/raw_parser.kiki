@@ -21,14 +21,14 @@ enum FileItem {
 }
 
 struct Struct {
-    prefix: OptRustInjection
+    prefix: OptRustStringLiteral
     _: $StructKw
     name: $UpperName
     fieldset: Fieldset
 }
 
 struct Enum {
-    prefix: OptRustInjection
+    prefix: OptRustStringLiteral
     _: $EnumKw
     name: $UpperName
     _: $LCurly
@@ -47,7 +47,7 @@ struct Custom {
 }
 
 struct TerminalEnum {
-    prefix: OptRustInjection
+    prefix: OptRustStringLiteral
     _: $TerminalKw
     name: $UpperName
     _: $LCurly
@@ -55,9 +55,9 @@ struct TerminalEnum {
     _: $RCurly
 }
 
-enum OptRustInjection {
+enum OptRustStringLiteral {
     None
-    Some($RustKw $RawStringLiteral)
+    Some($RustStringLiteral)
 }
 
 enum Fieldset {
@@ -170,7 +170,6 @@ terminal Token {
     $EnumKw: crate::token::span_of::EnumKw
     $CustomKw: crate::token::span_of::CustomKw
     $TerminalKw: crate::token::span_of::TerminalKw
-    $RustKw: crate::token::span_of::RustKw
 
     $Underscore: crate::token::span_of::Underscore
     $LParen: crate::token::span_of::LParen
@@ -189,5 +188,5 @@ terminal Token {
     $LowerName: crate::token::span_of::LowerName
     $DollarUpperName: crate::token::span_of::DollarUpperName
 
-    $RawStringLiteral: crate::token::span_of::RawStringLiteral
+    $RustStringLiteral: crate::token::span_of::RustStringLiteral
 }

@@ -133,9 +133,6 @@ enum LogosToken {
     #[token("terminal", span_callback)]
     TerminalKw(Span),
 
-    #[token("rust", span_callback)]
-    RustKw(Span),
-
     #[token("_", span_callback)]
     Underscore(Span),
 
@@ -181,8 +178,8 @@ enum LogosToken {
     #[regex(r#"\$[A-Z][a-zA-Z0-9_]*"#, span_callback)]
     DollarUpperName(Span),
 
-    #[regex(r#"r#*""#, raw_string_span_callback)]
-    RawStringLiteral(Span),
+    #[regex(r#"rust#*""#, rust_string_span_callback)]
+    RustStringLiteral(Span),
 
     #[regex(r"\/\/[^\n]*", span_callback, allow_greedy = true)]
     SingleLineComment(Span),
@@ -201,9 +198,9 @@ fn span_callback(logos_lexer: &mut LogosLexer<LogosToken>) -> Span {
     Span { start, end }
 }
 
-fn raw_string_span_callback(logos_lexer: &mut LogosLexer<LogosToken>) -> Option<Span> {
+fn rust_string_span_callback(logos_lexer: &mut LogosLexer<LogosToken>) -> Option<Span> {
     let opener = logos_lexer.slice();
-    let hashes = &opener.as_bytes()[1..opener.len() - 1];
+    let hashes = &opener.as_bytes()["rust".len()..opener.len() - 1];
     let remainder = logos_lexer.remainder();
     let terminator_end = remainder.match_indices('"').find_map(|(index, _)| {
         remainder.as_bytes()[index + 1..]
@@ -253,10 +250,6 @@ impl TryFrom<LogosToken> for Token {
             },
             LogosToken::TerminalKw(span) => Token {
                 kind: TokenKind::TerminalKw,
-                span,
-            },
-            LogosToken::RustKw(span) => Token {
-                kind: TokenKind::RustKw,
                 span,
             },
             LogosToken::Underscore(span) => Token {
@@ -319,8 +312,8 @@ impl TryFrom<LogosToken> for Token {
                 kind: TokenKind::DollarUpperName,
                 span,
             },
-            LogosToken::RawStringLiteral(span) => Token {
-                kind: TokenKind::RawStringLiteral,
+            LogosToken::RustStringLiteral(span) => Token {
+                kind: TokenKind::RustStringLiteral,
                 span,
             },
 
@@ -347,7 +340,6 @@ mod lookarounds {
             | TokenKind::EnumKw
             | TokenKind::CustomKw
             | TokenKind::TerminalKw
-            | TokenKind::RustKw
             | TokenKind::Underscore
             | TokenKind::UpperName
             | TokenKind::LowerName
@@ -386,7 +378,7 @@ mod lookarounds {
             | TokenKind::Colon
             | TokenKind::Equal
             | TokenKind::Octothorpe
-            | TokenKind::RawStringLiteral => Ok(()),
+            | TokenKind::RustStringLiteral => Ok(()),
         }
     }
 
