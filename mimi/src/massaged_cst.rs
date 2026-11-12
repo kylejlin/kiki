@@ -5,7 +5,11 @@ pub struct File {
 }
 
 pub enum FileItem {
-    // TODO
+    Start(span_of::UpperName),
+    Struct(Struct),
+    Enum(Enum),
+    Manual(Manual),
+    Terminal(TerminalEnum),
 }
 
 pub struct Struct {
@@ -14,12 +18,28 @@ pub struct Struct {
     pub fieldset: Fieldset,
 }
 
-// TODO: Enum, Manual, TerminalEnum
+pub struct Enum {
+    pub prefix: Option<span_of::RustStringLiteral>,
+    pub name: span_of::UpperName,
+    pub variants: Vec<EnumVariant>,
+}
+
+pub struct Manual {
+    pub name: span_of::UpperName,
+    pub type_: Path,
+    pub variants: Vec<ManualVariant>,
+}
+
+pub struct TerminalEnum {
+    pub prefix: Option<span_of::RustStringLiteral>,
+    pub name: span_of::UpperName,
+    pub variants: Vec<TerminalEnumVariant>,
+}
 
 pub enum Fieldset {
     Empty,
     Named(NamedFieldset),
-    // TODO: Tuple(TupleFieldset),
+    Tuple(TupleFieldset),
 }
 
 pub struct NamedFieldset {
@@ -31,8 +51,30 @@ pub struct NamedField {
     pub symbol: GrammarSymbol,
 }
 
-// TODO: TupleFieldset, TupleField, EnumVariant, ManualVariant, TerminalEnumVariant
+pub struct TupleFieldset {
+    pub fields: Vec<TupleField>,
+}
 
-// TODO: Path
+pub enum TupleField {
+    Used(GrammarSymbol),
+    Skipped(GrammarSymbol),
+}
+
+pub struct EnumVariant {
+    pub name: span_of::UpperName,
+    pub fieldset: Fieldset,
+}
+
+pub struct ManualVariant {
+    pub function: Path,
+    pub inputs: Vec<TupleField>,
+}
+
+pub struct TerminalEnumVariant {
+    pub name: span_of::DollarUpperName,
+    pub type_: Path,
+}
+
+pub type Path = Vec<Name>;
 
 pub use crate::raw_parser::{GrammarSymbol, Name, UnderscoreOrLowerName};
