@@ -17,7 +17,7 @@ pub struct PreflightCertificate<'a> {
 /// 2. There is exactly one `bridge` item.
 /// 3. No two items have the same name.
 /// 4. For any given `enum` or `terminal` item, no two variants have the same name.
-/// 5. For any given named field set, no two fields have the same name.
+/// 5. For any given named field set, no two fields have the same name (obviously, underscores are exempt).
 /// 6. Every grammar symbol occurrence (including the `start` item) is defined.
 pub fn preflight_check<'a>(
     source: &'a str,
