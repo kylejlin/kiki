@@ -11,7 +11,7 @@ pub enum TokenKind {
     StartKw,
     StructKw,
     EnumKw,
-    CustomKw,
+    ManualKw,
     TerminalKw,
 
     Underscore,
@@ -39,7 +39,7 @@ pub enum TransposedToken {
     StartKw(span_of::StartKw),
     StructKw(span_of::StructKw),
     EnumKw(span_of::EnumKw),
-    CustomKw(span_of::CustomKw),
+    ManualKw(span_of::ManualKw),
     TerminalKw(span_of::TerminalKw),
 
     Underscore(span_of::Underscore),
@@ -69,7 +69,7 @@ impl Token {
             TokenKind::StartKw => TransposedToken::StartKw(span_of::StartKw::new(span)),
             TokenKind::StructKw => TransposedToken::StructKw(span_of::StructKw::new(span)),
             TokenKind::EnumKw => TransposedToken::EnumKw(span_of::EnumKw::new(span)),
-            TokenKind::CustomKw => TransposedToken::CustomKw(span_of::CustomKw::new(span)),
+            TokenKind::ManualKw => TransposedToken::ManualKw(span_of::ManualKw::new(span)),
             TokenKind::TerminalKw => TransposedToken::TerminalKw(span_of::TerminalKw::new(span)),
             TokenKind::Underscore => TransposedToken::Underscore(span_of::Underscore::new(span)),
             TokenKind::LParen => TransposedToken::LParen(span_of::LParen::new(span)),
@@ -115,8 +115,8 @@ impl TransposedToken {
                 kind: TokenKind::EnumKw,
                 span: span.raw,
             },
-            Self::CustomKw(span) => Token {
-                kind: TokenKind::CustomKw,
+            Self::ManualKw(span) => Token {
+                kind: TokenKind::ManualKw,
                 span: span.raw,
             },
             Self::TerminalKw(span) => Token {
@@ -238,7 +238,7 @@ pub mod span_of {
     pub type StartKw = TaggedSpan<ntt::StartKw>;
     pub type StructKw = TaggedSpan<ntt::StructKw>;
     pub type EnumKw = TaggedSpan<ntt::EnumKw>;
-    pub type CustomKw = TaggedSpan<ntt::CustomKw>;
+    pub type ManualKw = TaggedSpan<ntt::ManualKw>;
     pub type TerminalKw = TaggedSpan<ntt::TerminalKw>;
 
     pub type Underscore = TaggedSpan<ntt::Underscore>;
@@ -264,7 +264,7 @@ pub mod span_of {
         pub struct StartKw;
         pub struct StructKw;
         pub struct EnumKw;
-        pub struct CustomKw;
+        pub struct ManualKw;
         pub struct TerminalKw;
 
         pub struct Underscore;

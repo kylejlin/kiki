@@ -127,8 +127,8 @@ enum LogosToken {
     #[token("enum", span_callback)]
     EnumKw(Span),
 
-    #[token("custom", span_callback)]
-    CustomKw(Span),
+    #[token("manual", span_callback)]
+    ManualKw(Span),
 
     #[token("terminal", span_callback)]
     TerminalKw(Span),
@@ -244,8 +244,8 @@ impl TryFrom<LogosToken> for Token {
                 kind: TokenKind::EnumKw,
                 span,
             },
-            LogosToken::CustomKw(span) => Token {
-                kind: TokenKind::CustomKw,
+            LogosToken::ManualKw(span) => Token {
+                kind: TokenKind::ManualKw,
                 span,
             },
             LogosToken::TerminalKw(span) => Token {
@@ -338,7 +338,7 @@ mod lookarounds {
             TokenKind::StartKw
             | TokenKind::StructKw
             | TokenKind::EnumKw
-            | TokenKind::CustomKw
+            | TokenKind::ManualKw
             | TokenKind::TerminalKw
             | TokenKind::Underscore
             | TokenKind::UpperName

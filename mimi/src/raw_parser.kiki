@@ -10,13 +10,10 @@ enum OptItems {
 }
 
 enum FileItem {
-    Start(
-        _: $StartKw
-        $UpperName
-    )
+    Start($StartKw $UpperName)
     Struct(Struct)
     Enum(Enum)
-    Custom(Custom)
+    Manual(Manual)
     Terminal(TerminalEnum)
 }
 
@@ -36,13 +33,13 @@ struct Enum {
     _: $RCurly
 }
 
-struct Custom {
-    _: $CustomKw
+struct Manual {
+    _: $ManualKw
     name: $UpperName
     _: $Equal
     type_: Path
     _: $LCurly
-    variants: OptCustomVariants // TODO
+    variants: OptManualVariants
     _: $RCurly
 }
 
@@ -96,11 +93,7 @@ enum TupleFields {
 
 enum TupleField {
     Used(GrammarSymbol)
-    Skipped(
-        _: $Underscore
-        _: $Colon
-        GrammarSymbol
-    )
+    Skipped($Underscore $Colon GrammarSymbol)
 }
 
 enum OptEnumVariants {
@@ -113,12 +106,12 @@ struct EnumVariant {
     fieldset: Fieldset
 }
 
-enum OptCustomVariants {
+enum OptManualVariants {
     Zero
-    Snoc(OptCustomVariants CustomVariant)
+    Snoc(OptManualVariants ManualVariant)
 }
 
-struct CustomVariant {
+struct ManualVariant {
     function: Path
     _: $LParen
     inputs: TupleFields
@@ -138,11 +131,7 @@ struct TerminalEnumVariant {
 
 enum Path {
     One(Name)
-    Snoc(
-        Path
-        _: $DoubleColon
-        Name
-    )
+    Snoc(Path $DoubleColon Name)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -168,7 +157,7 @@ terminal Token {
     $StartKw: crate::token::span_of::StartKw
     $StructKw: crate::token::span_of::StructKw
     $EnumKw: crate::token::span_of::EnumKw
-    $CustomKw: crate::token::span_of::CustomKw
+    $ManualKw: crate::token::span_of::ManualKw
     $TerminalKw: crate::token::span_of::TerminalKw
 
     $Underscore: crate::token::span_of::Underscore
