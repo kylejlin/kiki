@@ -181,7 +181,7 @@ enum LogosToken {
     #[regex(r"\/\/[^\n]*", span_callback, allow_greedy = true)]
     SingleLineComment(Span),
 
-    #[regex(r"[ \t\n\f]+", span_callback)]
+    #[regex(r"[ \t\r\n\f]+", span_callback)]
     Whitespace(Span),
 
     #[regex(r".", span_callback, priority = 0)]
