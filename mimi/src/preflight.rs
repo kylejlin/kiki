@@ -6,8 +6,11 @@ pub enum PreflightCheckError {
 }
 
 pub struct PreflightCertificate<'a> {
+    pub(crate) start_symbol: span_of::UpperName,
+    pub(crate) terminal: &'a m::TerminalEnum,
+    pub(crate) bridge_path: &'a m::Path,
     pub(crate) non_terminal_defs: HashMap<SigilFreeStr<'a>, &'a m::FileItem>,
-    pub(crate) terminal_defs: HashMap<SigilFreeStr<'a>, &'a m::TerminalEnumVariant>,
+    pub(crate) terminal_resolutions: HashMap<SigilFreeStr<'a>, SigilFreeStr<'a>>,
 }
 
 /// Precondition: `file` must be the parse result of `source`.
