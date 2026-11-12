@@ -133,6 +133,9 @@ enum LogosToken {
     #[token("terminal", span_callback)]
     TerminalKw(Span),
 
+    #[token("bridge", span_callback)]
+    BridgeKw(Span),
+
     #[token("_", span_callback)]
     Underscore(Span),
 
@@ -177,6 +180,12 @@ enum LogosToken {
 
     #[regex(r#"\$[A-Z][a-zA-Z0-9_]*"#, span_callback)]
     DollarUpperName(Span),
+
+    #[regex(r#"@[A-Z][a-zA-Z0-9_]*"#, span_callback)]
+    AtUpperName(Span),
+
+    #[regex(r#"@[a-z][a-zA-Z0-9_]*"#, span_callback)]
+    AtLowerName(Span),
 
     #[regex(r#"rust#*""#, rust_string_span_callback)]
     RustStringLiteral(Span),

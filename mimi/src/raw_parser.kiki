@@ -15,6 +15,7 @@ enum FileItem {
     Enum(Enum)
     Manual(Manual)
     Terminal(TerminalEnum)
+    Bridge($BridgeKw Path)
 }
 
 struct Struct {
@@ -36,8 +37,7 @@ struct Enum {
 struct Manual {
     _: $ManualKw
     name: $UpperName
-    _: $Equal
-    type_: Path
+    override: OptEqualAtUpperName
     _: $LCurly
     variants: OptManualVariants
     _: $RCurly
@@ -112,7 +112,7 @@ enum OptManualVariants {
 }
 
 struct ManualVariant {
-    function: Path
+    function: $AtLowerName
     _: $LParen
     inputs: TupleFields
     _: $RParen
@@ -125,8 +125,12 @@ enum OptTerminalEnumVariants {
 
 struct TerminalEnumVariant {
     name: $DollarUpperName
-    _: $Equal
-    type_: Path
+    override: OptEqualAtUpperName
+}
+
+enum OptEqualAtUpperName {
+    None
+    Some($Equal $AtUpperName)
 }
 
 enum Path {
