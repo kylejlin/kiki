@@ -1,0 +1,191 @@
+start File
+
+struct File {
+    items: OptItems
+}
+
+enum OptItems {
+    Zero
+    Snoc(OptItems FileItem)
+}
+
+enum FileItem {
+    Start(
+        _: $StartKw
+        $UpperName
+    )
+    Struct(Struct)
+    Enum(Enum)
+    Custom(Custom)
+    Terminal(TerminalEnum)
+}
+
+struct Struct {
+    attributes: OptOuterAttributes
+    _: $StructKw
+    name: $UpperName
+    fieldset: Fieldset
+}
+
+struct Enum {
+    attributes: OptOuterAttributes
+    _: $EnumKw
+    name: $UpperName
+    _: $LCurly
+    variants: OptEnumVariants
+    _: $RCurly
+}
+
+struct Custom {
+    attributes: OptOuterAttributes
+    _: $CustomKw
+    name: $UpperName
+    _: $Equal
+    type_: Path
+    _: $LCurly
+    variants: OptCustomVariants // TODO
+    _: $RCurly
+}
+
+struct TerminalEnum {
+    attributes: OptOuterAttributes
+    _: $TerminalKw
+    name: $UpperName
+    _: $LCurly
+    variants: OptTerminalEnumVariants
+    _: $RCurly
+}
+
+enum OptOuterAttributes {
+    Zero
+    Snoc(OptOuterAttributes OuterAttribute)
+}
+
+struct OuterAttribute {
+    _: $Octothorpe
+    _: $LSquare
+    _: AttributeContentNode
+    _: $RSquare
+}
+
+enum AttributeContentNode {
+    Name(Name)
+    Comma($Comma)
+    Equal($Equal)
+    ParenEnclosed($LParen AttributeContentNode $RParen)
+    SquareEnclosed($LSquare AttributeContentNode $RSquare)
+    CurlyEnclosed($LCurly AttributeContentNode $RCurly)
+    PluralSequence(TwoOrMoreAttributeContentNodes)
+}
+
+enum TwoOrMoreAttributeContentNodes {
+    Two(AttributeContentNode AttributeContentNode)
+    Snoc(TwoOrMoreAttributeContentNodes AttributeContentNode)
+}
+
+enum Fieldset {
+    Empty
+    Named(NamedFieldset)
+    Tuple(TupleFieldset)
+}
+
+struct NamedFieldset {
+    _: $LCurly
+    fields: NamedFields
+    _: $RCurly
+}
+
+enum NamedFields {
+    One(NamedField)
+    Snoc(NamedFields NamedField)
+}
+
+struct NamedField {
+    name: UnderscoreOrLowerName
+    _: $Colon
+    symbol: GrammarSymbol
+}
+
+struct TupleFieldset {
+    _: $LParen
+    fields: TupleFields
+    _: $RParen
+}
+
+enum TupleFields {
+    One(TupleField)
+    Snoc(TupleFields TupleField)
+}
+
+enum TupleField {
+    Used(GrammarSymbol)
+    Skipped(
+        _: $Underscore
+        _: $Colon
+        GrammarSymbol
+    )
+}
+
+enum OptEnumVariants {
+    Zero
+    Snoc(OptEnumVariants EnumVariant)
+}
+
+struct EnumVariant {
+    name: $UpperName
+    fieldset: Fieldset
+}
+
+enum OptCustomVariants {
+    Zero
+    Snoc(OptCustomVariants CustomVariant)
+}
+
+struct CustomVariant {
+    function: Path
+    _: $LParen
+    inputs: TupleFields
+    _: $RParen
+}
+
+enum OptTerminalEnumVariants {
+    Zero
+    Snoc(OptTerminalEnumVariants TerminalEnumVariant)
+}
+
+struct TerminalEnumVariant {
+    name: $TerminalIdent
+    _: $Equal
+    type_: Path
+}
+
+enum Path {
+    One(Name)
+    Snoc(
+        Path
+        _: $DoubleColon
+        Name
+    )
+}
+
+enum Name {
+    Upper($UpperName)
+    Lower($LowerName)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum UnderscoreOrLowerName {
+    Underscore($Underscore)
+    Lower($LowerName)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum GrammarSymbol {
+    Upper($UpperName)
+    DollarUpper($DollarUpperName)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+terminal Token {
+    $StartKw: crate::token::span_of::StartKw
+}
