@@ -13,6 +13,7 @@ pub enum TokenKind {
     EnumKw,
     CustomKw,
     TerminalKw,
+    RustKw,
 
     Underscore,
     LParen,
@@ -41,6 +42,7 @@ pub enum TransposedToken {
     EnumKw(span_of::EnumKw),
     CustomKw(span_of::CustomKw),
     TerminalKw(span_of::TerminalKw),
+    RustKw(span_of::RustKw),
 
     Underscore(span_of::Underscore),
     LParen(span_of::LParen),
@@ -71,6 +73,7 @@ impl Token {
             TokenKind::EnumKw => TransposedToken::EnumKw(span_of::EnumKw::new(span)),
             TokenKind::CustomKw => TransposedToken::CustomKw(span_of::CustomKw::new(span)),
             TokenKind::TerminalKw => TransposedToken::TerminalKw(span_of::TerminalKw::new(span)),
+            TokenKind::RustKw => TransposedToken::RustKw(span_of::RustKw::new(span)),
             TokenKind::Underscore => TransposedToken::Underscore(span_of::Underscore::new(span)),
             TokenKind::LParen => TransposedToken::LParen(span_of::LParen::new(span)),
             TokenKind::RParen => TransposedToken::RParen(span_of::RParen::new(span)),
@@ -121,6 +124,10 @@ impl TransposedToken {
             },
             Self::TerminalKw(span) => Token {
                 kind: TokenKind::TerminalKw,
+                span: span.raw,
+            },
+            Self::RustKw(span) => Token {
+                kind: TokenKind::RustKw,
                 span: span.raw,
             },
             Self::Underscore(span) => Token {
@@ -240,6 +247,7 @@ pub mod span_of {
     pub type EnumKw = TaggedSpan<ntt::EnumKw>;
     pub type CustomKw = TaggedSpan<ntt::CustomKw>;
     pub type TerminalKw = TaggedSpan<ntt::TerminalKw>;
+    pub type RustKw = TaggedSpan<ntt::RustKw>;
 
     pub type Underscore = TaggedSpan<ntt::Underscore>;
     pub type LParen = TaggedSpan<ntt::LParen>;
@@ -266,6 +274,7 @@ pub mod span_of {
         pub struct EnumKw;
         pub struct CustomKw;
         pub struct TerminalKw;
+        pub struct RustKw;
 
         pub struct Underscore;
         pub struct LParen;

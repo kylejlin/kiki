@@ -133,6 +133,9 @@ enum LogosToken {
     #[token("terminal", span_callback)]
     TerminalKw(Span),
 
+    #[token("rust", span_callback)]
+    RustKw(Span),
+
     #[token("_", span_callback)]
     Underscore(Span),
 
@@ -208,11 +211,17 @@ fn raw_string_span_callback(logos_lexer: &mut LogosLexer<LogosToken>) -> Option<
             .then_some(index + 1 + hashes.len())
     });
 
-    logos_lexer.bump(terminator_end.unwrap_or(remainder.len()));
-    let span = span_callback(logos_lexer);
+    let Some(terminator_end) = terminator_end else {
+        // Advance to EOF so that the error handling logic will correctly return `UnexpectedCharOrEndOfInput::EndOfInput`.
+        logos_lexer.bump(remainder.len());
+        span_callback(logos_lexer);
 
-    // On failure, advancing to EOF lets the existing error path report EndOfInput.
-    terminator_end.map(|_| span)
+        return None;
+    };
+
+    logos_lexer.bump(terminator_end);
+    let span = span_callback(logos_lexer);
+    Some(span)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -244,6 +253,10 @@ impl TryFrom<LogosToken> for Token {
             },
             LogosToken::TerminalKw(span) => Token {
                 kind: TokenKind::TerminalKw,
+                span,
+            },
+            LogosToken::RustKw(span) => Token {
+                kind: TokenKind::RustKw,
                 span,
             },
             LogosToken::Underscore(span) => Token {
@@ -334,6 +347,7 @@ mod lookarounds {
             | TokenKind::EnumKw
             | TokenKind::CustomKw
             | TokenKind::TerminalKw
+            | TokenKind::RustKw
             | TokenKind::Underscore
             | TokenKind::UpperName
             | TokenKind::LowerName
