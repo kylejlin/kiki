@@ -178,6 +178,9 @@ enum LogosToken {
     #[regex(r#"\$[A-Z][a-zA-Z0-9_]*"#, span_callback)]
     DollarUpperName(Span),
 
+    #[regex(r#"r#*""#, raw_string_span_callback)]
+    RawStringLiteral(Span),
+
     #[regex(r"\/\/[^\n]*", span_callback, allow_greedy = true)]
     SingleLineComment(Span),
 
@@ -190,13 +193,26 @@ enum LogosToken {
 
 fn span_callback(logos_lexer: &mut LogosLexer<LogosToken>) -> Span {
     let start = logos_lexer.extras.position;
-    advance_extras(logos_lexer);
+    logos_lexer.extras.position.byte_index += logos_lexer.slice().len();
     let end = logos_lexer.extras.position;
     Span { start, end }
 }
 
-fn advance_extras(lex: &mut LogosLexer<LogosToken>) {
-    lex.extras.position.byte_index += lex.slice().len();
+fn raw_string_span_callback(logos_lexer: &mut LogosLexer<LogosToken>) -> Option<Span> {
+    let opener = logos_lexer.slice();
+    let hashes = &opener.as_bytes()[1..opener.len() - 1];
+    let remainder = logos_lexer.remainder();
+    let terminator_end = remainder.match_indices('"').find_map(|(index, _)| {
+        remainder.as_bytes()[index + 1..]
+            .starts_with(hashes)
+            .then_some(index + 1 + hashes.len())
+    });
+
+    logos_lexer.bump(terminator_end.unwrap_or(remainder.len()));
+    let span = span_callback(logos_lexer);
+
+    // On failure, advancing to EOF lets the existing error path report EndOfInput.
+    terminator_end.map(|_| span)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -290,6 +306,10 @@ impl TryFrom<LogosToken> for Token {
                 kind: TokenKind::DollarUpperName,
                 span,
             },
+            LogosToken::RawStringLiteral(span) => Token {
+                kind: TokenKind::RawStringLiteral,
+                span,
+            },
 
             LogosToken::SingleLineComment(_) | LogosToken::Whitespace(_) => {
                 return Err(LogosTokenToTokenConversionError::Skipped);
@@ -351,7 +371,8 @@ mod lookarounds {
             | TokenKind::DoubleColon
             | TokenKind::Colon
             | TokenKind::Equal
-            | TokenKind::Octothorpe => Ok(()),
+            | TokenKind::Octothorpe
+            | TokenKind::RawStringLiteral => Ok(()),
         }
     }
 

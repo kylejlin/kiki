@@ -30,6 +30,8 @@ pub enum TokenKind {
     UpperName,
     LowerName,
     DollarUpperName,
+
+    RawStringLiteral,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -56,6 +58,8 @@ pub enum TransposedToken {
     UpperName(span_of::UpperName),
     LowerName(span_of::LowerName),
     DollarUpperName(span_of::DollarUpperName),
+
+    RawStringLiteral(span_of::RawStringLiteral),
 }
 
 impl Token {
@@ -83,6 +87,9 @@ impl Token {
             TokenKind::LowerName => TransposedToken::LowerName(span_of::LowerName::new(span)),
             TokenKind::DollarUpperName => {
                 TransposedToken::DollarUpperName(span_of::DollarUpperName::new(span))
+            }
+            TokenKind::RawStringLiteral => {
+                TransposedToken::RawStringLiteral(span_of::RawStringLiteral::new(span))
             }
         }
     }
@@ -176,6 +183,10 @@ impl TransposedToken {
                 kind: TokenKind::DollarUpperName,
                 span: span.raw,
             },
+            Self::RawStringLiteral(span) => Token {
+                kind: TokenKind::RawStringLiteral,
+                span: span.raw,
+            },
         }
     }
 }
@@ -247,6 +258,8 @@ pub mod span_of {
     pub type LowerName = TaggedSpan<ntt::LowerName>;
     pub type DollarUpperName = TaggedSpan<ntt::DollarUpperName>;
 
+    pub type RawStringLiteral = TaggedSpan<ntt::RawStringLiteral>;
+
     pub mod ntt {
         pub struct StartKw;
         pub struct StructKw;
@@ -270,5 +283,7 @@ pub mod span_of {
         pub struct UpperName;
         pub struct LowerName;
         pub struct DollarUpperName;
+
+        pub struct RawStringLiteral;
     }
 }

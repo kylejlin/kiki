@@ -21,14 +21,14 @@ enum FileItem {
 }
 
 struct Struct {
-    attributes: OptOuterAttributes
+    prefix: OptRustInjection
     _: $StructKw
     name: $UpperName
     fieldset: Fieldset
 }
 
 struct Enum {
-    attributes: OptOuterAttributes
+    prefix: OptRustInjection
     _: $EnumKw
     name: $UpperName
     _: $LCurly
@@ -37,7 +37,6 @@ struct Enum {
 }
 
 struct Custom {
-    attributes: OptOuterAttributes
     _: $CustomKw
     name: $UpperName
     _: $Equal
@@ -48,7 +47,7 @@ struct Custom {
 }
 
 struct TerminalEnum {
-    attributes: OptOuterAttributes
+    prefix: OptRustInjection
     _: $TerminalKw
     name: $UpperName
     _: $LCurly
@@ -56,31 +55,9 @@ struct TerminalEnum {
     _: $RCurly
 }
 
-enum OptOuterAttributes {
-    Zero
-    Snoc(OptOuterAttributes OuterAttribute)
-}
-
-struct OuterAttribute {
-    _: $Octothorpe
-    _: $LSquare
-    _: AttributeContentNode
-    _: $RSquare
-}
-
-enum AttributeContentNode {
-    Name(Name)
-    Comma($Comma)
-    Equal($Equal)
-    ParenEnclosed($LParen AttributeContentNode $RParen)
-    SquareEnclosed($LSquare AttributeContentNode $RSquare)
-    CurlyEnclosed($LCurly AttributeContentNode $RCurly)
-    PluralSequence(TwoOrMoreAttributeContentNodes)
-}
-
-enum TwoOrMoreAttributeContentNodes {
-    Two(AttributeContentNode AttributeContentNode)
-    Snoc(TwoOrMoreAttributeContentNodes AttributeContentNode)
+enum OptRustInjection {
+    None
+    Some($RustKw $RawStringLiteral)
 }
 
 enum Fieldset {
@@ -193,6 +170,7 @@ terminal Token {
     $EnumKw: crate::token::span_of::EnumKw
     $CustomKw: crate::token::span_of::CustomKw
     $TerminalKw: crate::token::span_of::TerminalKw
+    $RustKw: crate::token::span_of::RustKw
 
     $Underscore: crate::token::span_of::Underscore
     $LParen: crate::token::span_of::LParen
@@ -210,4 +188,6 @@ terminal Token {
     $UpperName: crate::token::span_of::UpperName
     $LowerName: crate::token::span_of::LowerName
     $DollarUpperName: crate::token::span_of::DollarUpperName
+
+    $RawStringLiteral: crate::token::span_of::RawStringLiteral
 }
