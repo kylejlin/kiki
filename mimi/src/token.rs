@@ -34,14 +34,56 @@ pub enum TokenKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TransposedToken {
-    // TODO
+    StartKw(span_of::StartKw),
+    StructKw(span_of::StructKw),
+    EnumKw(span_of::EnumKw),
+    CustomKw(span_of::CustomKw),
+    TerminalKw(span_of::TerminalKw),
+
+    Underscore(span_of::Underscore),
+    LParen(span_of::LParen),
+    RParen(span_of::RParen),
+    LSquare(span_of::LSquare),
+    RSquare(span_of::RSquare),
+    LCurly(span_of::LCurly),
+    RCurly(span_of::RCurly),
+    Comma(span_of::Comma),
+    DoubleColon(span_of::DoubleColon),
+    Colon(span_of::Colon),
+    Equal(span_of::Equal),
+    Octothorpe(span_of::Octothorpe),
+
+    UpperName(span_of::UpperName),
+    LowerName(span_of::LowerName),
+    DollarUpperName(span_of::DollarUpperName),
 }
 
 impl Token {
     pub const fn transpose(self) -> TransposedToken {
         let Self { kind, span } = self;
         match kind {
-            _ => todo!(),
+            TokenKind::StartKw => TransposedToken::StartKw(span_of::StartKw::new(span)),
+            TokenKind::StructKw => TransposedToken::StructKw(span_of::StructKw::new(span)),
+            TokenKind::EnumKw => TransposedToken::EnumKw(span_of::EnumKw::new(span)),
+            TokenKind::CustomKw => TransposedToken::CustomKw(span_of::CustomKw::new(span)),
+            TokenKind::TerminalKw => TransposedToken::TerminalKw(span_of::TerminalKw::new(span)),
+            TokenKind::Underscore => TransposedToken::Underscore(span_of::Underscore::new(span)),
+            TokenKind::LParen => TransposedToken::LParen(span_of::LParen::new(span)),
+            TokenKind::RParen => TransposedToken::RParen(span_of::RParen::new(span)),
+            TokenKind::LSquare => TransposedToken::LSquare(span_of::LSquare::new(span)),
+            TokenKind::RSquare => TransposedToken::RSquare(span_of::RSquare::new(span)),
+            TokenKind::LCurly => TransposedToken::LCurly(span_of::LCurly::new(span)),
+            TokenKind::RCurly => TransposedToken::RCurly(span_of::RCurly::new(span)),
+            TokenKind::Comma => TransposedToken::Comma(span_of::Comma::new(span)),
+            TokenKind::DoubleColon => TransposedToken::DoubleColon(span_of::DoubleColon::new(span)),
+            TokenKind::Colon => TransposedToken::Colon(span_of::Colon::new(span)),
+            TokenKind::Equal => TransposedToken::Equal(span_of::Equal::new(span)),
+            TokenKind::Octothorpe => TransposedToken::Octothorpe(span_of::Octothorpe::new(span)),
+            TokenKind::UpperName => TransposedToken::UpperName(span_of::UpperName::new(span)),
+            TokenKind::LowerName => TransposedToken::LowerName(span_of::LowerName::new(span)),
+            TokenKind::DollarUpperName => {
+                TransposedToken::DollarUpperName(span_of::DollarUpperName::new(span))
+            }
         }
     }
 }
@@ -54,7 +96,86 @@ impl From<Token> for TransposedToken {
 impl TransposedToken {
     pub const fn transpose(self) -> Token {
         match self {
-            _ => todo!(),
+            Self::StartKw(span) => Token {
+                kind: TokenKind::StartKw,
+                span: span.raw,
+            },
+            Self::StructKw(span) => Token {
+                kind: TokenKind::StructKw,
+                span: span.raw,
+            },
+            Self::EnumKw(span) => Token {
+                kind: TokenKind::EnumKw,
+                span: span.raw,
+            },
+            Self::CustomKw(span) => Token {
+                kind: TokenKind::CustomKw,
+                span: span.raw,
+            },
+            Self::TerminalKw(span) => Token {
+                kind: TokenKind::TerminalKw,
+                span: span.raw,
+            },
+            Self::Underscore(span) => Token {
+                kind: TokenKind::Underscore,
+                span: span.raw,
+            },
+            Self::LParen(span) => Token {
+                kind: TokenKind::LParen,
+                span: span.raw,
+            },
+            Self::RParen(span) => Token {
+                kind: TokenKind::RParen,
+                span: span.raw,
+            },
+            Self::LSquare(span) => Token {
+                kind: TokenKind::LSquare,
+                span: span.raw,
+            },
+            Self::RSquare(span) => Token {
+                kind: TokenKind::RSquare,
+                span: span.raw,
+            },
+            Self::LCurly(span) => Token {
+                kind: TokenKind::LCurly,
+                span: span.raw,
+            },
+            Self::RCurly(span) => Token {
+                kind: TokenKind::RCurly,
+                span: span.raw,
+            },
+            Self::Comma(span) => Token {
+                kind: TokenKind::Comma,
+                span: span.raw,
+            },
+            Self::DoubleColon(span) => Token {
+                kind: TokenKind::DoubleColon,
+                span: span.raw,
+            },
+            Self::Colon(span) => Token {
+                kind: TokenKind::Colon,
+                span: span.raw,
+            },
+            Self::Equal(span) => Token {
+                kind: TokenKind::Equal,
+                span: span.raw,
+            },
+            Self::Octothorpe(span) => Token {
+                kind: TokenKind::Octothorpe,
+                span: span.raw,
+            },
+            Self::UpperName(span) => Token {
+                kind: TokenKind::UpperName,
+                span: span.raw,
+            },
+            Self::LowerName(span) => Token {
+                kind: TokenKind::LowerName,
+                span: span.raw,
+            },
+            Self::DollarUpperName(span) => Token {
+                kind: TokenKind::DollarUpperName,
+                span: span.raw,
+            },
         }
     }
 }
@@ -104,10 +225,50 @@ pub mod span_of {
     }
 
     pub type StartKw = TaggedSpan<ntt::StartKw>;
-    // TODO: Add the rest.
+    pub type StructKw = TaggedSpan<ntt::StructKw>;
+    pub type EnumKw = TaggedSpan<ntt::EnumKw>;
+    pub type CustomKw = TaggedSpan<ntt::CustomKw>;
+    pub type TerminalKw = TaggedSpan<ntt::TerminalKw>;
+
+    pub type Underscore = TaggedSpan<ntt::Underscore>;
+    pub type LParen = TaggedSpan<ntt::LParen>;
+    pub type RParen = TaggedSpan<ntt::RParen>;
+    pub type LSquare = TaggedSpan<ntt::LSquare>;
+    pub type RSquare = TaggedSpan<ntt::RSquare>;
+    pub type LCurly = TaggedSpan<ntt::LCurly>;
+    pub type RCurly = TaggedSpan<ntt::RCurly>;
+    pub type Comma = TaggedSpan<ntt::Comma>;
+    pub type DoubleColon = TaggedSpan<ntt::DoubleColon>;
+    pub type Colon = TaggedSpan<ntt::Colon>;
+    pub type Equal = TaggedSpan<ntt::Equal>;
+    pub type Octothorpe = TaggedSpan<ntt::Octothorpe>;
+
+    pub type UpperName = TaggedSpan<ntt::UpperName>;
+    pub type LowerName = TaggedSpan<ntt::LowerName>;
+    pub type DollarUpperName = TaggedSpan<ntt::DollarUpperName>;
 
     pub mod ntt {
         pub struct StartKw;
-        // TODO: Add the rest
+        pub struct StructKw;
+        pub struct EnumKw;
+        pub struct CustomKw;
+        pub struct TerminalKw;
+
+        pub struct Underscore;
+        pub struct LParen;
+        pub struct RParen;
+        pub struct LSquare;
+        pub struct RSquare;
+        pub struct LCurly;
+        pub struct RCurly;
+        pub struct Comma;
+        pub struct DoubleColon;
+        pub struct Colon;
+        pub struct Equal;
+        pub struct Octothorpe;
+
+        pub struct UpperName;
+        pub struct LowerName;
+        pub struct DollarUpperName;
     }
 }

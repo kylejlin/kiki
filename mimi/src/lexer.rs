@@ -214,7 +214,82 @@ impl TryFrom<LogosToken> for Token {
                 kind: TokenKind::StartKw,
                 span,
             },
-            _ => todo!("Add the rest"),
+            LogosToken::StructKw(span) => Token {
+                kind: TokenKind::StructKw,
+                span,
+            },
+            LogosToken::EnumKw(span) => Token {
+                kind: TokenKind::EnumKw,
+                span,
+            },
+            LogosToken::CustomKw(span) => Token {
+                kind: TokenKind::CustomKw,
+                span,
+            },
+            LogosToken::TerminalKw(span) => Token {
+                kind: TokenKind::TerminalKw,
+                span,
+            },
+            LogosToken::Underscore(span) => Token {
+                kind: TokenKind::Underscore,
+                span,
+            },
+            LogosToken::LParen(span) => Token {
+                kind: TokenKind::LParen,
+                span,
+            },
+            LogosToken::RParen(span) => Token {
+                kind: TokenKind::RParen,
+                span,
+            },
+            LogosToken::LSquare(span) => Token {
+                kind: TokenKind::LSquare,
+                span,
+            },
+            LogosToken::RSquare(span) => Token {
+                kind: TokenKind::RSquare,
+                span,
+            },
+            LogosToken::LCurly(span) => Token {
+                kind: TokenKind::LCurly,
+                span,
+            },
+            LogosToken::RCurly(span) => Token {
+                kind: TokenKind::RCurly,
+                span,
+            },
+            LogosToken::Comma(span) => Token {
+                kind: TokenKind::Comma,
+                span,
+            },
+            LogosToken::DoubleColon(span) => Token {
+                kind: TokenKind::DoubleColon,
+                span,
+            },
+            LogosToken::Colon(span) => Token {
+                kind: TokenKind::Colon,
+                span,
+            },
+            LogosToken::Equal(span) => Token {
+                kind: TokenKind::Equal,
+                span,
+            },
+            LogosToken::Octothorpe(span) => Token {
+                kind: TokenKind::Octothorpe,
+                span,
+            },
+            LogosToken::UpperName(span) => Token {
+                kind: TokenKind::UpperName,
+                span,
+            },
+            LogosToken::LowerName(span) => Token {
+                kind: TokenKind::LowerName,
+                span,
+            },
+            LogosToken::DollarUpperName(span) => Token {
+                kind: TokenKind::DollarUpperName,
+                span,
+            },
 
             LogosToken::SingleLineComment(_) | LogosToken::Whitespace(_) => {
                 return Err(LogosTokenToTokenConversionError::Skipped);
