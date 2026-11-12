@@ -118,7 +118,7 @@ struct LogosExtras {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Logos)]
 #[logos(extras = LogosExtras)]
 enum LogosToken {
-    #[token("destartf", span_callback)]
+    #[token("start", span_callback)]
     StartKw(Span),
 
     #[token("struct", span_callback)]
