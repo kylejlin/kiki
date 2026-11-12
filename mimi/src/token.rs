@@ -34,33 +34,7 @@ pub enum TokenKind {
     RustStringLiteral,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum TransposedToken {
-    StartKw(span_of::StartKw),
-    StructKw(span_of::StructKw),
-    EnumKw(span_of::EnumKw),
-    ManualKw(span_of::ManualKw),
-    TerminalKw(span_of::TerminalKw),
-
-    Underscore(span_of::Underscore),
-    LParen(span_of::LParen),
-    RParen(span_of::RParen),
-    LSquare(span_of::LSquare),
-    RSquare(span_of::RSquare),
-    LCurly(span_of::LCurly),
-    RCurly(span_of::RCurly),
-    Comma(span_of::Comma),
-    DoubleColon(span_of::DoubleColon),
-    Colon(span_of::Colon),
-    Equal(span_of::Equal),
-    Octothorpe(span_of::Octothorpe),
-
-    UpperName(span_of::UpperName),
-    LowerName(span_of::LowerName),
-    DollarUpperName(span_of::DollarUpperName),
-
-    RustStringLiteral(span_of::RustStringLiteral),
-}
+pub use crate::raw_parser::Token as TransposedToken;
 
 impl Token {
     pub const fn transpose(self) -> TransposedToken {

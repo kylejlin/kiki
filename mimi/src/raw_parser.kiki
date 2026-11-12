@@ -152,7 +152,7 @@ enum GrammarSymbol {
     DollarUpper($DollarUpperName)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 terminal Token {
     $StartKw: crate::token::span_of::StartKw
     $StructKw: crate::token::span_of::StructKw
