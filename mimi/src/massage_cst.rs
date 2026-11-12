@@ -197,13 +197,16 @@ impl From<r::TupleField> for m::TupleField {
     }
 }
 
-impl From<r::OptEnumVariants> for Vec<m::EnumVariant> {
-    fn from(mut value: r::OptEnumVariants) -> Self {
+impl From<r::EnumVariants> for Vec<m::EnumVariant> {
+    fn from(mut value: r::EnumVariants) -> Self {
         let mut out = Vec::new();
         loop {
             match value {
-                r::OptEnumVariants::Zero => break,
-                r::OptEnumVariants::Snoc(left, right) => {
+                r::EnumVariants::One(item) => {
+                    out.push((*item).into());
+                    break;
+                }
+                r::EnumVariants::Snoc(left, right) => {
                     out.push((*right).into());
                     value = *left;
                 }
@@ -247,6 +250,15 @@ impl From<r::ManualVariant> for m::ManualVariant {
         Self {
             function,
             inputs: (*inputs).into(),
+        }
+    }
+}
+
+impl From<r::OptTupleFields> for Vec<m::TupleField> {
+    fn from(value: r::OptTupleFields) -> Self {
+        match value {
+            r::OptTupleFields::None => Vec::new(),
+            r::OptTupleFields::Some(fields) => (*fields).into(),
         }
     }
 }
