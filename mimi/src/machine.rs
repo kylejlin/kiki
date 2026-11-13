@@ -76,7 +76,7 @@ where
 
     loop {
         for item in items {
-            // let rule = item.rule_id.lookup(takeoff);
+            // let rule = takeoff[item.rule_id];
         }
     }
     todo!()

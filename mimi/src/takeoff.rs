@@ -171,3 +171,11 @@ fn get_rules(file: &m::File) -> Vec<Rule<'_>> {
 
     out
 }
+
+impl<'a> Index<RuleId> for TakeoffCertificate<'a> {
+    type Output = Rule<'a>;
+
+    fn index(&self, index: RuleId) -> &Self::Output {
+        &self.rules[index.as_usize()]
+    }
+}
