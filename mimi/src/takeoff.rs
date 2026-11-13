@@ -16,7 +16,7 @@ pub(crate) struct TakeoffCertificate<'a> {
     /// Rule IDs follow rule order, with each rule listed once per RHS nonterminal.
     pub rhs_nonterminal_to_rule_ids: HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
 
-    pub first_sets: HashMap<GrammarSymbol<'a>, EpsilonOrTerminalSet>,
+    pub non_terminal_first_sets: HashMap<SigilFreeStr<'a>, EpsilonOrTerminalSet>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -296,7 +296,7 @@ impl<'a> TakeoffCertificate<'a> {
         let rules = get_rules(file);
         let lhs_to_rule_ids = get_lhs_to_rule_ids_map(source, file);
         let rhs_nonterminal_to_rule_ids = get_rhs_nonterminal_to_rule_ids_map(&preflight, &rules);
-        let first_sets = get_first_sets(
+        let non_terminal_first_sets = get_non_terminal_first_sets(
             &preflight,
             &rules,
             &lhs_to_rule_ids,
@@ -308,7 +308,7 @@ impl<'a> TakeoffCertificate<'a> {
             rules,
             lhs_to_rule_ids,
             rhs_nonterminal_to_rule_ids,
-            first_sets,
+            non_terminal_first_sets,
         }
     }
 }
@@ -462,11 +462,64 @@ impl<'a> TakeoffCertificate<'a> {
     }
 }
 
-fn get_first_sets<'a>(
+fn get_non_terminal_first_sets<'a>(
     preflight: &PreflightCertificate<'a>,
     rules: &[Rule<'a>],
     lhs_to_rule_ids: &HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
     rhs_nonterminal_to_rule_ids: &HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
-) -> HashMap<GrammarSymbol<'a>, EpsilonOrTerminalSet> {
+) -> HashMap<SigilFreeStr<'a>, EpsilonOrTerminalSet> {
+    let mut out: HashMap<SigilFreeStr<'a>, EpsilonOrTerminalSet> = lhs_to_rule_ids
+        .iter()
+        .map(|(lhs, _)| (*lhs, EpsilonOrTerminalSet::empty()))
+        .collect();
+
+    // Exclude the augmented rule.
+    let mut queue: VecDeque<RuleId> = (1..rules.len()).map(RuleId::from_usize).collect();
+    let mut currently_enqueued: HashSet<RuleId> = queue.iter().copied().collect();
+
+    let mut accumulator = EpsilonOrTerminalSet::empty();
+
+    while let Some(rule_id) = queue.pop_front() {
+        currently_enqueued.remove(&rule_id);
+
+        let rule = rules[rule_id.as_usize()];
+        let lhs = rule
+            .lhs(todo_())
+            .expect("`queue` should never contain the augmented rule");
+
+        accumulator.clear();
+
+        for symbol in rule.rhs(todo_()) {
+            let Some(symbol) = symbol.as_non_terminal() else {
+                // let terminal_id = terminal_ids[symbol];
+                let terminal_id = todo_();
+                accumulator |= EpsilonOrTerminalSingletonSet { value: terminal_id };
+                break;
+            };
+
+            let rhs_first_set = &out[&symbol];
+
+            accumulator |= rhs_first_set;
+
+            if !rhs_first_set.contains(EpsilonOrTerminal::Epsilon) {
+                break;
+            }
+        }
+
+        let lhs_first_set = out.get_mut(&lhs).unwrap();
+        let original_cardinality = lhs_first_set.cardinality();
+        *lhs_first_set |= &accumulator;
+        if lhs_first_set.cardinality() != original_cardinality {
+            let was_newly_inserted = currently_enqueued.insert(rule_id);
+            if was_newly_inserted {
+                queue.push_back(rule_id);
+            }
+        }
+    }
+
+    out
+}
+
+fn todo_<T>() -> T {
     todo!()
 }

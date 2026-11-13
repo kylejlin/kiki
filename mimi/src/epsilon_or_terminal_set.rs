@@ -16,8 +16,16 @@ impl EpsilonOrTerminalSet {
         }
     }
 
+    pub fn cardinality(&self) -> usize {
+        self.buf.cardinality()
+    }
+
     pub fn contains(&self, needle: EpsilonOrTerminal) -> bool {
         self.buf.contains(needle)
+    }
+
+    pub fn clear(&mut self) {
+        self.buf.clear()
     }
 }
 
@@ -92,6 +100,13 @@ impl EpsilonOrTerminalSetBuf {
         Self::Small([0; _])
     }
 
+    fn cardinality(&self) -> usize {
+        self.as_slice()
+            .iter()
+            .map(|chunk| chunk.count_ones() as usize)
+            .sum()
+    }
+
     fn as_slice(&self) -> &[usize] {
         match self {
             Self::Small(buf) => &*buf,
@@ -121,6 +136,17 @@ impl EpsilonOrTerminalSetBuf {
         let mask: usize = 1usize << (i % Self::CHUNK_WIDTH);
 
         (chunk & mask) != 0
+    }
+
+    fn clear(&mut self) {
+        match self {
+            Self::Small(buf) => *buf = [0; _],
+
+            Self::Big(buf) => {
+                buf.clear();
+                buf.extend(iter::repeat_n(0, Self::MIN_CHUNK_COUNT));
+            }
+        }
     }
 
     fn grow_if_needed(&mut self, new_min_chunk_count: usize) {
