@@ -33,6 +33,15 @@ impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
     }
 }
 
+impl IntoIterator for EpsilonOrTerminalSet {
+    type Item = EpsilonOrTerminal;
+    type IntoIter = EpsilonOrTerminalSetBufIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.buf.into_iter()
+    }
+}
+
 impl From<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
     fn from(value: EpsilonOrTerminalSingletonSet) -> Self {
         let mut out = EpsilonOrTerminalSet::empty();
@@ -127,5 +136,44 @@ impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSetBuf {
         let mask: usize = 1usize << (i % Self::CHUNK_WIDTH);
 
         *chunk |= mask;
+    }
+}
+
+impl IntoIterator for EpsilonOrTerminalSetBuf {
+    type Item = EpsilonOrTerminal;
+    type IntoIter = EpsilonOrTerminalSetBufIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        EpsilonOrTerminalSetBufIter {
+            buf: self,
+            chunk_index: 0,
+            bias: 0,
+        }
+    }
+}
+
+pub struct EpsilonOrTerminalSetBufIter {
+    buf: EpsilonOrTerminalSetBuf,
+    chunk_index: usize,
+    bias: usize,
+}
+
+impl Iterator for EpsilonOrTerminalSetBufIter {
+    type Item = EpsilonOrTerminal;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let s = self.buf.as_mut();
+        loop {
+            let chunk = s.get_mut(self.chunk_index)?;
+            if *chunk == 0 {
+                self.chunk_index += 1;
+                self.bias += EpsilonOrTerminalSetBuf::CHUNK_WIDTH;
+                continue;
+            }
+
+            let i = self.bias + (chunk.trailing_zeros() as usize);
+            *chunk &= *chunk - 1;
+            break Some(EpsilonOrTerminal::from_usize(i));
+        }
     }
 }

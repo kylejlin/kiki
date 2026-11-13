@@ -47,6 +47,13 @@ impl EpsilonOrTerminal {
         }
     }
 
+    pub const fn from_usize(n: usize) -> Self {
+        match NonZeroUsize::new(n) {
+            None => Self::Epsilon,
+            Some(n) => Self::Terminal(TerminalId { raw: n }),
+        }
+    }
+
     pub const fn terminal(self) -> Option<TerminalId> {
         match self {
             Self::Epsilon => None,
