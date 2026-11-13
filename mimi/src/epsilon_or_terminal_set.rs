@@ -9,43 +9,6 @@ pub struct EpsilonOrTerminalSingletonSet {
     pub value: EpsilonOrTerminal,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum EpsilonOrTerminal {
-    Epsilon,
-    Terminal(TerminalId),
-}
-impl PartialEq for EpsilonOrTerminal {
-    fn eq(&self, other: &Self) -> bool {
-        self.get().eq(&other.get())
-    }
-}
-impl Eq for EpsilonOrTerminal {}
-impl PartialOrd for EpsilonOrTerminal {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for EpsilonOrTerminal {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.get().cmp(&other.get())
-    }
-}
-impl Hash for EpsilonOrTerminal {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.get().hash(state);
-    }
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct TerminalId {
-    pub raw: NonZeroUsize,
-}
-impl Debug for TerminalId {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.raw.fmt(f)
-    }
-}
-
 impl EpsilonOrTerminalSet {
     pub fn empty(terminal_count: usize) -> Self {
         Self {
@@ -110,7 +73,7 @@ impl EpsilonOrTerminalSetBuf {
     }
 
     fn contains(&self, needle: EpsilonOrTerminal) -> bool {
-        let i = needle.get();
+        let i = needle.as_usize();
 
         let chunk_index = i / Self::CHUNK_WIDTH;
         assert!(chunk_index < self.chunk_count());
@@ -133,7 +96,7 @@ impl BitOrAssign<&Self> for EpsilonOrTerminalSetBuf {
 
 impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSetBuf {
     fn bitor_assign(&mut self, rhs: EpsilonOrTerminalSingletonSet) {
-        let i = rhs.value.get();
+        let i = rhs.value.as_usize();
 
         let chunk_index = i / Self::CHUNK_WIDTH;
         assert!(chunk_index < self.chunk_count());
@@ -150,14 +113,5 @@ impl EpsilonOrTerminalSingletonSet {
         let mut out = EpsilonOrTerminalSet::empty(terminal_count);
         out |= self;
         out
-    }
-}
-
-impl EpsilonOrTerminal {
-    const fn get(self) -> usize {
-        match self {
-            Self::Epsilon => 0,
-            Self::Terminal(id) => id.raw.get(),
-        }
     }
 }

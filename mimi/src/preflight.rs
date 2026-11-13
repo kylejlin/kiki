@@ -23,7 +23,55 @@ pub struct PreflightCertificate<'a> {
     pub(crate) terminal: &'a m::TerminalEnum,
     pub(crate) bridge_path: &'a m::Path,
     pub(crate) non_terminal_defs: HashMap<SigilFreeStr<'a>, &'a m::FileItem>,
-    pub(crate) terminal_resolutions: HashMap<SigilFreeStr<'a>, SigilFreeStr<'a>>,
+    pub(crate) terminal_bridge_resolutions: HashMap<SigilFreeStr<'a>, SigilFreeStr<'a>>,
+    /// IDs follow terminal declaration order, starting at 1.
+    pub(crate) terminal_ids: HashMap<SigilFreeStr<'a>, TerminalId>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum EpsilonOrTerminal {
+    Epsilon,
+    Terminal(TerminalId),
+}
+impl PartialEq for EpsilonOrTerminal {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_usize().eq(&other.as_usize())
+    }
+}
+impl Eq for EpsilonOrTerminal {}
+impl PartialOrd for EpsilonOrTerminal {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for EpsilonOrTerminal {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_usize().cmp(&other.as_usize())
+    }
+}
+impl Hash for EpsilonOrTerminal {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_usize().hash(state);
+    }
+}
+
+impl EpsilonOrTerminal {
+    pub const fn as_usize(self) -> usize {
+        match self {
+            Self::Epsilon => 0,
+            Self::Terminal(id) => id.raw.get(),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct TerminalId {
+    pub raw: NonZeroUsize,
+}
+impl Debug for TerminalId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.raw.fmt(f)
+    }
 }
 
 struct PreflightDefinitions<'a> {
@@ -81,7 +129,8 @@ pub fn preflight_check<'a>(
         terminal,
         bridge_path,
         non_terminal_defs: definitions.non_terminal_defs,
-        terminal_resolutions: definitions.terminal_resolutions,
+        terminal_bridge_resolutions: definitions.terminal_resolutions,
+        terminal_ids: get_terminal_ids(source, terminal),
     })
 }
 
@@ -253,6 +302,29 @@ fn get_terminal_resolutions<'a>(
     }
 
     Ok(out)
+}
+
+fn get_terminal_ids<'a>(
+    source: &'a str,
+    terminal: &m::TerminalEnum,
+) -> HashMap<SigilFreeStr<'a>, TerminalId> {
+    let m::TerminalEnum {
+        prefix: _,
+        name: _,
+        variants,
+    } = terminal;
+
+    variants
+        .iter()
+        .enumerate()
+        .map(|(index, m::TerminalEnumVariant { name, override_: _ })| {
+            let key = sigil_free_name(source, name.raw);
+            let id = TerminalId {
+                raw: NonZeroUsize::new(index + 1).unwrap(),
+            };
+            (key, id)
+        })
+        .collect()
 }
 
 /// Returns the symbol sequence, preserving sigils and including skipped fields.
