@@ -10,6 +10,6 @@ pub use std::{
 };
 
 pub(crate) use crate::{
-    lexer::*, massaged_cst as m, ntt::*, oset::*, preflight::*, takeoff::*, text_position::*,
-    token::*,
+    epsilon_or_terminal_set::*, lexer::*, massaged_cst as m, ntt::*, oset::*, preflight::*,
+    takeoff::*, text_position::*, token::*,
 };

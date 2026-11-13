@@ -71,13 +71,57 @@ fn closure<'a, I>(items: &'a I, takeoff: &TakeoffCertificate) -> State
 where
     &'a I: IntoIterator<Item = &'a Item>,
 {
-    let mut seen: HashSet<Item> = items.into_iter().copied().collect();
-    let mut current: Vec<Item> = items.into_iter().copied().collect();
+    let mut current: HashSet<Item> = items.into_iter().copied().collect();
 
     loop {
+        let original_len = current.len();
+
         for item in items {
-            // let rule = takeoff[item.rule_id];
+            let Some(next) = item.next(takeoff) else {
+                continue;
+            };
+            if next.is_terminal() {
+                continue;
+            }
+
+            for (rule_id, rule) in takeoff
+                .enumerate_rules()
+                .filter(|(_, rule)| rule.lhs(takeoff).is_some_and(|lhs| lhs == next))
+            {
+                // let first = first_set(item.rhs_after_next(takeoff), takeoff);
+                let first: EpsilonOrTerminalSet = todo!();
+
+                // for lookahead in first.into_iter().filter_map(EpsilonOrTerminal::terminal) {
+                //     current.insert(Item {
+                //         rule_id,
+                //         dot_index: 0,
+                //         lookahead: EoiOrTerminal::Terminal(lookahead),
+                //     });
+                // }
+
+                if first.contains(EpsilonOrTerminal::Epsilon) {
+                    current.insert(Item {
+                        rule_id,
+                        dot_index: 0,
+                        lookahead: item.lookahead,
+                    });
+                }
+            }
+        }
+
+        if current.len() == original_len {
+            break;
         }
     }
-    todo!()
+
+    State {
+        items: current.into_iter().collect(),
+    }
+}
+
+impl Item {
+    fn next<'a>(self, takeoff: &'a TakeoffCertificate<'a>) -> Option<GrammarSymbol<'a>> {
+        let rule = takeoff[self.rule_id];
+        rule.rhs(self.dot_index, takeoff)
+    }
 }
