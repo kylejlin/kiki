@@ -13,6 +13,9 @@ pub(crate) struct TakeoffCertificate<'a> {
     /// For `struct` items, the vector is a singleton.
     pub lhs_to_rule_ids: HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
 
+    /// Rule IDs follow rule order, with each rule listed once per RHS nonterminal.
+    pub rhs_nonterminal_to_rule_ids: HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
+
     pub first_sets: HashMap<GrammarSymbol<'a>, EpsilonOrTerminalSet>,
 }
 
@@ -290,12 +293,22 @@ impl<'a> TakeoffCertificate<'a> {
         let source = preflight.source;
         let terminal = preflight.terminal;
         let file = preflight.file;
+        let rules = get_rules(file);
+        let lhs_to_rule_ids = get_lhs_to_rule_ids_map(source, file);
+        let rhs_nonterminal_to_rule_ids = get_rhs_nonterminal_to_rule_ids_map(&preflight, &rules);
+        let first_sets = get_first_sets(
+            &preflight,
+            &rules,
+            &lhs_to_rule_ids,
+            &rhs_nonterminal_to_rule_ids,
+        );
         Self {
             preflight,
             terminal_ids: get_terminal_ids(source, terminal),
-            rules: get_rules(file),
-            lhs_to_rule_ids: get_lhs_to_rule_ids_map(source, file),
-            first_sets: todo!(),
+            rules,
+            lhs_to_rule_ids,
+            rhs_nonterminal_to_rule_ids,
+            first_sets,
         }
     }
 }
@@ -368,6 +381,69 @@ fn get_lhs_to_rule_ids_map<'a>(
     out
 }
 
+fn get_rhs_nonterminal_to_rule_ids_map<'a>(
+    preflight: &PreflightCertificate<'a>,
+    rules: &[Rule<'a>],
+) -> HashMap<SigilFreeStr<'a>, Vec<RuleId>> {
+    let source = preflight.source;
+    let mut out: HashMap<SigilFreeStr<'a>, Vec<RuleId>> = HashMap::new();
+
+    for (index, rule) in rules.iter().copied().enumerate() {
+        let rule_id = RuleId::from_usize(index);
+        let mut insert_symbol = |symbol: &m::GrammarSymbol| {
+            if let m::GrammarSymbol::Upper(name) = symbol {
+                let key = sigil_free_name(source, name.raw);
+                let ids = out.entry(key).or_default();
+                if ids.last() != Some(&rule_id) {
+                    ids.push(rule_id);
+                }
+            }
+        };
+
+        let fieldset = match rule {
+            Rule::Augmented => {
+                insert_symbol(&m::GrammarSymbol::Upper(preflight.start_symbol));
+                continue;
+            }
+
+            Rule::Struct(s) => &s.fieldset,
+
+            Rule::EnumVariant(_, v) => &v.fieldset,
+
+            Rule::ManualVariant(_, v) => {
+                for input in &v.inputs {
+                    let symbol = match input {
+                        m::TupleField::Used(symbol) | m::TupleField::Skipped(symbol) => symbol,
+                    };
+                    insert_symbol(symbol);
+                }
+                continue;
+            }
+        };
+
+        match fieldset {
+            m::Fieldset::Empty => {}
+
+            m::Fieldset::Named(f) => {
+                for field in &f.fields {
+                    insert_symbol(&field.symbol);
+                }
+            }
+
+            m::Fieldset::Tuple(f) => {
+                for field in &f.fields {
+                    let symbol = match field {
+                        m::TupleField::Used(symbol) | m::TupleField::Skipped(symbol) => symbol,
+                    };
+                    insert_symbol(symbol);
+                }
+            }
+        }
+    }
+
+    out
+}
+
 impl<'a> Index<RuleId> for TakeoffCertificate<'a> {
     type Output = Rule<'a>;
 
@@ -384,4 +460,13 @@ impl<'a> TakeoffCertificate<'a> {
             .enumerate()
             .map(|(i, r)| (RuleId::from_usize(i), r))
     }
+}
+
+fn get_first_sets<'a>(
+    preflight: &PreflightCertificate<'a>,
+    rules: &[Rule<'a>],
+    lhs_to_rule_ids: &HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
+    rhs_nonterminal_to_rule_ids: &HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
+) -> HashMap<GrammarSymbol<'a>, EpsilonOrTerminalSet> {
+    todo!()
 }
