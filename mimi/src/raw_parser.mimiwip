@@ -138,28 +138,32 @@ manual OptEqualAtUpperName {
 
 manual Path {
     @vec_one(Name)
-    @vec_snoc_separated(Path $DoubleColon Name)
+    @vec_snoc(
+        Path
+        _: $DoubleColon
+        Name
+    )
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+rust"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]"
 enum Name {
     Upper($UpperName)
     Lower($LowerName)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+rust"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]"
 enum UnderscoreOrLowerName {
     Underscore($Underscore)
     Lower($LowerName)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+rust"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]"
 enum GrammarSymbol {
     Upper($UpperName)
     DollarUpper($DollarUpperName)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+rust"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]"
 terminal Token {
     $StartKw
     $StructKw
