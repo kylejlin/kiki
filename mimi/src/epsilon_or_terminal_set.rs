@@ -215,6 +215,10 @@ impl Iterator for EpsilonOrTerminalSetBufRefIter<'_> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
+            if self.chunk_index >= self.buf.len() {
+                return None;
+            }
+
             if self.chunk == 0 {
                 self.chunk_index += 1;
                 self.bias += EpsilonOrTerminalSetBuf::CHUNK_WIDTH;
