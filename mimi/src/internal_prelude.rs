@@ -1,6 +1,6 @@
 pub use std::{
     cmp::Ordering,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fmt::{self, Debug, Formatter},
     hash::{Hash, Hasher},
     iter,
@@ -10,5 +10,6 @@ pub use std::{
 };
 
 pub(crate) use crate::{
-    lexer::*, massaged_cst as m, ntt::*, oset::*, preflight::*, text_position::*, token::*,
+    lexer::*, massaged_cst as m, ntt::*, oset::*, preflight::*, takeoff::*, text_position::*,
+    token::*,
 };

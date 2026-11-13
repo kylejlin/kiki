@@ -28,52 +28,6 @@ pub struct PreflightCertificate<'a> {
     pub(crate) terminal_bridge_resolutions: HashMap<SigilFreeStr<'a>, SigilFreeStr<'a>>,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum EpsilonOrTerminal {
-    Epsilon,
-    Terminal(TerminalId),
-}
-impl PartialEq for EpsilonOrTerminal {
-    fn eq(&self, other: &Self) -> bool {
-        self.as_usize().eq(&other.as_usize())
-    }
-}
-impl Eq for EpsilonOrTerminal {}
-impl PartialOrd for EpsilonOrTerminal {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for EpsilonOrTerminal {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.as_usize().cmp(&other.as_usize())
-    }
-}
-impl Hash for EpsilonOrTerminal {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.as_usize().hash(state);
-    }
-}
-
-impl EpsilonOrTerminal {
-    pub const fn as_usize(self) -> usize {
-        match self {
-            Self::Epsilon => 0,
-            Self::Terminal(id) => id.raw.get(),
-        }
-    }
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct TerminalId {
-    pub raw: NonZeroUsize,
-}
-impl Debug for TerminalId {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.raw.fmt(f)
-    }
-}
-
 struct PreflightDefinitions<'a> {
     non_terminal_defs: HashMap<SigilFreeStr<'a>, &'a m::FileItem>,
     terminal_resolutions: HashMap<SigilFreeStr<'a>, SigilFreeStr<'a>>,
@@ -394,7 +348,7 @@ pub(crate) fn sigil_free_name(source: &str, span: Span) -> SigilFreeStr<'_> {
         .expect("Parsed names contain only ASCII letters, digits, and underscores")
 }
 
-fn source_text(source: &str, span: Span) -> &str {
+pub(crate) fn source_text(source: &str, span: Span) -> &str {
     &source[span.start.byte_index..span.end.byte_index]
 }
 
