@@ -156,7 +156,6 @@ impl IntoIterator for EpsilonOrTerminalSetBuf {
         EpsilonOrTerminalSetBufIter {
             buf: self,
             chunk_index: 0,
-            bias: 0,
         }
     }
 }
@@ -172,7 +171,6 @@ impl<'a> IntoIterator for &'a EpsilonOrTerminalSetBuf {
             buf,
             chunk,
             chunk_index: 0,
-            bias: 0,
         }
     }
 }
@@ -180,7 +178,6 @@ impl<'a> IntoIterator for &'a EpsilonOrTerminalSetBuf {
 pub struct EpsilonOrTerminalSetBufIter {
     buf: EpsilonOrTerminalSetBuf,
     chunk_index: usize,
-    bias: usize,
 }
 
 impl Iterator for EpsilonOrTerminalSetBufIter {
@@ -192,11 +189,11 @@ impl Iterator for EpsilonOrTerminalSetBufIter {
             let chunk = s.get_mut(self.chunk_index)?;
             if *chunk == 0 {
                 self.chunk_index += 1;
-                self.bias += EpsilonOrTerminalSetBuf::CHUNK_WIDTH;
                 continue;
             }
 
-            let i = self.bias + (chunk.trailing_zeros() as usize);
+            let i = self.chunk_index * EpsilonOrTerminalSetBuf::CHUNK_WIDTH
+                + (chunk.trailing_zeros() as usize);
             *chunk &= *chunk - 1;
             break Some(EpsilonOrTerminal::from_usize(i));
         }
@@ -207,7 +204,6 @@ pub struct EpsilonOrTerminalSetBufRefIter<'a> {
     buf: &'a [usize],
     chunk: usize,
     chunk_index: usize,
-    bias: usize,
 }
 
 impl Iterator for EpsilonOrTerminalSetBufRefIter<'_> {
@@ -221,12 +217,12 @@ impl Iterator for EpsilonOrTerminalSetBufRefIter<'_> {
 
             if self.chunk == 0 {
                 self.chunk_index += 1;
-                self.bias += EpsilonOrTerminalSetBuf::CHUNK_WIDTH;
                 self.chunk = *self.buf.get(self.chunk_index)?;
                 continue;
             }
 
-            let i = self.bias + (self.chunk.trailing_zeros() as usize);
+            let i = self.chunk_index * EpsilonOrTerminalSetBuf::CHUNK_WIDTH
+                + (self.chunk.trailing_zeros() as usize);
             self.chunk &= self.chunk - 1;
             break Some(EpsilonOrTerminal::from_usize(i));
         }
