@@ -57,11 +57,14 @@ impl EoiOrTerminal {
 
 impl Machine {
     pub fn new(takeoff: &TakeoffCertificate) -> Self {
-        let item = vec![Item {
-            rule_id: RuleId::Augmented,
-            dot_index: 0,
-            lookahead: EoiOrTerminal::Eoi,
-        }];
+        let initial_state = closure(
+            &[Item {
+                rule_id: RuleId::Augmented,
+                dot_index: 0,
+                lookahead: EoiOrTerminal::Eoi,
+            }],
+            takeoff,
+        );
 
         todo!()
     }
@@ -84,20 +87,19 @@ where
                 continue;
             }
 
-            for (rule_id, rule) in takeoff
+            for (rule_id, _) in takeoff
                 .enumerate_rules()
                 .filter(|(_, rule)| rule.lhs(takeoff).is_some_and(|lhs| lhs == next))
             {
-                // let first = first_set(item.rhs_after_next(takeoff), takeoff);
-                let first: EpsilonOrTerminalSet = todo!();
+                let first = first_set(item.rhs_after_next(takeoff), takeoff);
 
-                // for lookahead in first.into_iter().filter_map(EpsilonOrTerminal::terminal) {
-                //     current.insert(Item {
-                //         rule_id,
-                //         dot_index: 0,
-                //         lookahead: EoiOrTerminal::Terminal(lookahead),
-                //     });
-                // }
+                for lookahead in first.iter().filter_map(EpsilonOrTerminal::terminal) {
+                    current.insert(Item {
+                        rule_id,
+                        dot_index: 0,
+                        lookahead: EoiOrTerminal::Terminal(lookahead),
+                    });
+                }
 
                 if first.contains(EpsilonOrTerminal::Epsilon) {
                     current.insert(Item {
@@ -122,6 +124,21 @@ where
 impl Item {
     fn next<'a>(self, takeoff: &'a TakeoffCertificate<'a>) -> Option<GrammarSymbol<'a>> {
         let rule = takeoff[self.rule_id];
-        rule.rhs(self.dot_index, takeoff)
+        rule.rhs(takeoff).get(self.dot_index)
     }
+
+    fn rhs_after_next<'a>(
+        self,
+        takeoff: &'a TakeoffCertificate<'a>,
+    ) -> impl Iterator<Item = GrammarSymbol<'a>> {
+        let rule = takeoff[self.rule_id];
+        rule.rhs(takeoff).suffix(self.dot_index + 1)
+    }
+}
+
+fn first_set<'a, I>(symbols: I, takeoff: &TakeoffCertificate) -> EpsilonOrTerminalSet
+where
+    I: Iterator<Item = GrammarSymbol<'a>>,
+{
+    todo!()
 }

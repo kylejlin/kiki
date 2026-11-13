@@ -150,13 +150,29 @@ impl<'a> Rule<'a> {
         })
     }
 
-    pub(crate) fn rhs(
-        self,
-        i: usize,
-        takeoff: &'a TakeoffCertificate<'a>,
-    ) -> Option<GrammarSymbol<'a>> {
-        match self {
-            Self::Augmented => {
+    pub(crate) fn rhs(self, takeoff: &'a TakeoffCertificate<'a>) -> RuleRhsSuffix<'a> {
+        RuleRhsSuffix {
+            rule: self,
+            start_index: 0,
+            takeoff,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub(crate) struct RuleRhsSuffix<'a> {
+    pub rule: Rule<'a>,
+    pub start_index: usize,
+    pub takeoff: &'a TakeoffCertificate<'a>,
+}
+
+impl<'a> RuleRhsSuffix<'a> {
+    pub(crate) fn get(&self, i: usize) -> Option<GrammarSymbol<'a>> {
+        let i = self.start_index + i;
+        let takeoff = self.takeoff;
+
+        match self.rule {
+            Rule::Augmented => {
                 if i == 0 {
                     Some(GrammarSymbol {
                         raw: source_text(
@@ -169,12 +185,37 @@ impl<'a> Rule<'a> {
                 }
             }
 
-            Self::Struct(s) => s.fieldset.symbol(i, takeoff),
+            Rule::Struct(s) => s.fieldset.symbol(i, takeoff),
 
-            Self::EnumVariant(_, v) => v.fieldset.symbol(i, takeoff),
+            Rule::EnumVariant(_, v) => v.fieldset.symbol(i, takeoff),
 
-            Self::ManualVariant(_, v) => Some(v.inputs.get(i)?.symbol(takeoff)),
+            Rule::ManualVariant(_, v) => Some(v.inputs.get(i)?.symbol(takeoff)),
         }
+    }
+
+    pub(crate) fn suffix(&self, i: usize) -> Self {
+        let &Self {
+            rule,
+            start_index,
+            takeoff,
+        } = self;
+        Self {
+            rule,
+            start_index: start_index + i,
+            takeoff,
+        }
+    }
+}
+
+impl<'a> Iterator for RuleRhsSuffix<'a> {
+    type Item = GrammarSymbol<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let out = self.get(self.start_index);
+        if out.is_some() {
+            self.start_index += 1;
+        }
+        out
     }
 }
 

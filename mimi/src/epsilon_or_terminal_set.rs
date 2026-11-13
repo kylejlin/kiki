@@ -51,6 +51,12 @@ impl<'a> IntoIterator for &'a EpsilonOrTerminalSet {
     }
 }
 
+impl<'a> EpsilonOrTerminalSet {
+    pub fn iter(&'a self) -> <&'a Self as IntoIterator>::IntoIter {
+        (&self.buf).into_iter()
+    }
+}
+
 impl From<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
     fn from(value: EpsilonOrTerminalSingletonSet) -> Self {
         let mut out = EpsilonOrTerminalSet::empty();
