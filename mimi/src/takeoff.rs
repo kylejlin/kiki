@@ -3,8 +3,11 @@ use crate::internal_prelude::*;
 pub(crate) struct TakeoffCertificate<'a> {
     pub preflight: PreflightCertificate<'a>,
 
-    /// IDs follow terminal declaration order, starting at 1.
+    /// IDs follow declaration order, starting at 1.
     pub terminal_ids: HashMap<SigilFreeStr<'a>, TerminalId>,
+
+    /// Rule IDs index this vector: augmented at 0, then original rules in declaration order.
+    pub rules: Vec<Rule<'a>>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -104,17 +107,19 @@ impl Debug for OriginalRuleId {
 pub enum Rule<'a> {
     Augmented,
     Struct(&'a m::Struct),
-    Enum(&'a m::Enum),
-    Manual(&'a m::Manual),
+    EnumVariant(&'a m::EnumVariant),
+    ManualVariant(&'a m::ManualVariant),
 }
 
 impl<'a> TakeoffCertificate<'a> {
     pub fn new(preflight: PreflightCertificate<'a>) -> Self {
         let source = preflight.source;
         let terminal = preflight.terminal;
+        let file = preflight.file;
         Self {
             preflight,
             terminal_ids: get_terminal_ids(source, terminal),
+            rules: get_rules(file),
         }
     }
 }
@@ -140,4 +145,29 @@ fn get_terminal_ids<'a>(
             (key, id)
         })
         .collect()
+}
+
+fn get_rules(file: &m::File) -> Vec<Rule<'_>> {
+    let mut out = vec![Rule::Augmented];
+
+    for item in &file.items {
+        match item {
+            m::FileItem::Start(_) => {}
+            m::FileItem::Struct(def) => out.push(Rule::Struct(def)),
+            m::FileItem::Enum(m::Enum {
+                prefix: _,
+                name: _,
+                variants,
+            }) => out.extend(variants.iter().map(Rule::EnumVariant)),
+            m::FileItem::Manual(m::Manual {
+                name: _,
+                override_: _,
+                variants,
+            }) => out.extend(variants.iter().map(Rule::ManualVariant)),
+            m::FileItem::Terminal(_) => {}
+            m::FileItem::Bridge(_) => {}
+        }
+    }
+
+    out
 }
