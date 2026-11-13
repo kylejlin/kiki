@@ -78,19 +78,13 @@ where
     let mut queue: VecDeque<Item> = current.iter().copied().collect();
 
     while let Some(item) = queue.pop_front() {
-        let Some(next) = item.next(takeoff) else {
+        let Some(next) = item.next(takeoff).and_then(GrammarSymbol::as_non_terminal) else {
             continue;
         };
-        if next.is_terminal() {
-            continue;
-        }
 
         let first = first_set(item.rhs_after_next(takeoff), takeoff);
 
-        for (rule_id, _) in takeoff
-            .enumerate_rules()
-            .filter(|(_, rule)| rule.lhs(takeoff).is_some_and(|lhs| lhs == next))
-        {
+        for rule_id in takeoff.lhs_to_rule_ids[&next].iter().copied() {
             for lookahead in first.iter().filter_map(EpsilonOrTerminal::terminal) {
                 let item = Item {
                     rule_id,

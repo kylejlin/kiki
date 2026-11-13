@@ -9,6 +9,10 @@ pub(crate) struct TakeoffCertificate<'a> {
     /// Rule IDs index this vector: augmented at 0, then original rules in declaration order.
     pub rules: Vec<Rule<'a>>,
 
+    /// For `enum` and `manual` items, the vectors correspond to the variant order.
+    /// For `struct` items, the vector is a singleton.
+    pub lhs_to_rule_ids: HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
+
     pub first_sets: HashMap<GrammarSymbol<'a>, EpsilonOrTerminalSet>,
 }
 
@@ -271,9 +275,13 @@ impl<'a> PartialEq<SigilFreeStr<'a>> for GrammarSymbol<'a> {
         self.raw == other.raw()
     }
 }
-impl GrammarSymbol<'_> {
+impl<'a> GrammarSymbol<'a> {
     pub fn is_terminal(self) -> bool {
         self.raw.starts_with('$')
+    }
+
+    pub fn as_non_terminal(self) -> Option<SigilFreeStr<'a>> {
+        SigilFreeStr::new(self.raw)
     }
 }
 
@@ -286,6 +294,7 @@ impl<'a> TakeoffCertificate<'a> {
             preflight,
             terminal_ids: get_terminal_ids(source, terminal),
             rules: get_rules(file),
+            lhs_to_rule_ids: get_lhs_to_rule_ids_map(source, file),
             first_sets: todo!(),
         }
     }
@@ -328,6 +337,32 @@ fn get_rules(file: &m::File) -> Vec<Rule<'_>> {
             m::FileItem::Terminal(_) => {}
             m::FileItem::Bridge(_) => {}
         }
+    }
+
+    out
+}
+
+fn get_lhs_to_rule_ids_map<'a>(
+    source: &'a str,
+    file: &m::File,
+) -> HashMap<SigilFreeStr<'a>, Vec<RuleId>> {
+    let mut out = HashMap::new();
+    let mut next_id = 1;
+
+    for item in &file.items {
+        let (name, count) = match item {
+            m::FileItem::Start(_) => continue,
+            m::FileItem::Struct(def) => (def.name, 1),
+            m::FileItem::Enum(e) => (e.name, e.variants.len()),
+            m::FileItem::Manual(m) => (m.name, m.variants.len()),
+            m::FileItem::Terminal(_) => continue,
+            m::FileItem::Bridge(_) => continue,
+        };
+
+        let key = sigil_free_name(source, name.raw);
+        let ids = (next_id..next_id + count).map(RuleId::from_usize).collect();
+        out.insert(key, ids);
+        next_id += count;
     }
 
     out
