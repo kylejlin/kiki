@@ -58,11 +58,11 @@ impl EoiOrTerminal {
 impl Machine {
     pub fn new(takeoff: &TakeoffCertificate) -> Self {
         let initial_state = closure(
-            &[Item {
+            iter::once(Item {
                 rule_id: RuleId::Augmented,
                 dot_index: 0,
                 lookahead: EoiOrTerminal::Eoi,
-            }],
+            }),
             takeoff,
         );
 
@@ -70,49 +70,50 @@ impl Machine {
     }
 }
 
-fn closure<'a, I>(items: &'a I, takeoff: &TakeoffCertificate) -> State
+fn closure<I>(items: I, takeoff: &TakeoffCertificate) -> State
 where
-    &'a I: IntoIterator<Item = &'a Item>,
+    I: IntoIterator<Item = Item>,
 {
-    let mut current: HashSet<Item> = items.into_iter().copied().collect();
+    let mut queue: VecDeque<Item> = items.into_iter().collect();
+    let mut current: HashSet<Item> = queue.iter().copied().collect();
 
-    loop {
-        let original_len = current.len();
-
-        for item in items {
-            let Some(next) = item.next(takeoff) else {
-                continue;
-            };
-            if next.is_terminal() {
-                continue;
-            }
-
-            for (rule_id, _) in takeoff
-                .enumerate_rules()
-                .filter(|(_, rule)| rule.lhs(takeoff).is_some_and(|lhs| lhs == next))
-            {
-                let first = first_set(item.rhs_after_next(takeoff), takeoff);
-
-                for lookahead in first.iter().filter_map(EpsilonOrTerminal::terminal) {
-                    current.insert(Item {
-                        rule_id,
-                        dot_index: 0,
-                        lookahead: EoiOrTerminal::Terminal(lookahead),
-                    });
-                }
-
-                if first.contains(EpsilonOrTerminal::Epsilon) {
-                    current.insert(Item {
-                        rule_id,
-                        dot_index: 0,
-                        lookahead: item.lookahead,
-                    });
-                }
-            }
+    while let Some(item) = queue.pop_front() {
+        let Some(next) = item.next(takeoff) else {
+            continue;
+        };
+        if next.is_terminal() {
+            continue;
         }
 
-        if current.len() == original_len {
-            break;
+        for (rule_id, _) in takeoff
+            .enumerate_rules()
+            .filter(|(_, rule)| rule.lhs(takeoff).is_some_and(|lhs| lhs == next))
+        {
+            let first = first_set(item.rhs_after_next(takeoff), takeoff);
+
+            for lookahead in first.iter().filter_map(EpsilonOrTerminal::terminal) {
+                let item = Item {
+                    rule_id,
+                    dot_index: 0,
+                    lookahead: EoiOrTerminal::Terminal(lookahead),
+                };
+                let was_newly_inserted = current.insert(item);
+                if was_newly_inserted {
+                    queue.push_back(item);
+                }
+            }
+
+            if first.contains(EpsilonOrTerminal::Epsilon) {
+                let item = Item {
+                    rule_id,
+                    dot_index: 0,
+                    lookahead: item.lookahead,
+                };
+                let was_newly_inserted = current.insert(item);
+                if was_newly_inserted {
+                    queue.push_back(item);
+                }
+            }
         }
     }
 

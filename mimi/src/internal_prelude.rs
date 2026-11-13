@@ -1,6 +1,6 @@
 pub use std::{
     cmp::Ordering,
-    collections::{HashMap, HashSet},
+    collections::{HashMap, HashSet, VecDeque},
     fmt::{self, Debug, Formatter},
     hash::{Hash, Hasher},
     iter,
