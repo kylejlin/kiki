@@ -3,6 +3,7 @@ pub use std::{
     collections::HashMap,
     fmt::{self, Debug, Formatter},
     hash::{Hash, Hasher},
+    iter,
     marker::PhantomData,
     num::{NonZeroU64, NonZeroUsize},
     ops::BitOrAssign,

@@ -10,9 +10,9 @@ pub struct EpsilonOrTerminalSingletonSet {
 }
 
 impl EpsilonOrTerminalSet {
-    pub fn empty(terminal_count: usize) -> Self {
+    pub fn empty() -> Self {
         Self {
-            buf: EpsilonOrTerminalSetBuf::empty(terminal_count),
+            buf: EpsilonOrTerminalSetBuf::empty(),
         }
     }
 
@@ -33,6 +33,14 @@ impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
     }
 }
 
+impl From<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
+    fn from(value: EpsilonOrTerminalSingletonSet) -> Self {
+        let mut out = EpsilonOrTerminalSet::empty();
+        out |= value;
+        out
+    }
+}
+
 enum EpsilonOrTerminalSetBuf {
     Small([usize; Self::MIN_CHUNK_COUNT]),
     Big(Vec<usize>),
@@ -44,14 +52,8 @@ impl EpsilonOrTerminalSetBuf {
 
     const CHUNK_WIDTH: usize = usize::BITS as usize;
 
-    fn empty(terminal_count: usize) -> Self {
-        let required_min_chunk_count = (1 + terminal_count).div_ceil(Self::CHUNK_WIDTH);
-
-        if required_min_chunk_count <= Self::MIN_CHUNK_COUNT {
-            Self::Small([0; _])
-        } else {
-            Self::Big(vec![0; required_min_chunk_count])
-        }
+    fn empty() -> Self {
+        Self::Small([0; _])
     }
 
     fn as_slice(&self) -> &[usize] {
@@ -76,18 +78,38 @@ impl EpsilonOrTerminalSetBuf {
         let i = needle.as_usize();
 
         let chunk_index = i / Self::CHUNK_WIDTH;
-        assert!(chunk_index < self.chunk_count());
-        let chunk = self.as_slice()[chunk_index];
+        let Some(chunk) = self.as_slice().get(chunk_index) else {
+            return false;
+        };
 
         let mask: usize = 1usize << (i % Self::CHUNK_WIDTH);
 
         (chunk & mask) != 0
     }
+
+    fn grow_if_needed(&mut self, new_min_chunk_count: usize) {
+        let additional_chunk_count = new_min_chunk_count.saturating_sub(self.chunk_count());
+
+        if additional_chunk_count == 0 {
+            return;
+        }
+
+        let extra_chunks = iter::repeat_n(0, additional_chunk_count);
+
+        match self {
+            Self::Small(buf) => {
+                *self = Self::Big(buf.iter().copied().chain(extra_chunks).collect());
+            }
+
+            Self::Big(buf) => buf.extend(extra_chunks),
+        }
+    }
 }
 
 impl BitOrAssign<&Self> for EpsilonOrTerminalSetBuf {
     fn bitor_assign(&mut self, rhs: &Self) {
-        assert_eq!(self.chunk_count(), rhs.chunk_count());
+        self.grow_if_needed(rhs.chunk_count());
+
         for (l, r) in self.as_mut().into_iter().zip(rhs.as_slice()) {
             *l |= *r;
         }
@@ -99,19 +121,11 @@ impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSetBuf {
         let i = rhs.value.as_usize();
 
         let chunk_index = i / Self::CHUNK_WIDTH;
-        assert!(chunk_index < self.chunk_count());
+        self.grow_if_needed(chunk_index + 1);
         let chunk = &mut self.as_mut()[chunk_index];
 
         let mask: usize = 1usize << (i % Self::CHUNK_WIDTH);
 
         *chunk |= mask;
-    }
-}
-
-impl EpsilonOrTerminalSingletonSet {
-    pub fn with_terminal_count(self, terminal_count: usize) -> EpsilonOrTerminalSet {
-        let mut out = EpsilonOrTerminalSet::empty(terminal_count);
-        out |= self;
-        out
     }
 }
