@@ -111,6 +111,21 @@ pub enum Rule<'a> {
     ManualVariant(&'a m::ManualVariant),
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct GrammarSymbol<'a> {
+    pub raw: &'a str,
+}
+impl Debug for GrammarSymbol<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self.raw, f)
+    }
+}
+impl GrammarSymbol<'_> {
+    pub fn is_terminal(self) -> bool {
+        self.raw.starts_with('$')
+    }
+}
+
 impl<'a> TakeoffCertificate<'a> {
     pub fn new(preflight: PreflightCertificate<'a>) -> Self {
         let source = preflight.source;

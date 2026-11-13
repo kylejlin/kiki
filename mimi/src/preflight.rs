@@ -264,7 +264,7 @@ fn check_fieldset<'a>(
     source: &'a str,
     fieldset: &m::Fieldset,
     definitions: &PreflightDefinitions<'_>,
-) -> Result<Vec<&'a str>, PreflightCheckError> {
+) -> Result<Vec<GrammarSymbol<'a>>, PreflightCheckError> {
     match fieldset {
         m::Fieldset::Empty => Ok(Vec::new()),
         m::Fieldset::Named(m::NamedFieldset { fields }) => {
@@ -296,7 +296,7 @@ fn check_tuple_fields<'a>(
     source: &'a str,
     fields: &[m::TupleField],
     definitions: &PreflightDefinitions<'_>,
-) -> Result<Vec<&'a str>, PreflightCheckError> {
+) -> Result<Vec<GrammarSymbol<'a>>, PreflightCheckError> {
     fields
         .iter()
         .map(|field| {
@@ -313,18 +313,22 @@ fn check_grammar_symbol<'a>(
     source: &'a str,
     symbol: &m::GrammarSymbol,
     definitions: &PreflightDefinitions<'_>,
-) -> Result<&'a str, PreflightCheckError> {
+) -> Result<GrammarSymbol<'a>, PreflightCheckError> {
     match symbol {
         m::GrammarSymbol::Upper(name) => {
             check_non_terminal(source, *name, definitions)?;
-            Ok(source_text(source, name.raw))
+            Ok(GrammarSymbol {
+                raw: source_text(source, name.raw),
+            })
         }
         m::GrammarSymbol::DollarUpper(name) => {
             let key = sigil_free_name(source, name.raw);
             if !definitions.terminal_resolutions.contains_key(&key) {
                 return Err(PreflightCheckError::UndefinedTerminal(*name));
             }
-            Ok(source_text(source, name.raw))
+            Ok(GrammarSymbol {
+                raw: source_text(source, name.raw),
+            })
         }
     }
 }
