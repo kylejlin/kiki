@@ -19,13 +19,13 @@ pub enum PreflightCheckError {
 }
 
 pub struct PreflightCertificate<'a> {
+    pub(crate) source: &'a str,
+    pub(crate) file: &'a m::File,
     pub(crate) start_symbol: span_of::UpperName,
     pub(crate) terminal: &'a m::TerminalEnum,
     pub(crate) bridge_path: &'a m::Path,
     pub(crate) non_terminal_defs: HashMap<SigilFreeStr<'a>, &'a m::FileItem>,
     pub(crate) terminal_bridge_resolutions: HashMap<SigilFreeStr<'a>, SigilFreeStr<'a>>,
-    /// IDs follow terminal declaration order, starting at 1.
-    pub(crate) terminal_ids: HashMap<SigilFreeStr<'a>, TerminalId>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -125,12 +125,13 @@ pub fn preflight_check<'a>(
     }
 
     Ok(PreflightCertificate {
+        source,
+        file,
         start_symbol,
         terminal,
         bridge_path,
         non_terminal_defs: definitions.non_terminal_defs,
         terminal_bridge_resolutions: definitions.terminal_resolutions,
-        terminal_ids: get_terminal_ids(source, terminal),
     })
 }
 
@@ -304,29 +305,6 @@ fn get_terminal_resolutions<'a>(
     Ok(out)
 }
 
-fn get_terminal_ids<'a>(
-    source: &'a str,
-    terminal: &m::TerminalEnum,
-) -> HashMap<SigilFreeStr<'a>, TerminalId> {
-    let m::TerminalEnum {
-        prefix: _,
-        name: _,
-        variants,
-    } = terminal;
-
-    variants
-        .iter()
-        .enumerate()
-        .map(|(index, m::TerminalEnumVariant { name, override_: _ })| {
-            let key = sigil_free_name(source, name.raw);
-            let id = TerminalId {
-                raw: NonZeroUsize::new(index + 1).unwrap(),
-            };
-            (key, id)
-        })
-        .collect()
-}
-
 /// Returns the symbol sequence, preserving sigils and including skipped fields.
 fn check_fieldset<'a>(
     source: &'a str,
@@ -409,7 +387,7 @@ fn check_non_terminal(
     Ok(())
 }
 
-fn sigil_free_name(source: &str, span: Span) -> SigilFreeStr<'_> {
+pub(crate) fn sigil_free_name(source: &str, span: Span) -> SigilFreeStr<'_> {
     let text = source_text(source, span);
     let raw = text.strip_prefix(['$', '@']).unwrap_or(text);
     SigilFreeStr::new(raw)
