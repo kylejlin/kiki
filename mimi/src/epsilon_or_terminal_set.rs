@@ -45,7 +45,7 @@ impl EpsilonOrTerminalSetBuf {
     const CHUNK_WIDTH: usize = usize::BITS as usize;
 
     fn empty(terminal_count: usize) -> Self {
-        let required_min_chunk_count = (1 + terminal_count) / Self::CHUNK_WIDTH;
+        let required_min_chunk_count = (1 + terminal_count).div_ceil(Self::CHUNK_WIDTH);
 
         if required_min_chunk_count <= Self::MIN_CHUNK_COUNT {
             Self::Small([0; _])
