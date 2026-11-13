@@ -42,6 +42,15 @@ impl IntoIterator for EpsilonOrTerminalSet {
     }
 }
 
+impl<'a> IntoIterator for &'a EpsilonOrTerminalSet {
+    type Item = EpsilonOrTerminal;
+    type IntoIter = EpsilonOrTerminalSetBufRefIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        (&self.buf).into_iter()
+    }
+}
+
 impl From<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
     fn from(value: EpsilonOrTerminalSingletonSet) -> Self {
         let mut out = EpsilonOrTerminalSet::empty();
@@ -152,6 +161,22 @@ impl IntoIterator for EpsilonOrTerminalSetBuf {
     }
 }
 
+impl<'a> IntoIterator for &'a EpsilonOrTerminalSetBuf {
+    type Item = EpsilonOrTerminal;
+    type IntoIter = EpsilonOrTerminalSetBufRefIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let buf = self.as_slice();
+        let chunk = buf[0];
+        EpsilonOrTerminalSetBufRefIter {
+            buf,
+            chunk,
+            chunk_index: 0,
+            bias: 0,
+        }
+    }
+}
+
 pub struct EpsilonOrTerminalSetBufIter {
     buf: EpsilonOrTerminalSetBuf,
     chunk_index: usize,
@@ -173,6 +198,32 @@ impl Iterator for EpsilonOrTerminalSetBufIter {
 
             let i = self.bias + (chunk.trailing_zeros() as usize);
             *chunk &= *chunk - 1;
+            break Some(EpsilonOrTerminal::from_usize(i));
+        }
+    }
+}
+
+pub struct EpsilonOrTerminalSetBufRefIter<'a> {
+    buf: &'a [usize],
+    chunk: usize,
+    chunk_index: usize,
+    bias: usize,
+}
+
+impl Iterator for EpsilonOrTerminalSetBufRefIter<'_> {
+    type Item = EpsilonOrTerminal;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if self.chunk == 0 {
+                self.chunk_index += 1;
+                self.bias += EpsilonOrTerminalSetBuf::CHUNK_WIDTH;
+                self.chunk = *self.buf.get(self.chunk_index)?;
+                continue;
+            }
+
+            let i = self.bias + (self.chunk.trailing_zeros() as usize);
+            self.chunk &= self.chunk - 1;
             break Some(EpsilonOrTerminal::from_usize(i));
         }
     }
