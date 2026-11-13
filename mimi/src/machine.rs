@@ -74,8 +74,8 @@ fn closure<I>(items: I, takeoff: &TakeoffCertificate) -> State
 where
     I: IntoIterator<Item = Item>,
 {
-    let mut queue: VecDeque<Item> = items.into_iter().collect();
-    let mut current: HashSet<Item> = queue.iter().copied().collect();
+    let mut current: HashSet<Item> = items.into_iter().collect();
+    let mut queue: VecDeque<Item> = current.iter().copied().collect();
 
     while let Some(item) = queue.pop_front() {
         let Some(next) = item.next(takeoff) else {
@@ -85,12 +85,12 @@ where
             continue;
         }
 
+        let first = first_set(item.rhs_after_next(takeoff), takeoff);
+
         for (rule_id, _) in takeoff
             .enumerate_rules()
             .filter(|(_, rule)| rule.lhs(takeoff).is_some_and(|lhs| lhs == next))
         {
-            let first = first_set(item.rhs_after_next(takeoff), takeoff);
-
             for lookahead in first.iter().filter_map(EpsilonOrTerminal::terminal) {
                 let item = Item {
                     rule_id,
