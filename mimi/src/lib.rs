@@ -7,6 +7,7 @@ pub mod token;
 
 mod internal_prelude;
 
+mod epsilon_or_terminal_set;
 mod massage_cst;
 mod massaged_cst;
 mod raw_parser;

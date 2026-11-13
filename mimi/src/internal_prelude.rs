@@ -5,7 +5,7 @@ pub use std::{
     hash::{Hash, Hasher},
     marker::PhantomData,
     num::{NonZeroU64, NonZeroUsize},
-    ops::Deref,
+    ops::BitOrAssign,
 };
 
 pub(crate) use crate::{
