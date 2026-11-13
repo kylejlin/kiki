@@ -33,6 +33,18 @@ impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
     }
 }
 
+impl SubAssign<&Self> for EpsilonOrTerminalSet {
+    fn sub_assign(&mut self, rhs: &Self) {
+        self.buf -= &rhs.buf;
+    }
+}
+
+impl SubAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
+    fn sub_assign(&mut self, rhs: EpsilonOrTerminalSingletonSet) {
+        self.buf -= rhs;
+    }
+}
+
 impl IntoIterator for EpsilonOrTerminalSet {
     type Item = EpsilonOrTerminal;
     type IntoIter = EpsilonOrTerminalSetBufIter;
@@ -151,6 +163,29 @@ impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSetBuf {
         let mask: usize = 1usize << (i % Self::CHUNK_WIDTH);
 
         *chunk |= mask;
+    }
+}
+
+impl SubAssign<&Self> for EpsilonOrTerminalSetBuf {
+    fn sub_assign(&mut self, rhs: &Self) {
+        for (l, r) in self.as_mut().into_iter().zip(rhs.as_slice()) {
+            *l &= !*r;
+        }
+    }
+}
+
+impl SubAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSetBuf {
+    fn sub_assign(&mut self, rhs: EpsilonOrTerminalSingletonSet) {
+        let i = rhs.value.as_usize();
+
+        let chunk_index = i / Self::CHUNK_WIDTH;
+        let Some(chunk) = self.as_mut().get_mut(chunk_index) else {
+            return;
+        };
+
+        let mask: usize = 1usize << (i % Self::CHUNK_WIDTH);
+
+        *chunk &= !mask;
     }
 }
 

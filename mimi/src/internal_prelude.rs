@@ -6,7 +6,7 @@ pub use std::{
     iter,
     marker::PhantomData,
     num::{NonZeroU64, NonZeroUsize},
-    ops::{BitOrAssign, Index},
+    ops::{BitOrAssign, Index, SubAssign},
 };
 
 pub(crate) use crate::{
