@@ -1,13 +1,13 @@
 use crate::internal_prelude::*;
 
-pub(crate) struct Takeoff<'a> {
+pub(crate) struct TakeoffCertificate<'a> {
     pub preflight: PreflightCertificate<'a>,
 
     /// IDs follow terminal declaration order, starting at 1.
     pub terminal_ids: HashMap<SigilFreeStr<'a>, TerminalId>,
 }
 
-impl<'a> Takeoff<'a> {
+impl<'a> TakeoffCertificate<'a> {
     pub fn new(preflight: PreflightCertificate<'a>) -> Self {
         let source = preflight.source;
         let terminal = preflight.terminal;
