@@ -211,7 +211,7 @@ impl<'a> Iterator for RuleRhsSuffix<'a> {
     type Item = GrammarSymbol<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let out = self.get(self.start_index);
+        let out = self.get(0);
         if out.is_some() {
             self.start_index += 1;
         }
