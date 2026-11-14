@@ -3,12 +3,7 @@ use crate::internal_prelude::*;
 use logos::{Lexer as LogosLexer, Logos};
 
 pub fn lex(source: &str) -> impl Iterator<Item = Result<Token<'_>, LexError>> {
-    let logos_lexer = LogosToken::lexer_with_extras(
-        source,
-        LogosExtras {
-            position: TextPosition { byte_index: 0 },
-        },
-    );
+    let logos_lexer = LogosToken::lexer(source);
     Lexer {
         logos_lexer,
         is_done: false,
@@ -76,16 +71,18 @@ impl<'a> Lexer<'a> {
                 Ok(t) => t,
 
                 Err(()) => {
+                    let position = TextPosition {
+                        byte_index: self.logos_lexer.span().end,
+                    };
                     return Some(Err(LexError {
-                        character: match self.logos_lexer.source()
-                            [self.logos_lexer.extras.position.byte_index..]
+                        character: match self.logos_lexer.source()[position.byte_index..]
                             .chars()
                             .next()
                         {
                             Some(c) => UnexpectedCharOrEndOfInput::Char(c),
                             None => UnexpectedCharOrEndOfInput::EndOfInput,
                         },
-                        position: self.logos_lexer.extras.position,
+                        position,
                     }));
                 }
             };
@@ -116,12 +113,7 @@ impl<'a> Lexer<'a> {
     }
 }
 
-struct LogosExtras {
-    pub position: TextPosition,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Logos)]
-#[logos(extras = LogosExtras)]
 enum LogosToken<'a> {
     #[token("start", tagged_token_callback)]
     StartKw(token::StartKw<'a>),
@@ -195,11 +187,11 @@ enum LogosToken<'a> {
     #[regex(r#"rust#*""#, rust_string_tagged_token_callback)]
     RustStringLiteral(token::RustStringLiteral<'a>),
 
-    #[regex(r"\/\/[^\n]*", position_callback, allow_greedy = true)]
-    SingleLineComment(TextPosition),
+    #[regex(r"\/\/[^\n]*", allow_greedy = true)]
+    SingleLineComment,
 
-    #[regex(r"[ \t\r\n\f]+", position_callback)]
-    Whitespace(TextPosition),
+    #[regex(r"[ \t\r\n\f]+")]
+    Whitespace,
 
     #[regex(r".", position_callback, priority = 0)]
     IllegalCharacter(TextPosition),
@@ -208,16 +200,15 @@ enum LogosToken<'a> {
 fn tagged_token_callback<'a, T>(
     logos_lexer: &mut LogosLexer<'a, LogosToken<'a>>,
 ) -> token::tagged_token::generic_tagged_token::TaggedToken<'a, T> {
-    position_callback(logos_lexer);
     token::tagged_token::generic_tagged_token::TaggedToken::new(SourceFragment::new(
         logos_lexer.slice(),
     ))
 }
 
 fn position_callback<'a>(logos_lexer: &mut LogosLexer<'a, LogosToken<'a>>) -> TextPosition {
-    let start = logos_lexer.extras.position;
-    logos_lexer.extras.position.byte_index += logos_lexer.slice().len();
-    start
+    TextPosition {
+        byte_index: logos_lexer.span().start,
+    }
 }
 
 fn rust_string_tagged_token_callback<'a>(
@@ -235,7 +226,6 @@ fn rust_string_tagged_token_callback<'a>(
     let Some(terminator_end) = terminator_end else {
         // Advance to EOF so that the error handling logic will correctly return `UnexpectedCharOrEndOfInput::EndOfInput`.
         logos_lexer.bump(remainder.len());
-        position_callback(logos_lexer);
 
         return None;
     };
@@ -280,7 +270,7 @@ impl<'a> TryFrom<LogosToken<'a>> for Token<'a> {
             LogosToken::AtLowerName(token) => Token::AtLowerName(token),
             LogosToken::RustStringLiteral(token) => Token::RustStringLiteral(token),
 
-            LogosToken::SingleLineComment(_) | LogosToken::Whitespace(_) => {
+            LogosToken::SingleLineComment | LogosToken::Whitespace => {
                 return Err(LogosTokenToTokenConversionError::Skipped);
             }
 
