@@ -184,6 +184,9 @@ enum LogosToken<'a> {
     #[regex(r#"@[a-z][a-zA-Z0-9_]*"#, tagged_token_callback)]
     AtLowerName(token::AtLowerName<'a>),
 
+    #[regex(r#"'[a-z][a-zA-Z0-9_]*"#, tagged_token_callback)]
+    SingleQuoteLowerName(token::SingleQuoteLowerName<'a>),
+
     #[regex(r#"rust#*""#, rust_string_tagged_token_callback)]
     RustStringLiteral(token::RustStringLiteral<'a>),
 
@@ -268,6 +271,7 @@ impl<'a> TryFrom<LogosToken<'a>> for Token<'a> {
             LogosToken::DollarUpperName(token) => Token::DollarUpperName(token),
             LogosToken::AtUpperName(token) => Token::AtUpperName(token),
             LogosToken::AtLowerName(token) => Token::AtLowerName(token),
+            LogosToken::SingleQuoteLowerName(token) => Token::SingleQuoteLowerName(token),
             LogosToken::RustStringLiteral(token) => Token::RustStringLiteral(token),
 
             LogosToken::SingleLineComment | LogosToken::Whitespace => {
@@ -298,6 +302,7 @@ mod lookarounds {
             Token::DollarUpperName(token) => token.raw,
             Token::AtUpperName(token) => token.raw,
             Token::AtLowerName(token) => token.raw,
+            Token::SingleQuoteLowerName(token) => token.raw,
 
             Token::LParen(_)
             | Token::RParen(_)
@@ -342,6 +347,8 @@ mod lookarounds {
     }
 
     fn is_namelike_char(o: Option<char>) -> bool {
-        o.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$' || c == '@')
+        o.is_some_and(|c| {
+            c.is_ascii_alphanumeric() || c == '_' || c == '$' || c == '@' || c == '\''
+        })
     }
 }

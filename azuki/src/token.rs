@@ -25,6 +25,7 @@ pub enum Token<'a> {
     DollarUpperName(DollarUpperName<'a>),
     AtUpperName(AtUpperName<'a>),
     AtLowerName(AtLowerName<'a>),
+    SingleQuoteLowerName(SingleQuoteLowerName<'a>),
     RustStringLiteral(RustStringLiteral<'a>),
 }
 
@@ -59,6 +60,7 @@ pub mod tagged_token {
         pub type DollarUpperName<'a> = TaggedToken<'a, ntt::DollarUpperName>;
         pub type AtUpperName<'a> = TaggedToken<'a, ntt::AtUpperName>;
         pub type AtLowerName<'a> = TaggedToken<'a, ntt::AtLowerName>;
+        pub type SingleQuoteLowerName<'a> = TaggedToken<'a, ntt::SingleQuoteLowerName>;
 
         pub type RustStringLiteral<'a> = TaggedToken<'a, ntt::RustStringLiteral>;
     }
@@ -132,6 +134,7 @@ pub mod tagged_token {
         pub struct DollarUpperName;
         pub struct AtUpperName;
         pub struct AtLowerName;
+        pub struct SingleQuoteLowerName;
 
         pub struct RustStringLiteral;
     }
