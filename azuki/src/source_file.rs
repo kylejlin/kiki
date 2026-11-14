@@ -19,14 +19,14 @@ impl<'a> SourceFile<'a> {
         self.raw().substr_range(substr.raw())
     }
 }
-impl Display for SourceFile<'_> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        Display::fmt(&self.ass, f)
-    }
-}
 impl Debug for SourceFile<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         Debug::fmt(&self.ass, f)
+    }
+}
+impl Display for SourceFile<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Display::fmt(&self.ass, f)
     }
 }
 
@@ -45,14 +45,14 @@ impl<'a> SourceFragment<'a> {
         self.ass.raw
     }
 }
-impl Display for SourceFragment<'_> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        Display::fmt(&self.ass, f)
-    }
-}
 impl Debug for SourceFragment<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         Debug::fmt(&self.ass, f)
+    }
+}
+impl Display for SourceFragment<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Display::fmt(&self.ass, f)
     }
 }
 
