@@ -64,8 +64,59 @@ pub struct CompareByValue<T> {
 pub(crate) type CbvFile<'a> = CompareByValue<SourceFile<'a>>;
 pub(crate) type CbvFragment<'a> = CompareByValue<SourceFragment<'a>>;
 
-// TODO: Impl PartialEq, Eq, PartialOrd, Hash, Debug, Display for CbvFoo.
-// All of these use only the value; not the address range.
+impl Debug for CbvFile<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self.raw.raw(), f)
+    }
+}
+impl Display for CbvFile<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Display::fmt(self.raw.raw(), f)
+    }
+}
+impl PartialEq for CbvFile<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.raw.raw() == other.raw.raw()
+    }
+}
+impl Eq for CbvFile<'_> {}
+impl PartialOrd for CbvFile<'_> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.raw.raw().partial_cmp(other.raw.raw())
+    }
+}
+impl Hash for CbvFile<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.raw.raw().hash(state)
+    }
+}
+
+impl Debug for CbvFragment<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self.raw.raw(), f)
+    }
+}
+impl Display for CbvFragment<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Display::fmt(self.raw.raw(), f)
+    }
+}
+impl PartialEq for CbvFragment<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.raw.raw() == other.raw.raw()
+    }
+}
+impl Eq for CbvFragment<'_> {}
+impl PartialOrd for CbvFragment<'_> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.raw.raw().partial_cmp(other.raw.raw())
+    }
+}
+impl Hash for CbvFragment<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.raw.raw().hash(state)
+    }
+}
 
 /// Address-sensitive string.
 #[derive(Clone, Copy, Default)]
