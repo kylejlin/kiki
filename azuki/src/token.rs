@@ -37,7 +37,33 @@ pub enum TokenKind {
     RustStringLiteral,
 }
 
-pub use crate::raw_parser::Token as TransposedToken;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TransposedToken {
+    StartKw(crate::token::span_of::StartKw),
+    StructKw(crate::token::span_of::StructKw),
+    EnumKw(crate::token::span_of::EnumKw),
+    ManualKw(crate::token::span_of::ManualKw),
+    TerminalKw(crate::token::span_of::TerminalKw),
+    BridgeKw(crate::token::span_of::BridgeKw),
+    Underscore(crate::token::span_of::Underscore),
+    LParen(crate::token::span_of::LParen),
+    RParen(crate::token::span_of::RParen),
+    LSquare(crate::token::span_of::LSquare),
+    RSquare(crate::token::span_of::RSquare),
+    LCurly(crate::token::span_of::LCurly),
+    RCurly(crate::token::span_of::RCurly),
+    Comma(crate::token::span_of::Comma),
+    DoubleColon(crate::token::span_of::DoubleColon),
+    Colon(crate::token::span_of::Colon),
+    Equal(crate::token::span_of::Equal),
+    Octothorpe(crate::token::span_of::Octothorpe),
+    UpperName(crate::token::span_of::UpperName),
+    LowerName(crate::token::span_of::LowerName),
+    DollarUpperName(crate::token::span_of::DollarUpperName),
+    AtUpperName(crate::token::span_of::AtUpperName),
+    AtLowerName(crate::token::span_of::AtLowerName),
+    RustStringLiteral(crate::token::span_of::RustStringLiteral),
+}
 
 impl Token {
     pub const fn transpose(self) -> TransposedToken {
