@@ -1,0 +1,25 @@
+[package]
+name = "azuki"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+
+[dependencies]
+sha256 = "1.6.0"
+nohash-hasher = "0.2.0"
+logos = "0.16.1"
+derivative = "2.2.0"
+bitvec = "1"
+leb128 = "0.2.5"
+
+[dependencies.xxhash-rust]
+version = "0.8.12"
+features = ["xxh3"]
+
+[build-dependencies]
+sha256 = "1.6.0"
+kiki = "7.1"
+walkdir = "2"
+
+[dev-dependencies]
+insta = "1.48.0"

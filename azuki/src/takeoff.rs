@@ -1,0 +1,525 @@
+use crate::internal_prelude::*;
+
+pub(crate) struct TakeoffCertificate<'a> {
+    pub preflight: PreflightCertificate<'a>,
+
+    /// IDs follow declaration order, starting at 1.
+    pub terminal_ids: HashMap<SigilFreeStr<'a>, TerminalId>,
+
+    /// Rule IDs index this vector: augmented at 0, then original rules in declaration order.
+    pub rules: Vec<Rule<'a>>,
+
+    /// For `enum` and `manual` items, the vectors correspond to the variant order.
+    /// For `struct` items, the vector is a singleton.
+    pub lhs_to_rule_ids: HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
+
+    /// Rule IDs follow rule order, with each rule listed once per RHS nonterminal.
+    pub rhs_nonterminal_to_rule_ids: HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
+
+    pub non_terminal_first_sets: HashMap<SigilFreeStr<'a>, EpsilonOrTerminalSet>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum EpsilonOrTerminal {
+    Epsilon,
+    Terminal(TerminalId),
+}
+impl PartialEq for EpsilonOrTerminal {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_usize().eq(&other.as_usize())
+    }
+}
+impl Eq for EpsilonOrTerminal {}
+impl PartialOrd for EpsilonOrTerminal {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for EpsilonOrTerminal {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_usize().cmp(&other.as_usize())
+    }
+}
+impl Hash for EpsilonOrTerminal {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_usize().hash(state);
+    }
+}
+
+impl EpsilonOrTerminal {
+    pub const fn as_usize(self) -> usize {
+        match self {
+            Self::Epsilon => 0,
+            Self::Terminal(id) => id.raw.get(),
+        }
+    }
+
+    pub const fn from_usize(n: usize) -> Self {
+        match NonZeroUsize::new(n) {
+            None => Self::Epsilon,
+            Some(n) => Self::Terminal(TerminalId { raw: n }),
+        }
+    }
+
+    pub const fn terminal(self) -> Option<TerminalId> {
+        match self {
+            Self::Epsilon => None,
+            Self::Terminal(id) => Some(id),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct TerminalId {
+    pub raw: NonZeroUsize,
+}
+impl Debug for TerminalId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.raw.fmt(f)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum RuleId {
+    Augmented,
+    Original(OriginalRuleId),
+}
+
+impl PartialEq for RuleId {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_usize().eq(&other.as_usize())
+    }
+}
+impl Eq for RuleId {}
+impl PartialOrd for RuleId {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for RuleId {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_usize().cmp(&other.as_usize())
+    }
+}
+impl Hash for RuleId {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_usize().hash(state);
+    }
+}
+
+impl RuleId {
+    pub const fn as_usize(self) -> usize {
+        match self {
+            Self::Augmented => 0,
+            Self::Original(id) => id.raw.get(),
+        }
+    }
+
+    pub const fn from_usize(n: usize) -> Self {
+        match NonZeroUsize::new(n) {
+            None => Self::Augmented,
+            Some(n) => Self::Original(OriginalRuleId { raw: n }),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct OriginalRuleId {
+    pub raw: NonZeroUsize,
+}
+impl Debug for OriginalRuleId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.raw.fmt(f)
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum Rule<'a> {
+    Augmented,
+    Struct(&'a m::Struct),
+    EnumVariant(&'a m::Enum, &'a m::EnumVariant),
+    ManualVariant(&'a m::Manual, &'a m::ManualVariant),
+}
+
+impl<'a> Rule<'a> {
+    /// Returns `None` if and only if `self == Augmented`.
+    pub(crate) fn lhs(self, takeoff: &'a TakeoffCertificate<'a>) -> Option<SigilFreeStr<'a>> {
+        let source = takeoff.preflight.source;
+
+        Some(match self {
+            Self::Augmented => return None,
+
+            Self::Struct(s) => sigil_free_name(source, s.name.raw),
+
+            Self::EnumVariant(e, _) => sigil_free_name(source, e.name.raw),
+
+            Self::ManualVariant(m, _) => sigil_free_name(source, m.name.raw),
+        })
+    }
+
+    pub(crate) fn rhs(self, takeoff: &'a TakeoffCertificate<'a>) -> RuleRhsSuffix<'a> {
+        RuleRhsSuffix {
+            rule: self,
+            start_index: 0,
+            takeoff,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub(crate) struct RuleRhsSuffix<'a> {
+    pub rule: Rule<'a>,
+    pub start_index: usize,
+    pub takeoff: &'a TakeoffCertificate<'a>,
+}
+
+impl<'a> RuleRhsSuffix<'a> {
+    pub(crate) fn get(&self, i: usize) -> Option<GrammarSymbol<'a>> {
+        let i = self.start_index + i;
+        let takeoff = self.takeoff;
+
+        match self.rule {
+            Rule::Augmented => {
+                if i == 0 {
+                    Some(GrammarSymbol {
+                        raw: source_text(
+                            takeoff.preflight.source,
+                            takeoff.preflight.start_symbol.raw,
+                        ),
+                    })
+                } else {
+                    None
+                }
+            }
+
+            Rule::Struct(s) => s.fieldset.symbol(i, takeoff),
+
+            Rule::EnumVariant(_, v) => v.fieldset.symbol(i, takeoff),
+
+            Rule::ManualVariant(_, v) => Some(v.inputs.get(i)?.symbol(takeoff)),
+        }
+    }
+
+    pub(crate) fn suffix(&self, i: usize) -> Self {
+        let &Self {
+            rule,
+            start_index,
+            takeoff,
+        } = self;
+        Self {
+            rule,
+            start_index: start_index + i,
+            takeoff,
+        }
+    }
+}
+
+impl<'a> Iterator for RuleRhsSuffix<'a> {
+    type Item = GrammarSymbol<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let out = self.get(0);
+        if out.is_some() {
+            self.start_index += 1;
+        }
+        out
+    }
+}
+
+impl m::Fieldset {
+    fn symbol<'a>(
+        &self,
+        i: usize,
+        takeoff: &'a TakeoffCertificate<'a>,
+    ) -> Option<GrammarSymbol<'a>> {
+        Some(match self {
+            m::Fieldset::Empty => return None,
+            m::Fieldset::Named(f) => f.fields.get(i)?.symbol.source_text(takeoff),
+            m::Fieldset::Tuple(f) => f.fields.get(i)?.symbol(takeoff),
+        })
+    }
+}
+
+impl m::GrammarSymbol {
+    fn source_text<'a>(&self, takeoff: &'a TakeoffCertificate<'a>) -> GrammarSymbol<'a> {
+        let source = takeoff.preflight.source;
+        let raw = match self {
+            m::GrammarSymbol::Upper(span) => source_text(source, span.raw),
+            m::GrammarSymbol::DollarUpper(span) => source_text(source, span.raw),
+        };
+        GrammarSymbol { raw }
+    }
+}
+
+impl m::TupleField {
+    fn symbol<'a>(&self, takeoff: &'a TakeoffCertificate<'a>) -> GrammarSymbol<'a> {
+        match self {
+            m::TupleField::Used(span) | m::TupleField::Skipped(span) => span.source_text(takeoff),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct GrammarSymbol<'a> {
+    pub raw: &'a str,
+}
+impl Debug for GrammarSymbol<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self.raw, f)
+    }
+}
+impl<'a> PartialEq<GrammarSymbol<'a>> for SigilFreeStr<'a> {
+    fn eq(&self, other: &GrammarSymbol<'a>) -> bool {
+        self.raw() == other.raw
+    }
+}
+impl<'a> PartialEq<SigilFreeStr<'a>> for GrammarSymbol<'a> {
+    fn eq(&self, other: &SigilFreeStr<'a>) -> bool {
+        self.raw == other.raw()
+    }
+}
+impl<'a> GrammarSymbol<'a> {
+    pub fn is_terminal(self) -> bool {
+        self.raw.starts_with('$')
+    }
+
+    pub fn as_non_terminal(self) -> Option<SigilFreeStr<'a>> {
+        SigilFreeStr::new(self.raw)
+    }
+}
+
+impl<'a> TakeoffCertificate<'a> {
+    pub fn new(preflight: PreflightCertificate<'a>) -> Self {
+        let source = preflight.source;
+        let terminal = preflight.terminal;
+        let file = preflight.file;
+        let rules = get_rules(file);
+        let lhs_to_rule_ids = get_lhs_to_rule_ids_map(source, file);
+        let rhs_nonterminal_to_rule_ids = get_rhs_nonterminal_to_rule_ids_map(&preflight, &rules);
+        let non_terminal_first_sets = get_non_terminal_first_sets(
+            &preflight,
+            &rules,
+            &lhs_to_rule_ids,
+            &rhs_nonterminal_to_rule_ids,
+        );
+        Self {
+            preflight,
+            terminal_ids: get_terminal_ids(source, terminal),
+            rules,
+            lhs_to_rule_ids,
+            rhs_nonterminal_to_rule_ids,
+            non_terminal_first_sets,
+        }
+    }
+}
+
+fn get_terminal_ids<'a>(
+    source: &'a str,
+    terminal: &m::TerminalEnum,
+) -> HashMap<SigilFreeStr<'a>, TerminalId> {
+    let m::TerminalEnum {
+        prefix: _,
+        name: _,
+        variants,
+    } = terminal;
+
+    variants
+        .iter()
+        .enumerate()
+        .map(|(index, m::TerminalEnumVariant { name, override_: _ })| {
+            let key = sigil_free_name(source, name.raw);
+            let id = TerminalId {
+                raw: NonZeroUsize::new(index + 1).unwrap(),
+            };
+            (key, id)
+        })
+        .collect()
+}
+
+fn get_rules(file: &m::File) -> Vec<Rule<'_>> {
+    let mut out = vec![Rule::Augmented];
+
+    for item in &file.items {
+        match item {
+            m::FileItem::Start(_) => {}
+            m::FileItem::Struct(def) => out.push(Rule::Struct(def)),
+            m::FileItem::Enum(e) => out.extend(e.variants.iter().map(|v| Rule::EnumVariant(e, v))),
+            m::FileItem::Manual(m) => {
+                out.extend(m.variants.iter().map(|v| Rule::ManualVariant(m, v)))
+            }
+            m::FileItem::Terminal(_) => {}
+            m::FileItem::Bridge(_) => {}
+        }
+    }
+
+    out
+}
+
+fn get_lhs_to_rule_ids_map<'a>(
+    source: &'a str,
+    file: &m::File,
+) -> HashMap<SigilFreeStr<'a>, Vec<RuleId>> {
+    let mut out = HashMap::new();
+    let mut next_id = 1;
+
+    for item in &file.items {
+        let (name, count) = match item {
+            m::FileItem::Start(_) => continue,
+            m::FileItem::Struct(def) => (def.name, 1),
+            m::FileItem::Enum(e) => (e.name, e.variants.len()),
+            m::FileItem::Manual(m) => (m.name, m.variants.len()),
+            m::FileItem::Terminal(_) => continue,
+            m::FileItem::Bridge(_) => continue,
+        };
+
+        let key = sigil_free_name(source, name.raw);
+        let ids = (next_id..next_id + count).map(RuleId::from_usize).collect();
+        out.insert(key, ids);
+        next_id += count;
+    }
+
+    out
+}
+
+fn get_rhs_nonterminal_to_rule_ids_map<'a>(
+    preflight: &PreflightCertificate<'a>,
+    rules: &[Rule<'a>],
+) -> HashMap<SigilFreeStr<'a>, Vec<RuleId>> {
+    let source = preflight.source;
+    let mut out: HashMap<SigilFreeStr<'a>, Vec<RuleId>> = HashMap::new();
+
+    for (index, rule) in rules.iter().copied().enumerate() {
+        let rule_id = RuleId::from_usize(index);
+        let mut insert_symbol = |symbol: &m::GrammarSymbol| {
+            if let m::GrammarSymbol::Upper(name) = symbol {
+                let key = sigil_free_name(source, name.raw);
+                let ids = out.entry(key).or_default();
+                if ids.last() != Some(&rule_id) {
+                    ids.push(rule_id);
+                }
+            }
+        };
+
+        let fieldset = match rule {
+            Rule::Augmented => {
+                insert_symbol(&m::GrammarSymbol::Upper(preflight.start_symbol));
+                continue;
+            }
+
+            Rule::Struct(s) => &s.fieldset,
+
+            Rule::EnumVariant(_, v) => &v.fieldset,
+
+            Rule::ManualVariant(_, v) => {
+                for input in &v.inputs {
+                    let symbol = match input {
+                        m::TupleField::Used(symbol) | m::TupleField::Skipped(symbol) => symbol,
+                    };
+                    insert_symbol(symbol);
+                }
+                continue;
+            }
+        };
+
+        match fieldset {
+            m::Fieldset::Empty => {}
+
+            m::Fieldset::Named(f) => {
+                for field in &f.fields {
+                    insert_symbol(&field.symbol);
+                }
+            }
+
+            m::Fieldset::Tuple(f) => {
+                for field in &f.fields {
+                    let symbol = match field {
+                        m::TupleField::Used(symbol) | m::TupleField::Skipped(symbol) => symbol,
+                    };
+                    insert_symbol(symbol);
+                }
+            }
+        }
+    }
+
+    out
+}
+
+impl<'a> Index<RuleId> for TakeoffCertificate<'a> {
+    type Output = Rule<'a>;
+
+    fn index(&self, index: RuleId) -> &Self::Output {
+        &self.rules[index.as_usize()]
+    }
+}
+
+impl<'a> TakeoffCertificate<'a> {
+    pub(crate) fn enumerate_rules(&'a self) -> impl Iterator<Item = (RuleId, Rule<'a>)> {
+        self.rules
+            .iter()
+            .copied()
+            .enumerate()
+            .map(|(i, r)| (RuleId::from_usize(i), r))
+    }
+}
+
+fn get_non_terminal_first_sets<'a>(
+    preflight: &PreflightCertificate<'a>,
+    rules: &[Rule<'a>],
+    lhs_to_rule_ids: &HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
+    rhs_nonterminal_to_rule_ids: &HashMap<SigilFreeStr<'a>, Vec<RuleId>>,
+) -> HashMap<SigilFreeStr<'a>, EpsilonOrTerminalSet> {
+    let mut out: HashMap<SigilFreeStr<'a>, EpsilonOrTerminalSet> = lhs_to_rule_ids
+        .iter()
+        .map(|(lhs, _)| (*lhs, EpsilonOrTerminalSet::empty()))
+        .collect();
+
+    // Exclude the augmented rule.
+    let mut queue: VecDeque<RuleId> = (1..rules.len()).map(RuleId::from_usize).collect();
+    let mut currently_enqueued: HashSet<RuleId> = queue.iter().copied().collect();
+
+    let mut accumulator = EpsilonOrTerminalSet::empty();
+
+    while let Some(rule_id) = queue.pop_front() {
+        currently_enqueued.remove(&rule_id);
+
+        let rule = rules[rule_id.as_usize()];
+        let lhs = rule
+            .lhs(todo_())
+            .expect("`queue` should never contain the augmented rule");
+
+        accumulator.clear();
+
+        for symbol in rule.rhs(todo_()) {
+            let Some(symbol) = symbol.as_non_terminal() else {
+                // let terminal_id = terminal_ids[symbol];
+                let terminal_id = todo_();
+                accumulator |= EpsilonOrTerminalSingletonSet { value: terminal_id };
+                break;
+            };
+
+            let rhs_first_set = &out[&symbol];
+
+            accumulator |= rhs_first_set;
+
+            if !rhs_first_set.contains(EpsilonOrTerminal::Epsilon) {
+                break;
+            }
+        }
+
+        let lhs_first_set = out.get_mut(&lhs).unwrap();
+        let original_cardinality = lhs_first_set.cardinality();
+        *lhs_first_set |= &accumulator;
+        if lhs_first_set.cardinality() != original_cardinality {
+            let was_newly_inserted = currently_enqueued.insert(rule_id);
+            if was_newly_inserted {
+                queue.push_back(rule_id);
+            }
+        }
+    }
+
+    out
+}
+
+fn todo_<T>() -> T {
+    todo!()
+}
