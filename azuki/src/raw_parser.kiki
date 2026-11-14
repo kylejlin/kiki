@@ -79,7 +79,7 @@ enum NamedFields {
 struct NamedField {
     name: UnderscoreOrLowerName
     _: $Colon
-    symbol: GrammarSymbol
+    symbol: GrammarSymbolOrSelf
 }
 
 struct TupleFieldset {
@@ -94,8 +94,8 @@ enum TupleFields {
 }
 
 enum TupleField {
-    Used(GrammarSymbol)
-    Skipped($Underscore $Colon GrammarSymbol)
+    Used(GrammarSymbolOrSelf)
+    Skipped($Underscore $Colon GrammarSymbolOrSelf)
 }
 
 enum EnumVariants {
@@ -162,9 +162,10 @@ enum UnderscoreOrLowerName {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum GrammarSymbol {
+enum GrammarSymbolOrSelf {
     Upper($UpperName)
     DollarUpper($DollarUpperName)
+    Self($UpperSelfKw)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
