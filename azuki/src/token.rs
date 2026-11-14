@@ -8,6 +8,7 @@ pub enum Token<'a> {
     ManualKw(ManualKw<'a>),
     TerminalKw(TerminalKw<'a>),
     BridgeKw(BridgeKw<'a>),
+    UpperSelfKw(UpperSelfKw<'a>),
     Underscore(Underscore<'a>),
     LParen(LParen<'a>),
     RParen(RParen<'a>),
@@ -41,6 +42,7 @@ pub mod tagged_token {
         pub type ManualKw<'a> = TaggedToken<'a, ntt::ManualKw>;
         pub type TerminalKw<'a> = TaggedToken<'a, ntt::TerminalKw>;
         pub type BridgeKw<'a> = TaggedToken<'a, ntt::BridgeKw>;
+        pub type UpperSelfKw<'a> = TaggedToken<'a, ntt::UpperSelfKw>;
 
         pub type Underscore<'a> = TaggedToken<'a, ntt::Underscore>;
         pub type LParen<'a> = TaggedToken<'a, ntt::LParen>;
@@ -115,6 +117,7 @@ pub mod tagged_token {
         pub struct ManualKw;
         pub struct TerminalKw;
         pub struct BridgeKw;
+        pub struct UpperSelfKw;
 
         pub struct Underscore;
         pub struct LParen;

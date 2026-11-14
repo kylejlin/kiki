@@ -175,6 +175,7 @@ terminal Token {
     $ManualKw: crate::kiki_bridge::span_of::ManualKw
     $TerminalKw: crate::kiki_bridge::span_of::TerminalKw
     $BridgeKw: crate::kiki_bridge::span_of::BridgeKw
+    $UpperSelfKw: crate::kiki_bridge::span_of::UpperSelfKw
 
     $Underscore: crate::kiki_bridge::span_of::Underscore
     $LParen: crate::kiki_bridge::span_of::LParen
