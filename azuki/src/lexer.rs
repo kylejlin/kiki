@@ -21,6 +21,11 @@ pub struct LexError {
     pub position: TextPosition,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct TextPosition {
+    pub byte_index: usize,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum UnexpectedCharOrEndOfInput {
     EndOfInput,
@@ -321,21 +326,25 @@ mod lookarounds {
         let range = SourceFile::new(source)
             .substr_range(fragment)
             .expect("Lexed token must be a fragment of its source file");
-        let prefix = &source[..range.start.byte_index];
+        let prefix = &source[..range.start];
         let prev_char = prefix.chars().last();
         if is_namelike_char(prev_char) {
             return Err(LexError {
                 character: UnexpectedCharOrEndOfInput::Char(fragment.raw().chars().next().unwrap()),
-                position: range.start,
+                position: TextPosition {
+                    byte_index: range.start,
+                },
             });
         }
 
-        let suffix = &source[range.end.byte_index..];
+        let suffix = &source[range.end..];
         let next_char = suffix.chars().next();
         if is_namelike_char(next_char) {
             return Err(LexError {
                 character: UnexpectedCharOrEndOfInput::Char(next_char.unwrap()),
-                position: range.end,
+                position: TextPosition {
+                    byte_index: range.end,
+                },
             });
         }
 

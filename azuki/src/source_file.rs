@@ -15,10 +15,8 @@ impl<'a> SourceFile<'a> {
         self.ass.raw
     }
 
-    pub fn substr_range(self, substr: SourceFragment) -> Option<Range<TextPosition>> {
-        self.raw()
-            .substr_range(substr.raw())
-            .map(TextPosition::convert_range)
+    pub fn substr_range(self, substr: SourceFragment) -> Option<Range<usize>> {
+        self.raw().substr_range(substr.raw())
     }
 }
 impl Debug for SourceFile<'_> {
@@ -117,22 +115,6 @@ impl PartialOrd for CbvFragment<'_> {
 impl Hash for CbvFragment<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.raw.raw().hash(state)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-pub struct TextPosition {
-    pub byte_index: usize,
-}
-
-impl TextPosition {
-    const fn convert_range(r: Range<usize>) -> Range<Self> {
-        Range {
-            start: TextPosition {
-                byte_index: r.start,
-            },
-            end: TextPosition { byte_index: r.end },
-        }
     }
 }
 
