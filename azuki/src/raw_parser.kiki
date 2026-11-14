@@ -165,7 +165,7 @@ enum UnderscoreOrLowerName {
 enum GrammarSymbolOrSelf {
     Upper($UpperName)
     DollarUpper($DollarUpperName)
-    Self($UpperSelfKw)
+    Self_($UpperSelfKw)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
