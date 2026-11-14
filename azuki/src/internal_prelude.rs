@@ -10,4 +10,9 @@ pub use std::{
     range::Range,
 };
 
-pub(crate) use crate::{lexer::*, ntt::*, source_file::*, token::*};
+pub(crate) use crate::{
+    lexer::*,
+    ntt::*,
+    source_file::*,
+    token::{self, Token},
+};

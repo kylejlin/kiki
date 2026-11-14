@@ -117,9 +117,9 @@ struct LogosExtras {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Logos)]
 #[logos(extras = LogosExtras)]
-enum LogosToken {
-    #[token("start", span_callback)]
-    StartKw(Span),
+enum LogosToken<'a> {
+    #[token("start", tagged_token_callback)]
+    StartKw(token::StartKw<'a>),
 
     #[token("struct", span_callback)]
     StructKw(Span),
@@ -200,40 +200,47 @@ enum LogosToken {
     IllegalCharacter(Span),
 }
 
-fn span_callback(logos_lexer: &mut LogosLexer<LogosToken>) -> Span {
-    let start = logos_lexer.extras.position;
-    logos_lexer.extras.position.byte_index += logos_lexer.slice().len();
-    let end = logos_lexer.extras.position;
-    Span { start, end }
+fn tagged_token_callback<'a, T>(
+    logos_lexer: &mut LogosLexer<LogosToken>,
+) -> token::tagged_token::generic_tagged_token::TaggedToken<'a, T> {
+    // let start = logos_lexer.extras.position;
+    // logos_lexer.extras.position.byte_index += logos_lexer.slice().len();
+    // let end = logos_lexer.extras.position;
+    // Span { start, end }
+    todo!()
 }
 
-fn rust_string_span_callback(logos_lexer: &mut LogosLexer<LogosToken>) -> Option<Span> {
-    let opener = logos_lexer.slice();
-    let hashes = &opener.as_bytes()["rust".len()..opener.len() - 1];
-    let remainder = logos_lexer.remainder();
-    let terminator_end = remainder.match_indices('"').find_map(|(index, _)| {
-        remainder.as_bytes()[index + 1..]
-            .starts_with(hashes)
-            .then_some(index + 1 + hashes.len())
-    });
+fn rust_string_span_callback<'a>(
+    logos_lexer: &mut LogosLexer<LogosToken>,
+) -> Option<token::RustStringLiteral<'a>> {
+    // let opener = logos_lexer.slice();
+    // let hashes = &opener.as_bytes()["rust".len()..opener.len() - 1];
+    // let remainder = logos_lexer.remainder();
+    // let terminator_end = remainder.match_indices('"').find_map(|(index, _)| {
+    //     remainder.as_bytes()[index + 1..]
+    //         .starts_with(hashes)
+    //         .then_some(index + 1 + hashes.len())
+    // });
 
-    let Some(terminator_end) = terminator_end else {
-        // Advance to EOF so that the error handling logic will correctly return `UnexpectedCharOrEndOfInput::EndOfInput`.
-        logos_lexer.bump(remainder.len());
-        span_callback(logos_lexer);
+    // let Some(terminator_end) = terminator_end else {
+    //     // Advance to EOF so that the error handling logic will correctly return `UnexpectedCharOrEndOfInput::EndOfInput`.
+    //     logos_lexer.bump(remainder.len());
+    //     tagged_token_callback(logos_lexer);
 
-        return None;
-    };
+    //     return None;
+    // };
 
-    logos_lexer.bump(terminator_end);
-    let span = span_callback(logos_lexer);
-    Some(span)
+    // logos_lexer.bump(terminator_end);
+    // let span = tagged_token_callback(logos_lexer);
+    // Some(span)
+    todo!()
 }
 
 #[derive(Debug, Clone, Copy)]
 enum LogosTokenToTokenConversionError {
     Skipped,
-    IllegalCharacter(Span),
+    IllegalCharacter(TextPosition),
+    IllegalEndOfInput,
 }
 
 impl TryFrom<LogosToken> for Token {
@@ -353,10 +360,8 @@ mod lookarounds {
     use super::*;
 
     pub fn validate_lookarounds(token: Token, source: &str) -> Result<(), LexError> {
-        let Token { kind, span } = token;
-
-        match kind {
-            TokenKind::StartKw
+        match token {
+            Token::StartKw(_)
             | TokenKind::StructKw
             | TokenKind::EnumKw
             | TokenKind::ManualKw
