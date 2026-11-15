@@ -11,6 +11,7 @@ pub use std::{
 };
 
 pub(crate) use crate::{
+    cst,
     lexer::*,
     ntt::*,
     source_text::*,
