@@ -11,8 +11,10 @@ pub use std::{
 };
 
 pub(crate) use crate::{
+    kiki_bridge,
     lexer::*,
     ntt::*,
+    raw_parser,
     source_file::*,
     token::{self, Token},
 };

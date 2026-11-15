@@ -79,7 +79,7 @@ pub mod tagged_token {
         }
         impl<T> Debug for TaggedToken<'_, T> {
             fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-                self.raw.fmt(f)
+                Debug::fmt(&self.raw, f)
             }
         }
         impl<T> Clone for TaggedToken<'_, T> {

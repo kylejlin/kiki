@@ -18,6 +18,10 @@ impl<'a> SourceFile<'a> {
     pub fn substr_range(self, substr: SourceFragment) -> Option<Range<usize>> {
         self.raw().substr_range(substr.raw())
     }
+
+    pub fn get(self, r: Range<usize>) -> Option<SourceFragment<'a>> {
+        Some(SourceFragment::new(self.raw().get(r)?))
+    }
 }
 impl Debug for SourceFile<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
