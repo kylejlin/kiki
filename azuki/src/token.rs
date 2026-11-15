@@ -70,7 +70,7 @@ pub mod tagged_token {
     pub mod generic_tagged_token {
         use crate::{
             internal_prelude::{Debug, Formatter, Hash, Hasher, Ntt, fmt},
-            source_file::SourceFragment,
+            source_text::SourceFragment,
         };
 
         pub struct TaggedToken<'a, T> {

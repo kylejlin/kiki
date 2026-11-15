@@ -323,7 +323,7 @@ mod lookarounds {
             | Token::RustStringLiteral(_) => return Ok(()),
         };
 
-        let range = SourceFile::new(source)
+        let range = FileSource::new(source)
             .substr_range(fragment)
             .expect("Lexed token must be a fragment of its source file");
         let prefix = &source[..range.start];

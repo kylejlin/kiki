@@ -170,33 +170,33 @@ enum GrammarSymbolOrSelf {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 terminal Token {
-    $StartKw: crate::kiki_bridge::span_of::StartKw
-    $StructKw: crate::kiki_bridge::span_of::StructKw
-    $EnumKw: crate::kiki_bridge::span_of::EnumKw
-    $ManualKw: crate::kiki_bridge::span_of::ManualKw
-    $TerminalKw: crate::kiki_bridge::span_of::TerminalKw
-    $BridgeKw: crate::kiki_bridge::span_of::BridgeKw
-    $UpperSelfKw: crate::kiki_bridge::span_of::UpperSelfKw
+    $StartKw: crate::cst::kiki_bridge::span_of::StartKw
+    $StructKw: crate::cst::kiki_bridge::span_of::StructKw
+    $EnumKw: crate::cst::kiki_bridge::span_of::EnumKw
+    $ManualKw: crate::cst::kiki_bridge::span_of::ManualKw
+    $TerminalKw: crate::cst::kiki_bridge::span_of::TerminalKw
+    $BridgeKw: crate::cst::kiki_bridge::span_of::BridgeKw
+    $UpperSelfKw: crate::cst::kiki_bridge::span_of::UpperSelfKw
 
-    $Underscore: crate::kiki_bridge::span_of::Underscore
-    $LParen: crate::kiki_bridge::span_of::LParen
-    $RParen: crate::kiki_bridge::span_of::RParen
-    $LSquare: crate::kiki_bridge::span_of::LSquare
-    $RSquare: crate::kiki_bridge::span_of::RSquare
-    $LCurly: crate::kiki_bridge::span_of::LCurly
-    $RCurly: crate::kiki_bridge::span_of::RCurly
-    $Comma: crate::kiki_bridge::span_of::Comma
-    $DoubleColon: crate::kiki_bridge::span_of::DoubleColon
-    $Colon: crate::kiki_bridge::span_of::Colon
-    $Equal: crate::kiki_bridge::span_of::Equal
-    $Octothorpe: crate::kiki_bridge::span_of::Octothorpe
+    $Underscore: crate::cst::kiki_bridge::span_of::Underscore
+    $LParen: crate::cst::kiki_bridge::span_of::LParen
+    $RParen: crate::cst::kiki_bridge::span_of::RParen
+    $LSquare: crate::cst::kiki_bridge::span_of::LSquare
+    $RSquare: crate::cst::kiki_bridge::span_of::RSquare
+    $LCurly: crate::cst::kiki_bridge::span_of::LCurly
+    $RCurly: crate::cst::kiki_bridge::span_of::RCurly
+    $Comma: crate::cst::kiki_bridge::span_of::Comma
+    $DoubleColon: crate::cst::kiki_bridge::span_of::DoubleColon
+    $Colon: crate::cst::kiki_bridge::span_of::Colon
+    $Equal: crate::cst::kiki_bridge::span_of::Equal
+    $Octothorpe: crate::cst::kiki_bridge::span_of::Octothorpe
 
-    $UpperName: crate::kiki_bridge::span_of::UpperName
-    $LowerName: crate::kiki_bridge::span_of::LowerName
-    $DollarUpperName: crate::kiki_bridge::span_of::DollarUpperName
-    $AtUpperName: crate::kiki_bridge::span_of::AtUpperName
-    $AtLowerName: crate::kiki_bridge::span_of::AtLowerName
-    $SingleQuoteLowerName: crate::kiki_bridge::span_of::SingleQuoteLowerName
+    $UpperName: crate::cst::kiki_bridge::span_of::UpperName
+    $LowerName: crate::cst::kiki_bridge::span_of::LowerName
+    $DollarUpperName: crate::cst::kiki_bridge::span_of::DollarUpperName
+    $AtUpperName: crate::cst::kiki_bridge::span_of::AtUpperName
+    $AtLowerName: crate::cst::kiki_bridge::span_of::AtLowerName
+    $SingleQuoteLowerName: crate::cst::kiki_bridge::span_of::SingleQuoteLowerName
 
-    $RustStringLiteral: crate::kiki_bridge::span_of::RustStringLiteral
+    $RustStringLiteral: crate::cst::kiki_bridge::span_of::RustStringLiteral
 }

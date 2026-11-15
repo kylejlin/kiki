@@ -1,4 +1,4 @@
-use crate::internal_prelude::*;
+use super::*;
 
 use raw_parser::Token as KikiToken;
 
@@ -77,7 +77,7 @@ pub(crate) mod span_of {
 }
 
 impl KikiToken {
-    pub(crate) fn from_lexer_token(token: Token, file: SourceFile) -> Self {
+    pub(crate) fn from_lexer_token(token: Token, file: FileSource) -> Self {
         macro_rules! impl_ {
             ($t:ident, $Variant:ident) => {{
                 let r = file.substr_range($t.raw).unwrap();
@@ -121,7 +121,7 @@ impl KikiToken {
         }
     }
 
-    pub(crate) fn into_lexer_token<'a>(self, file: SourceFile<'a>) -> Token<'a> {
+    pub(crate) fn into_lexer_token<'a>(self, file: FileSource<'a>) -> Token<'a> {
         use token::tagged_token::generic_tagged_token::TaggedToken;
 
         macro_rules! impl_ {

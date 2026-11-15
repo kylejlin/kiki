@@ -2,11 +2,11 @@ use crate::internal_prelude::*;
 
 /// This is compared (and hashed) by address range, not just by value.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SourceFile<'a> {
+pub struct FileSource<'a> {
     ass: Ass<'a>,
 }
 
-impl<'a> SourceFile<'a> {
+impl<'a> FileSource<'a> {
     pub const fn new(raw: &'a str) -> Self {
         Self { ass: Ass { raw } }
     }
@@ -23,12 +23,12 @@ impl<'a> SourceFile<'a> {
         Some(SourceFragment::new(self.raw().get(r)?))
     }
 }
-impl Debug for SourceFile<'_> {
+impl Debug for FileSource<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         Debug::fmt(&self.ass, f)
     }
 }
-impl Display for SourceFile<'_> {
+impl Display for FileSource<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         Display::fmt(&self.ass, f)
     }
@@ -65,7 +65,7 @@ pub struct CompareByValue<T> {
     pub raw: T,
 }
 
-pub(crate) type CbvFile<'a> = CompareByValue<SourceFile<'a>>;
+pub(crate) type CbvFile<'a> = CompareByValue<FileSource<'a>>;
 pub(crate) type CbvFragment<'a> = CompareByValue<SourceFragment<'a>>;
 
 impl Debug for CbvFile<'_> {
