@@ -77,10 +77,10 @@ pub(crate) mod span_of {
 }
 
 impl KikiToken {
-    pub(crate) fn from_lexer_token(token: Token, file: FileSource) -> Self {
+    pub(crate) fn from_lexer_token(token: Token, file_source: FileSource) -> Self {
         macro_rules! impl_ {
             ($t:ident, $Variant:ident) => {{
-                let r = file.substr_range($t.raw).unwrap();
+                let r = file_source.substr_range($t.raw).unwrap();
 
                 KikiToken::$Variant(TaggedSpan {
                     start: TextPosition {

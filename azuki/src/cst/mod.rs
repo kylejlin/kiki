@@ -4,6 +4,50 @@ mod kiki_bridge;
 mod massage;
 mod raw_parser;
 
+#[derive(Debug, Clone)]
+pub struct ParseError<'a> {
+    /// This is `None` if and only if there was an unexpected end of input.
+    pub unexpected_token: Option<Token<'a>>,
+}
+
+/// If there is a lexer error, this returns `Err(Err(LexError))`.
+/// If there are no lexer errors, but there is a parser error, this returns `Err(Ok(ParseError))`.
+/// Otherwise, this returns `Ok`.
+pub fn parse<'a>(
+    file_source: FileSource<'a>,
+) -> Result<File<'a>, Result<ParseError<'a>, LexError>> {
+    use massage::Massage;
+
+    let mut lexer = lex(file_source.raw());
+    let mut lex_error = None;
+
+    let tokens = lexer
+        .by_ref()
+        .map_while(|result| match result {
+            Ok(token) => Some(token),
+            Err(error) => {
+                lex_error = Some(error);
+                None
+            }
+        })
+        .fuse()
+        .map(|token| raw_parser::Token::from_lexer_token(token, file_source));
+
+    let parsed = raw_parser::parse(tokens);
+
+    if let Some(error) = lex_error.or_else(|| lexer.find_map(Result::err)) {
+        return Err(Err(error));
+    }
+
+    parsed
+        .map(|file| file.massage(file_source))
+        .map_err(|unexpected| {
+            Ok(ParseError {
+                unexpected_token: unexpected.map(|token| token.into_lexer_token(file_source)),
+            })
+        })
+}
+
 #[derive(Debug)]
 pub struct File<'a> {
     pub items: Vec<FileItem<'a>>,
