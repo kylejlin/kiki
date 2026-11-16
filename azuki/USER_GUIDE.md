@@ -1,655 +1,340 @@
 # Azuki user guide
 
-This guide is meant to be a (mostly) comprehensive reference.
-It is not meant to be a quick read.
-If you want to learn Azuki as quickly as possible,
-click [here](./QUICKSTART.md).
+Azuki generates Rust parsers from type definitions.
+The type definitions describe the grammar too.
+The parser reads tokens from a lexer you provide.
+
+This guide assumes you know Rust and context-free grammars.
+Read the [quickstart](./QUICKSTART.md) for project setup.
+The examples below show only the declarations under discussion.
 
 ## Table of contents
 
-- [Prerequisites](#prerequisites)
-- [Statements](#statements)
-  - [Generated terminal declarations](#generated-terminal-declarations)
-  - [`manual terminal` declarations](#manual-terminal-declarations)
-  - [`struct` declarations](#struct-declarations)
-  - [`enum` declarations](#enum-declarations)
-  - [Manual nonterminal declarations](#manual-nonterminal-declarations)
-  - [`start` declarations](#start-declarations)
-  - [`bridge` declarations](#bridge-declarations)
+- [`terminal` declarations](#terminal-declarations)
+- [`struct` declarations](#struct-declarations)
+- [`enum` declarations](#enum-declarations)
+- [The start symbol](#the-start-symbol)
+- [Using the generated parser](#using-the-generated-parser)
+- [Rust prefixes](#rust-prefixes)
+- [Manual nonterminal declarations](#manual-nonterminal-declarations)
+  - [`Self`](#self)
+  - [Recursive types](#recursive-types)
+- [`manual terminal` declarations](#manual-terminal-declarations)
 - [Lifetimes](#lifetimes)
-- [`Self`](#self)
-- [Generated Rust](#generated-rust)
-- [Identifier names](#identifier-names)
-- [Terminal names](#terminal-names)
-- [Capitalization](#capitalization)
+- [Grammar files](#grammar-files)
+- [Names](#names)
 - [Comments](#comments)
 
-## Prerequisites
+## `terminal` declarations
 
-This guide assumes that you know what a [context-free grammar](https://en.wikipedia.org/wiki/Context-free_grammar) is.
-You must understand the following terms:
+Suppose our lexer produces three kinds of tokens:
 
-- Terminal symbol (henceforth abbreviated as "terminal")
-- Nonterminal symbol (henceforth abbreviated as "nonterminal")
-- Production rule (henceforth abbreviated as "rule")
-- Start symbol
+- A number literal, with a value of type `isize`.
+- A string literal, with a value of type `String`.
+- A comma, with a value of type `()`.
 
-## Statements
+We expose these types in a Rust module called `azuki_bridge`:
 
-An Azuki file consists of multiple _statements_.
-A statement can be a
+```rs
+pub type Int = isize;
+pub type Text = String;
+pub type Unit = ();
+```
 
-- Generated terminal declaration (`terminal Name ...`)
-- `manual terminal` declaration
-- `struct` declaration
-- `enum` declaration
-- Manual nonterminal declaration (`manual Name ...`)
-- `start` declaration
-- `bridge` declaration
+Then we write the following Azuki:
 
-A file must have **exactly one** terminal declaration,
-either `terminal` or `manual terminal`,
-and **exactly one** `start` declaration
-and **exactly one** `bridge` declaration.
-A file can have unlimited `enum`, `struct`, and manual nonterminal declarations.
-The declarations do not have to appear in a particular order.
+```azuki
+terminal Token {
+    $NumberLiteral = @Int
+    $StringLiteral = @Text
+    $Comma = @Unit
+}
 
-Generated terminal declarations let Azuki generate the terminal enum.
-Likewise, `struct` and `enum` declarations define generated nonterminals:
-Azuki generates their Rust types.
-Manual terminal and manual nonterminal declarations use types supplied by the bridge.
+bridge crate::azuki_bridge
+```
 
-Most examples below show only the declarations relevant to that section.
-The [quickstart](./QUICKSTART.md) contains complete projects.
-When showing generated Rust, we omit parser internals and bridge import aliases
-so that the relevant type definitions are easier to read.
-Unless otherwise stated, the examples assume the generated parser
-is in `crate::parser`.
+Azuki generates a Rust enum equivalent to:
 
-## Generated terminal declarations
+```rs
+pub enum Token {
+    NumberLiteral(isize),
+    StringLiteral(String),
+    Comma(()),
+}
+```
 
-Generated terminal declarations use the `terminal` keyword.
-They let you define each terminal's Rust type and generate the terminal enum.
-For example, suppose we have a lexer
-that spits out three kinds of terminals:
+Each terminal has a name and a Rust type.
+The name begins with `$`.
+The type comes from the bridge module.
+For example, `@Int` refers to the bridge's `Int` type.
+Here, we have expanded the aliases in the generated Rust.
 
-1. `StringLiteral`, with a Rust type of `String`.
-2. `NumberLiteral`, with a Rust type of `isize`.
-3. `Comma`, with a Rust type of `()` (the unit type).
+The `bridge` declaration names the module.
+You must write that module yourself.
+We use it for Rust functions too, as explained later.
+
+### Other Rust types
+
+You can use your own types in the same way.
+For example, suppose your crate defines an `Ident` type.
+Re-export it from the bridge:
+
+```rs
+pub use crate::Ident;
+```
+
+Then use `$Ident = @Ident` in the terminal declaration.
+You do not write Rust type paths in the grammar.
+
+Two terminals can share a type.
+For example, both `$LParen` and `$RParen` can use `@Unit`.
+
+If a terminal and its bridge type share a name, omit `= @TypeName`.
+For example, `$Ident` means `$Ident = @Ident`.
+
+## `struct` declarations
+
+Suppose we want to parse a pair of numbers separated by a comma:
+
+```bnf
+<NumberPair> ::= NumberLiteral Comma NumberLiteral
+```
+
+We want to store the result in this Rust type:
+
+```rs
+pub struct NumberPair {
+    pub left: isize,
+    pub comma: (),
+    pub right: isize,
+}
+```
 
 We write:
 
 ```azuki
-terminal Token {
-    $StringLiteral = @StringLiteral
-    $NumberLiteral = @NumberLiteral
-    $Comma = @Comma
-}
-
-bridge crate::azuki_bridge
-```
-
-We also write the following Rust in `azuki_bridge.rs`:
-
-```rs
-pub type StringLiteral = String;
-pub type NumberLiteral = isize;
-pub type Comma = ();
-```
-
-This results in a Rust terminal enum equivalent to:
-
-```rs
-pub enum Token {
-    StringLiteral(crate::azuki_bridge::StringLiteral),
-    NumberLiteral(crate::azuki_bridge::NumberLiteral),
-    Comma(crate::azuki_bridge::Comma),
-}
-```
-
-Terminal names must begin with `$`.
-The first letter after `$` must be uppercase.
-Each entry has the form `$TerminalName = @TypeName`.
-The name on the left identifies the terminal.
-The name after `@` selects its Rust type from the bridge module.
-
-### Sharing terminal types
-
-What if two terminals have the same Rust type?
-We can select the same bridge type for both terminals:
-
-```azuki
-terminal Token {
-    $LParen = @Unit
-    $RParen = @Unit
-}
-```
-
-In the bridge module, we write:
-
-```rs
-pub type Unit = ();
-```
-
-Both variants store `Unit`.
-The variant names are still `LParen` and `RParen`.
-The terminal's name and its bridge type's name do not have to match.
-
-### Shorthand for matching type names
-
-If the terminal and bridge type have the same name,
-you can omit `= @TypeName`.
-For example, the full declaration at the beginning of this section
-can be shortened to:
-
-```azuki
-terminal Token {
-    $StringLiteral
-    $NumberLiteral
-    $Comma
-}
-
-bridge crate::azuki_bridge
-```
-
-Here, `$StringLiteral` is shorthand for `$StringLiteral = @StringLiteral`,
-and similarly for the other two terminals.
-
-### Crate-defined types
-
-Up until now, we've only used types defined in
-Rust's `core` or `std`.
-Suppose we want our terminals to have types
-that _we_ define.
-For example, we write the following `lib.rs`:
-
-```rs
-mod azuki_bridge;
-mod parser;
-
-pub struct Ident {
-    pub name: String,
-    pub span: (usize, usize),
-}
-
-pub struct NumLit {
-    pub val: isize,
-    pub span: (usize, usize),
-}
-
-pub struct StrLit {
-    pub val: String,
-    pub span: (usize, usize),
-}
-```
-
-We can write the following Azuki:
-
-```azuki
-terminal Token {
-    $Ident = @Ident
-    $NumLit = @NumLit
-    $StrLit = @StrLit
-}
-```
-
-In `azuki_bridge.rs`, we re-export the types:
-
-```rs
-pub use crate::{Ident, NumLit, StrLit};
-```
-
-Azuki gets these types from the bridge module.
-You do not write Rust type paths directly in the grammar.
-
-### Rust prefixes
-
-You can write a _Rust prefix_ before a generated terminal declaration.
-A Rust prefix has the form `rust"..."`,
-where `...` is Rust code that gets copied verbatim
-before the generated declaration.
-
-For example:
-
-```azuki
-rust"#[derive(Clone, Copy, Debug)]"
-terminal Token {
-    $LParen = @Unit
-    $RParen = @Unit
-}
-```
-
-The above code results in Rust equivalent to:
-
-```rs
-#[derive(Clone, Copy, Debug)]
-pub enum Token {
-    LParen(crate::azuki_bridge::Unit),
-    RParen(crate::azuki_bridge::Unit),
-}
-```
-
-Observe that the outer attribute
-(i.e., `#[derive(Clone, Copy, Debug)]`)
-gets copied verbatim into the generated Rust code.
-Unlike Kiki, you must put it inside a Rust prefix.
-
-#### Rust string literals
-
-A Rust string literal begins with `rust`,
-followed by zero or more `#` characters and a double quote.
-It ends at the first double quote followed by the same number of `#` characters.
-The contents are copied verbatim, including newlines.
-Backslashes do not introduce escapes.
-
-For example, these two prefixes have the same contents:
-
-```azuki
-rust"#[derive(Debug)]"
-rust#"#[derive(Debug)]"#
-```
-
-If the contents contain double quotes, use `#` delimiters:
-
-```azuki
-rust#"
-#[derive(Debug)]
-#[doc = "A pair of parentheses."]
-"#
-struct Parens(_: $LParen _: $RParen)
-```
-
-A declaration can have at most one Rust prefix.
-If you want multiple attributes, put them in the same string.
-Prefixes are supported before `terminal`, `struct`, and `enum` declarations.
-They are forbidden before manual terminal and manual nonterminal declarations.
-
-## `manual terminal` declarations
-
-Use `manual terminal` when the bridge supplies the terminal enum:
-
-```azuki
-manual terminal Token = @LexToken {
-    $Word = @Text
-    $Comma = @Unit
-}
-
-bridge crate::azuki_bridge
-```
-
-In the bridge module, we write:
-
-```rs
-pub type Text = String;
-pub type Unit = ();
-
-#[derive(Debug)]
-pub enum LexToken {
-    Word(Text),
-    Comma(Unit),
-}
-```
-
-Azuki re-exports this enum as `Token` instead of generating a fresh enum.
-The generated Rust is equivalent to:
-
-```rs
-pub use crate::azuki_bridge::LexToken as Token;
-```
-
-The body has exactly the same syntax and meaning as a `terminal` body.
-Each entry still declares a terminal and selects its payload type from the bridge.
-The supplied enum must have exactly the declared variants,
-each with one tuple field of the declared payload type.
-Even a unit payload uses a tuple variant, such as `Comma(())`, rather than `Comma`.
-Rust checks that the supplied enum matches these declarations.
-The enum's Rust variant order does not have to match the grammar's declaration order.
-
-As with manual nonterminals, a matching bridge name can be omitted:
-`manual terminal Token { ... }` means `manual terminal Token = @Token { ... }`.
-Payload overrides and their matching-name shorthand work as usual.
-The optional global lifetime list goes after the override, before `{`,
-as in `manual terminal Token = @LexToken 'src { $Word = @Text 'src }`.
-The [lifetime rules](#lifetimes) are the same for both terminal forms.
-
-Rust prefixes are forbidden on manual terminal declarations,
-just as they are on manual nonterminal declarations.
-Put enum attributes, such as derives, on the bridge enum's Rust definition.
-
-## `struct` declarations
-
-Suppose we have the following grammar rule
-
-```bnf
-<CommaSeparatedNumberPair> ::= NumberLiteral Comma NumberLiteral
-```
-
-...and we want to store it in the Rust data type
-
-```rs
-struct CommaSeparatedNumberPair {
-    left: isize,
-    comma: (),
-    right: isize,
-}
-```
-
-We can write the following Azuki:
-
-```azuki
-struct CommaSeparatedNumberPair {
+struct NumberPair {
     left: $NumberLiteral
     comma: $Comma
     right: $NumberLiteral
 }
-
-terminal Token {
-    $Comma = @Unit
-    $NumberLiteral = @Int
-}
 ```
 
-Here, the bridge module defines `pub type Int = isize;`
-and `pub type Unit = ();`.
+The fields describe what to parse, in order.
+They also describe what to store.
+We have defined the grammar and the Rust type together.
 
-Observe how the data type definition implicitly defines the grammar.
+A field can refer to another nonterminal too.
+Use its name without `$`, as in `pair: NumberPair`.
+The field stores a value of that nonterminal's type.
 
-### Using `_` to omit fields
+### Omitting fields
 
-The `comma: ()` field is rather useless in this example.
-We can tell Azuki to omit that field using underscore syntax:
+The comma separates the numbers.
+Its value tells us nothing.
+Use `_` to leave it out of the Rust type:
 
 ```azuki
-struct CommaSeparatedNumberPair {
+struct NumberPair {
     left: $NumberLiteral
     _: $Comma
     right: $NumberLiteral
 }
-
-terminal Token {
-    $Comma = @Unit
-    $NumberLiteral = @Int
-}
 ```
 
-This results in the following Rust:
+This generates:
 
-```rust
-pub struct CommaSeparatedNumberPair {
+```rs
+pub struct NumberPair {
     pub left: isize,
     pub right: isize,
 }
 ```
 
-### Tuple structs
+The parser still expects the comma.
+It just discards its value.
 
-You can also use tuple syntax, just like in Rust:
+### Tuple and unit-like structs
+
+You can use tuple syntax, just like in Rust:
 
 ```azuki
-struct CommaSeparatedNumberPair(
+struct NumberPair(
     $NumberLiteral
     _: $Comma
     $NumberLiteral
 )
-
-terminal Token {
-    $NumberLiteral = @Int
-    $Comma = @Unit
-}
 ```
 
-This results in
+This generates:
 
-```rust
-pub struct CommaSeparatedNumberPair(pub isize, pub isize);
+```rs
+pub struct NumberPair(pub isize, pub isize);
 ```
 
-Observe that you can use `_` syntax to omit tuple fields,
-like we do in `_: $Comma`.
-
-### Unit-like structs
-
-For empty productions, you can use unit-like structs.
-In practice, this is never useful.
-However, here's an example:
+For an empty production, use a unit-like struct:
 
 ```azuki
 struct Epsilon
 ```
 
-This corresponds to the following grammar:
-
-```bnf
-<Epsilon> ::=
-```
-
-Notice the RHS is empty.
-
-The above Azuki generates the following Rust:
-
-```rs
-pub struct Epsilon;
-```
-
-### Rust prefixes before structs
-
-You can write a Rust prefix before a struct.
-You use the same syntax as when you write [a Rust prefix before a generated terminal declaration](#rust-prefixes).
-
-Example:
-
-```azuki
-rust"#[derive(Clone, Debug)]"
-struct ReturnStatement(
-    _: $ReturnKw
-    Expr
-    _: $Semicolon
-)
-```
-
-The above code results in the Rust code below:
-
-```rs
-#[derive(Clone, Debug)]
-pub struct ReturnStatement(pub Expr);
-```
+This parses an empty sequence and generates `pub struct Epsilon;`.
+A struct with all fields skipped also becomes unit-like.
 
 ## `enum` declarations
 
-Up until now, we've only considered nonterminals
-with one production rule.
-What if there are multiple production rules?
-For example, suppose we have the following grammar...
-
-```bnf
-<OneOrMoreNumbers> ::= NumLit
-                     | <OneOrMoreNumbers> NumLit
-```
-
-...and we want to store it in the Rust type:
+So far, each nonterminal has had one production rule.
+Suppose we want to accept either a number or a string.
+We want a separate Rust variant for each case:
 
 ```rs
-enum OneOrMoreNumbers {
-    One(isize),
-    Many(Box<OneOrMoreNumbers>, isize),
+pub enum Literal {
+    Number(isize),
+    String(String),
 }
 ```
-
-We can write the following Azuki:
-
-```azuki
-enum OneOrMoreNumbers {
-    One($NumLit)
-    Many(
-        BoxedNumbers
-        $NumLit
-    )
-}
-
-manual BoxedNumbers = @BoxedNumbers {
-    @boxed_numbers(OneOrMoreNumbers)
-}
-
-terminal Token {
-    $NumLit = @Int
-}
-```
-
-In the bridge module, we write:
-
-```rs
-use crate::parser::non_terminals::OneOrMoreNumbers;
-
-pub type Int = isize;
-pub type BoxedNumbers = Box<OneOrMoreNumbers>;
-
-pub fn boxed_numbers(inner: OneOrMoreNumbers) -> BoxedNumbers {
-    Box::new(inner)
-}
-```
-
-Observe that Azuki does not automatically insert `Box`.
-If we had used `OneOrMoreNumbers` directly in the `Many` variant,
-the generated Rust type would have infinite size.
-The `manual BoxedNumbers = @BoxedNumbers` declaration tells Azuki how to box the value.
-We explain manual nonterminal declarations in detail [below](#manual-nonterminal-declarations).
-
-### `_` syntax
-
-Just like with `struct` declarations, you can use `_` to omit fields.
-For example, we can change the preceding enum to parse commas between numbers:
-
-```azuki
-enum OneOrMoreNumbers {
-    One($NumLit)
-    Many(
-        BoxedNumbers
-        _: $Comma
-        $NumLit
-    )
-}
-
-terminal Token {
-    $NumLit = @Int
-    $Comma = @Unit
-}
-```
-
-Keep the same `manual BoxedNumbers = @BoxedNumbers` declaration and bridge code,
-and add `pub type Unit = ();` to the bridge.
-
-This results in a Rust enum equivalent to:
-
-```rust
-pub enum OneOrMoreNumbers {
-    One(isize),
-    Many(
-        Box<OneOrMoreNumbers>,
-        isize,
-    ),
-}
-```
-
-### Named variant fields
-
-An enum variant can use named fields, just like in Rust:
-
-```azuki
-enum OneOrMoreNumbers {
-    One { val: $NumLit }
-    Many {
-        left: BoxedNumbers
-        right: $NumLit
-    }
-}
-```
-
-Once again, keep the same `manual BoxedNumbers = @BoxedNumbers` declaration,
-terminal declaration, and bridge code.
-
-This results in a Rust enum equivalent to:
-
-```rs
-pub enum OneOrMoreNumbers {
-    One {
-        val: isize,
-    },
-    Many {
-        left: Box<OneOrMoreNumbers>,
-        right: isize,
-    },
-}
-```
-
-### Unit-like variants
-
-An enum variant can use unit-like syntax, just like in Rust:
-
-```azuki
-enum ZeroOrOneComma {
-    None
-    One(_: $Comma)
-}
-```
-
-This results in:
-
-```rs
-pub enum ZeroOrOneComma {
-    None,
-    One,
-}
-```
-
-### Rust prefixes before enums
-
-You can write a Rust prefix before an enum.
-You use the same syntax as when you write [a Rust prefix before a generated terminal declaration](#rust-prefixes).
-
-Example:
-
-```azuki
-rust"#[derive(Clone, Copy, Debug)]"
-enum ZeroOrOneComma {
-    None
-    One(_: $Comma)
-}
-```
-
-The above code results in the Rust code below:
-
-```rs
-#[derive(Clone, Copy, Debug)]
-pub enum ZeroOrOneComma {
-    None,
-    One,
-}
-```
-
-## Manual nonterminal declarations
-
-`struct` and `enum` declarations let Azuki generate Rust types for you.
-What if you want to use a type that you define yourself?
-For example, suppose we want a sequence of numbers
-stored in a `Vec<isize>`.
 
 We write:
 
 ```azuki
-manual Numbers = @NumberList {
-    @empty
-    @push(Numbers $NumLit)
-}
-
-terminal Token {
-    $NumLit = @Int
+enum Literal {
+    Number($NumberLiteral)
+    String($StringLiteral)
 }
 ```
 
-In the bridge module, we write:
+Each variant defines a rule.
+`Number` parses a number literal.
+`String` parses a string literal.
+
+Variants can have named fields, just like structs:
+
+```azuki
+enum Literal {
+    Number {
+        value: $NumberLiteral
+    }
+    String($StringLiteral)
+}
+```
+
+Use `_` to omit fields here too.
+
+### Empty rules and skipped fields
+
+Suppose a comma is optional:
+
+```azuki
+enum OptionalComma {
+    None
+    Some(_: $Comma)
+}
+```
+
+`None` parses an empty sequence.
+`Some` parses a comma and discards its value.
+Both Rust variants are unit-like:
 
 ```rs
-pub type Int = isize;
+pub enum OptionalComma {
+    None,
+    Some,
+}
+```
+
+## The start symbol
+
+Choose the nonterminal you want the parser to return:
+
+```azuki
+start NumberPair
+```
+
+This selects `NumberPair` as the start symbol.
+You must define it separately.
+Use a `struct`, `enum`, or manual nonterminal declaration.
+
+## Using the generated parser
+
+Suppose Azuki writes the parser to `parser.rs`.
+Declare both Rust modules in `lib.rs`:
+
+```rs
+mod azuki_bridge;
+mod parser;
+```
+
+The terminal enum and `parse` function are in `parser`.
+Nonterminal types are in `parser::non_terminals`.
+Generated types and struct fields are public.
+
+For the number-pair grammar, we can write:
+
+```rs
+use crate::parser::non_terminals::NumberPair;
+use crate::parser::{Token, parse};
+
+let result: Result<NumberPair, Option<Token>> = parse([
+    Token::NumberLiteral(12),
+    Token::Comma(()),
+    Token::NumberLiteral(34),
+]);
+```
+
+`parse` accepts any `IntoIterator` of terminal values.
+It returns `Ok(pair)` on success.
+The pair stores `12` and `34` in its two fields.
+
+An unexpected token produces `Err(Some(token))`.
+Unexpected end of input produces `Err(None)`.
+The generated parser has no runtime dependency on Azuki.
+
+## Rust prefixes
+
+Suppose we want to print a parsed pair with `Debug`.
+We need a derive on the generated struct.
+Put a Rust prefix before the declaration:
+
+```azuki
+rust"#[derive(Debug)]"
+struct NumberPair {
+    left: $NumberLiteral
+    _: $Comma
+    right: $NumberLiteral
+}
+```
+
+Azuki copies the prefix before the Rust declaration.
+Here, it adds `#[derive(Debug)]` to `NumberPair`.
+Prefixes work before `terminal`, `struct`, and `enum` declarations.
+Each declaration can have one prefix.
+Put multiple attributes in the same string.
+
+### Quotes inside a prefix
+
+Use `#` delimiters when the Rust code contains quotes:
+
+```azuki
+rust#"#[doc = "A pair of numbers."]"#
+struct NumberPair($NumberLiteral _: $Comma $NumberLiteral)
+```
+
+You can use any number of `#` characters.
+The closing quote must have the same number after it.
+The string ends at the first such closing delimiter.
+Newlines are allowed.
+Backslashes do not introduce escapes.
+
+## Manual nonterminal declarations
+
+So far, Azuki has generated our nonterminal types.
+Suppose we want to parse a sequence of numbers.
+We want to store them in a `Vec<isize>`.
+A manual nonterminal lets us choose that type and build its values ourselves.
+
+First, add the type and two functions to the bridge:
+
+```rs
 pub type NumberList = Vec<Int>;
 
 pub fn empty() -> NumberList {
@@ -662,486 +347,297 @@ pub fn push(mut numbers: NumberList, value: Int) -> NumberList {
 }
 ```
 
-This corresponds to the following grammar:
-
-```bnf
-<Numbers> ::=
-            | <Numbers> NumLit
-```
-
-Unlike a `struct` or `enum` declaration,
-a manual nonterminal declaration does not generate a new Rust type.
-`Numbers` names the grammar symbol,
-and `= @NumberList` selects its Rust type from the bridge module.
-The generated parser re-exports `NumberList` as `non_terminals::Numbers`.
-Each variant names a bridge function to call.
-The function takes the stored inputs, in order,
-and returns the manual nonterminal's Rust type.
-
-Here, `@empty` calls `empty()` with no arguments.
-`@push(Numbers $NumLit)` calls `push(numbers, value)`.
-
-Manual nonterminal inputs use tuple syntax.
-You can use `_: Symbol` to parse an input without passing it to the function.
-For example:
+Then write:
 
 ```azuki
-manual ParenthesizedNumber = @Int {
-    @identity(_: $LParen $NumLit _: $RParen)
-}
-```
-
-In the bridge module, we write:
-
-```rs
-pub fn identity(value: Int) -> Int {
-    value
-}
-```
-
-Here, `= @Int` selects the bridge type `Int` for `ParenthesizedNumber`.
-The generated parser re-exports `Int` as `non_terminals::ParenthesizedNumber`.
-
-A manual nonterminal declaration must have at least one variant.
-Two variants of the same manual nonterminal declaration cannot have the same symbol sequence,
-even if they call different functions or skip different inputs.
-Similarly, two variants of the same enum cannot have the same symbol sequence.
-
-Azuki checks the grammar's names and symbol sequences.
-Rust checks that the bridge types and functions exist,
-and that their signatures match the grammar.
-Manual nonterminal functions return the nonterminal's value directly;
-there is no special syntax for returning a parser error from a manual nonterminal function.
-
-### Shorthand for matching type names
-
-If the grammar symbol and bridge type have the same name,
-you can omit `= @TypeName`.
-For example, suppose the bridge also defines `pub type Numbers = NumberList;`.
-We can write the full declaration:
-
-```azuki
-manual Numbers = @Numbers {
+manual Numbers = @NumberList {
     @empty
-    @push(Numbers $NumLit)
+    @push(Numbers $NumberLiteral)
 }
 ```
 
-Or, we can use the shorthand:
+`Numbers` is the grammar symbol.
+`NumberList` is its Rust type.
+Azuki re-exports that type as `non_terminals::Numbers`.
 
-```azuki
-manual Numbers {
-    @empty
-    @push(Numbers $NumLit)
+Each rule names a bridge function.
+The first rule parses an empty sequence and calls `empty()`.
+The second parses a list followed by a number.
+It calls `push(numbers, value)` to extend the list.
+
+The function receives its inputs in grammar order.
+Use `_: Symbol` to skip an input here too.
+Skipped inputs are parsed but are not passed to the function.
+
+Rust checks the function's arguments and return type.
+The function must return the nonterminal's value directly.
+There is no special syntax for returning a parser error.
+
+If the bridge type is also called `Numbers`, omit `= @NumberList`.
+This follows the same rule as terminal payloads.
+
+### `Self`
+
+Inside a `struct`, `enum`, or manual nonterminal, `Self` names the enclosing nonterminal.
+For example, `@push(Self $NumberLiteral)` means `@push(Numbers $NumberLiteral)` above.
+
+### Recursive types
+
+Generated fields store nonterminal values directly.
+Azuki does not insert `Box` for you.
+For recursive Rust types, you can add a manual nonterminal that boxes its input.
+
+For example, suppose we want this Rust type:
+
+```rs
+pub enum Expr {
+    Empty,
+    Wrapped(Box<Expr>),
 }
 ```
 
-Both declarations select the bridge type `Numbers`.
-
-## `start` declarations
-
-You must specify a starting symbol for the grammar.
-Use a `start` declaration, like so:
-
-```azuki
-start FooBar
-```
-
-The start symbol must be a nonterminal symbol.
-
-Note that a `start` declaration does _not_ define the referenced
-symbol (i.e., `FooBar`, in this case).
-You must define it separately using a `struct`, `enum`, or manual nonterminal definition,
-as explained in previous sections.
-
-## `bridge` declarations
-
-You must specify a Rust module that supplies terminal types,
-manual terminal enums, manual nonterminal types, and manual nonterminal functions.
-Use a `bridge` declaration, like so:
-
-```azuki
-bridge crate::azuki_bridge
-```
-
-In `lib.rs`, declare the module:
+Add the following to the bridge:
 
 ```rs
-mod azuki_bridge;
-mod parser;
+use crate::parser::non_terminals::Expr;
+
+pub type BoxedExpr = Box<Expr>;
+
+pub fn boxed(inner: Expr) -> BoxedExpr {
+    Box::new(inner)
+}
 ```
 
-The `bridge` declaration does _not_ create the module.
-You must write it yourself.
-The types and functions used by the generated parser must be visible to it.
-The examples use `pub` aliases, re-exports, and functions for this purpose.
+Declare `$LParen` and `$RParen` with type `@Unit`.
+Then write:
 
-A bridge path consists of names separated by `::`.
-The generated parser uses this path in a Rust `use` statement.
-Paths beginning with `crate::` are convenient,
-since they do not depend on where the generated parser module is located.
+```azuki
+enum Expr {
+    Empty
+    Wrapped(_: $LParen BoxedExpr _: $RParen)
+}
 
-## Lifetimes
+manual BoxedExpr {
+    @boxed(Expr)
+}
+```
 
-A terminal type can borrow from the input.
-For example, suppose the bridge module contains:
+The parser calls `boxed` after parsing the inner `Expr`.
+The [quickstart](./QUICKSTART.md) includes the full grammar and project setup.
+
+## `manual terminal` declarations
+
+Your lexer may already return a suitable token enum.
+You can use that enum directly.
+For example, suppose the bridge supplies:
 
 ```rs
-pub type Text<'src> = &'src str;
+pub enum LexToken {
+    NumberLiteral(Int),
+    StringLiteral(Text),
+    Comma(Unit),
+}
 ```
 
 We write:
 
 ```azuki
-terminal Token 'src {
-    $Word = @Text 'src
+manual terminal Token = @LexToken {
+    $NumberLiteral = @Int
+    $StringLiteral = @Text
     $Comma = @Unit
 }
 ```
 
-The lifetime list after `Token` declares the lifetimes available in the grammar.
-The lifetime list after a terminal variant specifies the arguments
-for that terminal's bridge type.
-Here, `$Word` has Rust type `Text<'src>`,
-and `$Comma` has Rust type `Unit`, with no lifetime arguments.
-The bridge also needs `pub type Unit = ();`.
+Azuki re-exports `LexToken` as `Token`.
+The body follows the same rules as a generated terminal declaration.
+If the bridge enum is also named `Token`, omit `= @LexToken`.
 
-A manual nonterminal declaration can specify lifetime arguments too:
+The supplied enum must have exactly the declared variants.
+Their order does not matter.
+Each variant must have one tuple field of the declared type.
+Even `Comma` needs a field, with type `()`.
+Rust checks that the enum matches these declarations.
 
-```azuki
-manual Words = @Words 'src {
-    @empty
-    @push(Words $Word)
-}
-```
+Put attributes on the Rust enum itself.
+Manual declarations cannot have Rust prefixes.
 
-In the bridge module, we write:
+## Lifetimes
 
-```rs
-pub type Words<'src> = Vec<Text<'src>>;
-
-pub fn empty<'src>() -> Words<'src> {
-    Vec::new()
-}
-
-pub fn push<'src>(mut words: Words<'src>, word: Text<'src>) -> Words<'src> {
-    words.push(word);
-    words
-}
-```
-
-The bridge type's name goes after `@`, followed by its lifetime arguments.
-For example, we can name the grammar symbol `WordList`
-while still selecting the bridge type `Words`:
-
-```azuki
-manual WordList = @Words 'src {
-    @empty
-    @push(WordList $Word)
-}
-```
-
-You do not write lifetime arguments on grammar symbol occurrences.
-For example, use `Words`, not `Words 'src`, in a struct field:
-
-```azuki
-struct Document {
-    words: Words
-}
-```
-
-Azuki infers the lifetimes of generated structs and enums
-from the fields they store.
-The above declaration results in a Rust struct equivalent to:
+So far, our string literals have owned their text.
+Suppose we want to borrow that text from the input.
+Change the bridge alias to:
 
 ```rs
-pub struct Document<'src> {
-    pub words: crate::azuki_bridge::Words<'src>,
-}
+pub type Text<'src> = &'src str;
 ```
 
-Skipped fields do not contribute lifetimes to a generated struct or enum.
-A manual nonterminal type uses exactly the lifetime arguments you declare,
-regardless of its function inputs.
-For example, a manual nonterminal function may take borrowed text
-and return an owned `String`.
-In that case, the manual nonterminal type does not need `'src`.
-
-Every lifetime used by a terminal variant or manual nonterminal declaration
-must be declared in the terminal declaration's global lifetime list
-(whether it uses `terminal` or `manual terminal`).
-A lifetime list cannot contain duplicates.
-If there are multiple lifetimes, separate them with whitespace:
+Then write:
 
 ```azuki
-terminal Token 'src 'other {
-    $Pair = @Pair 'other 'src
+terminal Token 'src {
+    $NumberLiteral = @Int
+    $StringLiteral = @Text 'src
+    $Comma = @Unit
 }
 ```
 
-For terminal payload types and manual nonterminal bridge types,
-lifetime arguments stay in the order you write them.
-For generated structs and enums, inferred lifetimes appear in the order
-of the global lifetime list.
-The terminal enum includes only lifetimes used by its terminal variants.
-For `manual terminal`, the bridge enum must accept those same lifetime arguments,
-in global declaration order; unused global lifetimes are omitted.
+The list after `Token` is the grammar's global lifetime list.
+After `@Text`, `'src` is an argument to the bridge type.
+Here, string literals have type `Text<'src>`.
+The other payload types have no lifetime arguments.
 
-The matching-name shorthand also works with lifetimes:
-`manual Words = @Words 'src { ... }` can be shortened to `manual Words 'src { ... }`.
-Likewise, `$Text = @Text 'src` can be shortened to `$Text 'src`.
+### Generated types
 
-## `Self`
-
-We can refer to a nonterminal by its name inside its own declaration.
-For example, here is the full form of the number-list example:
+Now put a string literal in a struct:
 
 ```azuki
-manual Numbers = @NumberList {
-    @empty
-    @push(Numbers $NumLit)
+struct Message {
+    text: $StringLiteral
 }
 ```
 
-Inside a `struct`, `enum`, or manual nonterminal declaration,
-we can use `Self` as shorthand for the enclosing nonterminal's name:
+Azuki infers the struct's lifetimes from its stored fields.
+This generates a type equivalent to:
+
+```rs
+pub struct Message<'src> {
+    pub text: &'src str,
+}
+```
+
+Azuki also infers `'src` for types that store a `Message`.
+Write `message: Message` in the grammar.
+Leave lifetime arguments off symbol references.
+Skipped fields do not contribute lifetimes.
+
+### Manual types
+
+Suppose we want to return the borrowed string itself.
+A manual nonterminal can do that:
 
 ```azuki
-manual Numbers = @NumberList {
-    @empty
-    @push(Self $NumLit)
+manual BorrowedText = @Text 'src {
+    @identity($StringLiteral)
 }
 ```
 
-The two declarations have the same meaning.
-`Self` can appear wherever a grammar symbol can appear in a fieldset or manual nonterminal input.
-Inside an enum variant, `Self` means the enum, not the variant.
-Using `Self` does not insert a `Box`.
+The bridge function simply returns its input:
 
-## Generated Rust
+```rs
+pub fn identity<'src>(text: Text<'src>) -> Text<'src> {
+    text
+}
+```
 
-Suppose Azuki generates `parser.rs`, and `lib.rs` contains `mod parser;`.
-The terminal enum and `parse` function are in `parser`.
-The nonterminal types are in `parser::non_terminals`.
+List the lifetime arguments after the bridge type.
+These arguments determine the manual type's lifetimes.
+Azuki does not infer them from the function inputs.
+A function can accept borrowed text and return an owned value.
+In that case, the manual type does not need `'src`.
+
+Matching-name shorthand works with lifetimes too.
+`$Text 'src` means `$Text = @Text 'src`.
+Likewise, `manual Text 'src { ... }` selects the bridge type `Text<'src>`.
+
+### Multiple lifetimes
+
+A bridge type may need more than one lifetime.
+Declare all lifetimes in the terminal declaration.
+Separate them with whitespace.
 For example:
 
-```rs
-use crate::parser::non_terminals::Expr;
-use crate::parser::{Token, parse};
+```azuki
+terminal Token 'left 'right {
+    $Pair = @Pair 'right 'left
+}
 ```
 
-Generated structs and their stored fields are public.
-Generated enums are public.
-A field's Rust type is the type of the referenced grammar symbol.
-Azuki does not automatically insert `Box` around nonterminals.
-If recursive Rust types need indirection, provide it through a manual nonterminal,
-as in the [enum example](#enum-declarations).
+Type arguments keep the order you write them.
+Here, the bridge type receives `'right` before `'left`.
+Inferred lifetimes on generated structs and enums follow global declaration order.
+The terminal enum follows global order too.
+It includes only lifetimes used by its payloads.
 
-The `parse` function accepts any `IntoIterator` of terminal enum values.
-For a grammar with `start Expr` and no lifetimes,
-its signature is equivalent to:
+Each lifetime list must be free of duplicates.
+Every lifetime argument must appear in the global list.
 
-```rs
-pub fn parse<S>(src: S) -> Result<Expr, Option<Token>>
-where
-    S: IntoIterator<Item = Token>,
+### Manual terminal enums
+
+For `manual terminal`, put the global list after the optional type override:
+
+```azuki
+manual terminal Token = @LexToken 'src {
+    $NumberLiteral = @Int
+    $StringLiteral = @Text 'src
+    $Comma = @Unit
+}
 ```
 
-It returns `Ok(value)` if parsing succeeds,
-`Err(Some(token))` for an unexpected token,
-or `Err(None)` for unexpected end of input.
-The generated parser does not require Azuki as a runtime dependency.
+The bridge enum must accept the payload lifetimes in global order.
+Unused global lifetimes are omitted.
 
-To generate Rust in a build script, call
-`azuki::convenience::azuki_to_rust(FileSource::new(&source), file_name)`.
-Import `FileSource` from `azuki::source_text`.
-On success, the generated code is in the returned value's `raw` field.
-On failure, the returned error displays a human-readable diagnostic.
-The [quickstart](./QUICKSTART.md) includes a complete build script.
+## Grammar files
 
-## Identifier names
+A file must contain exactly one of each:
 
-Identifier names begin with an ASCII letter,
-followed by zero or more ASCII letters, digits, or underscores.
-Unlike Kiki, an identifier cannot begin with an underscore.
+- A terminal declaration, either `terminal` or `manual terminal`.
+- A `start` declaration.
+- A `bridge` declaration.
+
+You can add any number of `struct`, `enum`, and manual nonterminal declarations.
+Declarations can appear in any order.
+
+A bridge path consists of names separated by `::`.
+Azuki uses it in a Rust `use` statement.
+A path starting with `crate::` works from any parser module.
+The bridge's types and functions must be visible to the parser.
+
+Every referenced symbol must be defined.
+Terminal enum names and nonterminal names must be distinct.
+Variant names must be distinct within each enum.
+Field names must be distinct within each named fieldset.
+You can repeat `_`.
+
+An enum or manual nonterminal must have at least one variant.
+Its variants must have different symbol sequences.
+Changing field names or skipping fields does not change the sequence.
+The grammar must be LALR(1).
+
+## Names
+
+Identifiers start with an ASCII letter.
+The remaining characters can be ASCII letters, digits, or underscores.
+An identifier cannot start with `_`.
 The bare `_` is reserved for skipped fields.
-You cannot name an identifier `terminal`, `start`, `struct`, `enum`,
-`manual`, `bridge`, or `Self`.
 
-You cannot name an identifier any word that is reserved in Rust.
-This is not enforced by Azuki.
-That is, if you name an identifier using a reserved word
-(e.g., `impl`), Azuki will _not_ produce an error.
-However, the generated Rust code will almost certainly fail to compile.
+The first letter must be uppercase in these names:
 
-Good:
+- Terminal enum names: `Token`.
+- Nonterminal names: `NumberPair`.
+- Enum variant names: `Number`.
+- Terminal names: `$NumberLiteral`.
+- Bridge type names: `@Int`.
 
-- `FuncDef`
-- `lhs`
-- `rhs`
+Field names start with a lowercase letter, as in `left`.
+Bridge function names do too, as in `@push`.
+Lifetime names use the same convention, with a leading quote: `'src`.
+Later letters can have either case.
 
-Bad:
-
-- `terminal`
-- `start`
-- `struct`
-- `enum`
-- `manual`
-- `bridge`
-- `Self`
-- `_hidden`
-- `impl`
-- `mod`
-- `123`
-- `!#$@`
-
-## Terminal names
-
-A terminal name is valid iff it is of the form `$<ident_name>`,
-where `<ident_name>` is a valid identifier name beginning with an uppercase letter.
-
-Good:
-
-- `$Comma`
-- `$LParen`
-- `$NumberLiteral`
-
-Bad:
-
-- `$start`
-- `$123`
-- `$$`
-
-## Capitalization
-
-The following must start with an uppercase letter
-(after `$` or `@`, where applicable):
-
-- Terminal names
-
-  ```azuki
-  // RIGHT
-  terminal Token {
-      $NumLit = @Int
-  }
-
-  // WRONG
-  terminal Token {
-      $num_lit = @Int
-  }
-  ```
-
-- Terminal enum names, nonterminal names, and bridge type names
-
-  ```azuki
-  // RIGHT
-  struct Foo($NumLit)
-  enum BarBaz {
-      Qux($StrLit)
-  }
-
-  // WRONG
-  struct foo($NumLit)
-  enum bar_baz {
-      Qux($StrLit)
-  }
-  ```
-
-- Enum variants
-
-  ```azuki
-  // RIGHT
-  enum Lorem {
-      Ipsum($StrLit)
-      Sit($NumLit)
-      Amet(_: $Comma)
-  }
-
-  // WRONG
-  enum Lorem {
-      ipsum($StrLit)
-      sit($NumLit)
-      amet(_: $Comma)
-  }
-  ```
-
-The following must start with a lowercase letter:
-
-- Struct field names
-
-  ```azuki
-  // RIGHT
-  struct Foo {
-      bar: $NumLit
-      _: $Comma
-      qux: $NumLit
-  }
-
-  // WRONG
-  struct Foo {
-      Bar: $NumLit
-      _: $Comma
-      Qux: $NumLit
-  }
-  ```
-
-- Enum variant field names
-
-  ```azuki
-  // RIGHT
-  enum Lorem {
-      Ipsum {
-          bar: $NumLit
-          _: $Comma
-          qux: $NumLit
-      }
-  }
-
-  // WRONG
-  enum Lorem {
-      Ipsum {
-          Bar: $NumLit
-          _: $Comma
-          Qux: $NumLit
-      }
-  }
-  ```
-
-Manual nonterminal function names must have the form `@lower_name`.
-Lifetime names must have the form `'lower_name`.
-The names can contain uppercase letters after their first letter.
+Azuki reserves `terminal`, `start`, `struct`, `enum`, `manual`, `bridge`, and `Self`.
+Avoid Rust reserved words too.
+Azuki does not reject all of them.
+They can make the generated Rust fail to compile.
 
 ## Comments
 
-You can write single-line comments with `//`.
+Use `//` for a single-line comment:
 
 ```azuki
-// This file parses the language of balanced parentheses.
-// The language includes the empty string.
-
-start Expr
-
-enum Expr {
-    Empty
-    Wrap(
-        _: $LParen
-        BoxedExpr
-        _: $RParen
-    )
+// A pair of numbers separated by a comma.
+struct NumberPair {
+    left: $NumberLiteral
+    _: $Comma // Parse the comma without storing it.
+    right: $NumberLiteral
 }
-
-manual BoxedExpr = @BoxedExpr {
-    @boxed(Expr)
-}
-
-terminal Token {
-    // You can write a comment on its own line.
-    $LParen = @Unit // Or, you can write a comment at the end of a line.
-    $RParen = @Unit
-}
-
-bridge crate::azuki_bridge
 ```
-
-The bridge supplies `Unit`, `BoxedExpr`, and `boxed`,
-as in the [quickstart](./QUICKSTART.md).
