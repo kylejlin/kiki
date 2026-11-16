@@ -550,6 +550,15 @@ impl<T> TerminalIdMap<T> {
     pub(crate) fn len(&self) -> usize {
         self.raw.len()
     }
+
+    pub(crate) fn enumerate(&self) -> impl Iterator<Item = (TerminalId, &T)> {
+        self.raw.iter().enumerate().map(|(i, value)| {
+            let id = TerminalId {
+                raw: NonZeroUsize::new(i + 1).unwrap(),
+            };
+            (id, value)
+        })
+    }
 }
 
 impl<T> Index<TerminalId> for TerminalIdMap<T> {
