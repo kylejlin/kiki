@@ -628,3 +628,11 @@ impl Debug for OriginalRuleId {
         Debug::fmt(&self.raw, f)
     }
 }
+
+impl Index<RuleId> for PreflightCertificate<'_> {
+    type Output = Rule;
+
+    fn index(&self, index: RuleId) -> &Self::Output {
+        &self.rules[index.as_usize()]
+    }
+}
