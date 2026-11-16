@@ -11,7 +11,7 @@ pub struct Table {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Action {
     Shift(StateId),
-    Reduce(usize),
+    Reduce(RuleId),
     Accept,
     Err,
 }
@@ -84,8 +84,43 @@ impl Table {
             }
         }
 
-        for (state_ids, state) in machine.enumerate_states() {
-            todo!()
+        for (state_id, state) in machine.enumerate_states() {
+            for item in state.items.iter() {
+                if item.next_symbol(takeoff).is_some() {
+                    continue;
+                }
+
+                let rule = &takeoff[item.rule_id];
+                let Some(lhs) = rule.lhs.into_original() else {
+                    if item.lookahead == EoiOrTerminal::Eoi {
+                        let entry = &mut out[(state_id, item.lookahead)];
+
+                        match *entry {
+                            Action::Err => {
+                                *entry = Action::Accept;
+                            }
+
+                            Action::Shift(_) | Action::Reduce(_) | Action::Accept => {
+                                return Err(todo!());
+                            }
+                        }
+                    } else {
+                        todo!()
+                    }
+
+                    continue;
+                };
+
+                let entry = &mut out[(state_id, item.lookahead)];
+
+                match *entry {
+                    Action::Err => {
+                        *entry = Action::Reduce(item.rule_id);
+                    }
+
+                    Action::Shift(_) | Action::Reduce(_) | Action::Accept => return Err(todo!()),
+                }
+            }
         }
 
         todo!();
@@ -94,17 +129,31 @@ impl Table {
     }
 }
 
-impl Index<(StateId, TerminalId)> for Table {
+impl Index<(StateId, EoiOrTerminal)> for Table {
     type Output = Action;
 
-    fn index(&self, index: (StateId, TerminalId)) -> &Self::Output {
+    fn index(&self, index: (StateId, EoiOrTerminal)) -> &Self::Output {
         todo!()
     }
 }
 
-impl IndexMut<(StateId, TerminalId)> for Table {
-    fn index_mut(&mut self, index: (StateId, TerminalId)) -> &mut Self::Output {
+impl IndexMut<(StateId, EoiOrTerminal)> for Table {
+    fn index_mut(&mut self, index: (StateId, EoiOrTerminal)) -> &mut Self::Output {
         todo!()
+    }
+}
+
+impl Index<(StateId, TerminalId)> for Table {
+    type Output = Action;
+
+    fn index(&self, (s, t): (StateId, TerminalId)) -> &Self::Output {
+        &self[(s, EoiOrTerminal::Terminal(t))]
+    }
+}
+
+impl IndexMut<(StateId, TerminalId)> for Table {
+    fn index_mut(&mut self, (s, t): (StateId, TerminalId)) -> &mut Self::Output {
+        &mut self[(s, EoiOrTerminal::Terminal(t))]
     }
 }
 

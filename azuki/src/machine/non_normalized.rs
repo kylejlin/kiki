@@ -175,7 +175,7 @@ where
 }
 
 impl Item {
-    fn next_symbol(self, takeoff: &TakeoffCertificate) -> Option<OriginalSymbolId> {
+    pub(crate) fn next_symbol(self, takeoff: &TakeoffCertificate) -> Option<OriginalSymbolId> {
         let rule = &takeoff[self.rule_id];
         rule.rhs.get(self.dot_index).copied()
     }
