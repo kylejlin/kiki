@@ -48,4 +48,11 @@ impl Machine {
         let non_normalized = NonNormalizedMachine::new(takeoff);
         non_normalized.normalize()
     }
+
+    pub fn enumerate_states<'a>(&'a self) -> impl Iterator<Item = (StateId, &'a State)> {
+        self.states
+            .iter()
+            .enumerate()
+            .map(|(i, s)| (StateId { raw: i }, s))
+    }
 }

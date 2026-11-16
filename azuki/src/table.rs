@@ -84,6 +84,10 @@ impl Table {
             }
         }
 
+        for (state_ids, state) in machine.enumerate_states() {
+            todo!()
+        }
+
         todo!();
 
         Ok(out)
