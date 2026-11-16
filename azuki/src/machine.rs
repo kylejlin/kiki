@@ -21,6 +21,8 @@ pub struct Item {
 
 impl Machine {
     pub fn new(takeoff: &TakeoffCertificate) -> Self {
+        use std::collections::hash_map::Entry;
+
         let initial_state = closure(
             iter::once(Item {
                 rule_id: RuleId::Augmented,
@@ -42,9 +44,14 @@ impl Machine {
                 let dest = goto(&start, symbol_id, takeoff);
                 assert_ne!(dest.items.len(), 0);
 
-                if let std::collections::hash_map::Entry::Vacant(entry) = states.entry(dest) {
-                    queue.push_back(entry.key().clone());
-                    entry.insert(());
+                match states.entry(dest) {
+                    Entry::Vacant(entry) => {
+                        queue.push_back(entry.key().clone());
+                        entry.insert(());
+                    }
+
+                    // `dest` was already added, so no need to do anything.
+                    Entry::Occupied(_) => {}
                 }
             }
         }
