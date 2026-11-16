@@ -39,7 +39,7 @@ You need Rust 1.98 or newer.
 
    ```toml
    [build-dependencies]
-   azuki = "0.1"
+   azuki = "1.0"
    walkdir = "2"
    ```
 
