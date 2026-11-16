@@ -11,7 +11,7 @@ pub use std::{
 };
 
 pub(crate) use crate::{
-    bitset::*,
+    bit_set::*,
     cst,
     lexer::*,
     machine::*,

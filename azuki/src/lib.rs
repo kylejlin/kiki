@@ -1,4 +1,4 @@
-pub mod bitset;
+pub mod bit_set;
 pub mod cst;
 pub mod lexer;
 pub mod ntt;
