@@ -32,6 +32,35 @@ where
     pub fn contains(&self, item: &T) -> bool {
         self.raw.binary_search(item).is_ok()
     }
+
+    pub fn extend_with_oset(&mut self, other: Self) {
+        if other.raw.is_empty() {
+            return;
+        }
+        if self.raw.is_empty() {
+            self.raw = other.raw;
+            return;
+        }
+
+        let mut raw = Vec::with_capacity(self.raw.len() + other.raw.len());
+        let mut left = std::mem::take(&mut self.raw).into_iter().peekable();
+        let mut right = other.raw.into_iter().peekable();
+
+        while let (Some(left_item), Some(right_item)) = (left.peek(), right.peek()) {
+            match left_item.cmp(right_item) {
+                Ordering::Less => raw.push(left.next().unwrap()),
+                Ordering::Equal => {
+                    raw.push(left.next().unwrap());
+                    right.next();
+                }
+                Ordering::Greater => raw.push(right.next().unwrap()),
+            }
+        }
+
+        raw.extend(left);
+        raw.extend(right);
+        self.raw = raw;
+    }
 }
 
 impl<T> FromIterator<T> for Oset<T>

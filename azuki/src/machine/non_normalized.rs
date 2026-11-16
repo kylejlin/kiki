@@ -95,7 +95,7 @@ impl NonNormalizedMachine {
                             let original_item_count = existing.items.len();
 
                             // Both states are closed, so their union is already closed.
-                            existing.items.extend(dest.items);
+                            existing.items.extend_with_oset(dest.items);
 
                             if existing.items.len() != original_item_count
                                 && !currently_enqueued.contains(id)
