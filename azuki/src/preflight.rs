@@ -756,3 +756,31 @@ impl Index<RuleId> for PreflightCertificate<'_> {
         &self.rules[index.into_usize()]
     }
 }
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct LifetimeId {
+    pub raw: usize,
+}
+impl Debug for LifetimeId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(&self.raw, f)
+    }
+}
+
+impl UsizePun for LifetimeId {
+    fn into_usize(self) -> usize {
+        self.raw
+    }
+
+    fn from_usize(n: usize) -> Self {
+        Self { raw: n }
+    }
+}
+
+impl<'a> Index<LifetimeId> for PreflightCertificate<'a> {
+    type Output = token::SingleQuoteLowerName<'a>;
+
+    fn index(&self, index: LifetimeId) -> &Self::Output {
+        &self.terminal_enum.global_lifetimes[index.into_usize()]
+    }
+}
