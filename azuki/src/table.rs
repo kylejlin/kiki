@@ -55,34 +55,14 @@ impl Table {
 
             match symbol_id.as_terminal() {
                 Ok(terminal_id) => {
-                    let entry = &mut out[(start_id, terminal_id)];
-
-                    match *entry {
-                        Action::Err => {
-                            *entry = Action::Shift(dest_id);
-                        }
-
-                        Action::Shift(_) | Action::Reduce(_) | Action::Accept => {
-                            unreachable!(
-                                "Shifts are inserted once per state/terminal pair, before reductions and accepts"
-                            );
-                        }
-                    }
+                    let entry = out[(start_id, terminal_id)].mut_err().expect("Shifts are inserted once per state/terminal pair, before reductions and accepts");
+                    *entry = Action::Shift(dest_id);
                 }
 
                 Err(non_terminal_id) => {
-                    let entry = &mut out[(start_id, non_terminal_id)];
-
-                    match *entry {
-                        Goto::Err => {
-                            *entry = Goto::State(dest_id);
-                        }
-
-                        Goto::State(_) => {
-                            unreachable!("Gotos are inserted once per state/non-terminal pair");
-                        }
-                    }
-
+                    let entry = out[(start_id, non_terminal_id)]
+                        .mut_err()
+                        .expect("Gotos are inserted once per state/non-terminal pair");
                     *entry = Goto::State(dest_id);
                 }
             }
@@ -95,37 +75,23 @@ impl Table {
                 }
 
                 let rule = &takeoff[item.rule_id];
-                let Some(lhs) = rule.lhs.into_original() else {
+                if rule.lhs.is_synthetic() {
                     if item.lookahead == EoiOrTerminal::Eoi {
-                        let entry = &mut out[(state_id, item.lookahead)];
-
-                        match *entry {
-                            Action::Err => {
-                                *entry = Action::Accept;
-                            }
-
-                            Action::Shift(_) | Action::Reduce(_) | Action::Accept => {
-                                unreachable!(
-                                    "The augmented item sorts first, and EOI cannot be shifted"
-                                );
-                            }
-                        }
+                        let entry = out[(state_id, item.lookahead)]
+                            .mut_err()
+                            .expect("The augmented item sorts first, and EOI cannot be shifted");
+                        *entry = Action::Accept;
                     } else {
                         unreachable!("The augmented item's lookahead must be EOI")
                     }
 
                     continue;
-                };
-
-                let entry = &mut out[(state_id, item.lookahead)];
-
-                match *entry {
-                    Action::Err => {
-                        *entry = Action::Reduce(item.rule_id);
-                    }
-
-                    Action::Shift(_) | Action::Reduce(_) | Action::Accept => return Err(todo!()),
                 }
+
+                let Some(entry) = out[(state_id, item.lookahead)].mut_err() else {
+                    return Err(todo!());
+                };
+                *entry = Action::Reduce(item.rule_id);
             }
         }
 
@@ -174,5 +140,23 @@ impl Index<(StateId, OriginalNonTerminalId)> for Table {
 impl IndexMut<(StateId, OriginalNonTerminalId)> for Table {
     fn index_mut(&mut self, index: (StateId, OriginalNonTerminalId)) -> &mut Self::Output {
         todo!()
+    }
+}
+
+impl Action {
+    fn mut_err(&mut self) -> Option<&mut Self> {
+        match self {
+            Self::Err => Some(self),
+            _ => None,
+        }
+    }
+}
+
+impl Goto {
+    fn mut_err(&mut self) -> Option<&mut Self> {
+        match self {
+            Self::Err => Some(self),
+            _ => None,
+        }
     }
 }

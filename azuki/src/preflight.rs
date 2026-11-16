@@ -511,7 +511,7 @@ impl NonTerminalId {
     const SYNTHETIC_START_SYMBOL: usize = OriginalSymbolId::HIGH_BIT_MASK;
 
     pub const fn into_original(self) -> Option<OriginalNonTerminalId> {
-        if self.raw.get() == Self::SYNTHETIC_START_SYMBOL {
+        if self.is_synthetic() {
             None
         } else {
             Some(OriginalNonTerminalId { raw: self.raw })
@@ -520,6 +520,10 @@ impl NonTerminalId {
 
     pub const fn from_original(id: OriginalNonTerminalId) -> Self {
         Self { raw: id.raw }
+    }
+
+    pub const fn is_synthetic(self) -> bool {
+        self.raw.get() == Self::SYNTHETIC_START_SYMBOL
     }
 }
 impl From<OriginalNonTerminalId> for NonTerminalId {
