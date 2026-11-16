@@ -58,8 +58,9 @@ pub enum FileItem<'a> {
     Start(token::UpperName<'a>),
     Struct(Struct<'a>),
     Enum(Enum<'a>),
-    Manual(Manual<'a>),
+    ManualNonTerminal(ManualNonTerminal<'a>),
     Terminal(TerminalEnum<'a>),
+    ManualTerminal(ManualTerminal<'a>),
     Bridge(Path<'a>),
 }
 
@@ -78,17 +79,25 @@ pub struct Enum<'a> {
 }
 
 #[derive(Debug)]
-pub struct Manual<'a> {
+pub struct ManualNonTerminal<'a> {
     pub name: token::UpperName<'a>,
     pub override_: Option<token::AtUpperName<'a>>,
     pub lifetimes: Vec<token::SingleQuoteLowerName<'a>>,
-    pub variants: Vec<ManualVariant<'a>>,
+    pub variants: Vec<ManualNonTerminalVariant<'a>>,
 }
 
 #[derive(Debug)]
 pub struct TerminalEnum<'a> {
     pub prefix: Option<token::RustStringLiteral<'a>>,
     pub name: token::UpperName<'a>,
+    pub global_lifetimes: Vec<token::SingleQuoteLowerName<'a>>,
+    pub variants: Vec<TerminalEnumVariant<'a>>,
+}
+
+#[derive(Debug)]
+pub struct ManualTerminal<'a> {
+    pub name: token::UpperName<'a>,
+    pub override_: Option<token::AtUpperName<'a>>,
     pub global_lifetimes: Vec<token::SingleQuoteLowerName<'a>>,
     pub variants: Vec<TerminalEnumVariant<'a>>,
 }
@@ -129,7 +138,7 @@ pub struct EnumVariant<'a> {
 }
 
 #[derive(Debug)]
-pub struct ManualVariant<'a> {
+pub struct ManualNonTerminalVariant<'a> {
     pub function: token::AtLowerName<'a>,
     pub inputs: Vec<TupleField<'a>>,
 }

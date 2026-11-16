@@ -32,7 +32,7 @@ Read the [quickstart](./QUICKSTART.md).
   Azuki lets you write type definitions for most of your grammar.
   Azuki infers the grammar and semantic actions from the
   type definitions.
-  When you need more control, `manual` declarations let you
+  When you need more control, manual nonterminal declarations let you
   use your own Rust types and functions.
 - **Easy to read.**
   Azuki has a minimalist syntax.

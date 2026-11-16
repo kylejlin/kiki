@@ -10,9 +10,10 @@ click [here](./QUICKSTART.md).
 - [Prerequisites](#prerequisites)
 - [Statements](#statements)
   - [`terminal` declarations](#terminal-declarations)
+  - [`manual terminal` declarations](#manual-terminal-declarations)
   - [`struct` declarations](#struct-declarations)
   - [`enum` declarations](#enum-declarations)
-  - [`manual` declarations](#manual-declarations)
+  - [Manual nonterminal declarations](#manual-nonterminal-declarations)
   - [`start` declarations](#start-declarations)
   - [`bridge` declarations](#bridge-declarations)
 - [Lifetimes](#lifetimes)
@@ -39,16 +40,18 @@ An Azuki file consists of multiple _statements_.
 A statement can be a
 
 - `terminal` declaration
+- `manual terminal` declaration
 - `struct` declaration
 - `enum` declaration
-- `manual` declaration
+- Manual nonterminal declaration (`manual Name ...`)
 - `start` declaration
 - `bridge` declaration
 
-A file must have **exactly one** `terminal` declaration
+A file must have **exactly one** terminal declaration,
+either `terminal` or `manual terminal`,
 and **exactly one** `start` declaration
 and **exactly one** `bridge` declaration.
-A file can have unlimited `enum`, `struct`, and `manual` declarations.
+A file can have unlimited `enum`, `struct`, and manual nonterminal declarations.
 The declarations do not have to appear in a particular order.
 
 Most examples below show only the declarations relevant to that section.
@@ -254,6 +257,59 @@ struct Parens(_: $LParen _: $RParen)
 A declaration can have at most one Rust prefix.
 If you want multiple attributes, put them in the same string.
 Prefixes are supported before `terminal`, `struct`, and `enum` declarations.
+They are forbidden before manual terminal and manual nonterminal declarations.
+
+## `manual terminal` declarations
+
+Use `manual terminal` when the bridge supplies the terminal enum:
+
+```azuki
+manual terminal Token = @LexToken {
+    $Word = @Text
+    $Comma = @Unit
+}
+
+bridge crate::azuki_bridge
+```
+
+In the bridge module, we write:
+
+```rs
+pub type Text = String;
+pub type Unit = ();
+
+#[derive(Debug)]
+pub enum LexToken {
+    Word(Text),
+    Comma(Unit),
+}
+```
+
+Azuki re-exports this enum as `Token` instead of generating a fresh enum.
+The generated Rust is equivalent to:
+
+```rs
+pub use crate::azuki_bridge::LexToken as Token;
+```
+
+The body has exactly the same syntax and meaning as a `terminal` body.
+Each entry still declares a terminal and selects its payload type from the bridge.
+The supplied enum must have exactly the declared variants,
+each with one tuple field of the declared payload type.
+Even a unit payload uses a tuple variant, such as `Comma(())`, rather than `Comma`.
+Rust checks that the supplied enum matches these declarations.
+The enum's Rust variant order does not have to match the grammar's declaration order.
+
+As with manual nonterminals, a matching bridge name can be omitted:
+`manual terminal Token { ... }` means `manual terminal Token = @Token { ... }`.
+Payload overrides and their matching-name shorthand work as usual.
+The optional global lifetime list goes after the override, before `{`,
+as in `manual terminal Token = @LexToken 'src { $Word = @Text 'src }`.
+The [lifetime rules](#lifetimes) are the same for both terminal forms.
+
+Rust prefixes are forbidden on manual terminal declarations,
+just as they are on manual nonterminal declarations.
+Put enum attributes, such as derives, on the bridge enum's Rust definition.
 
 ## `struct` declarations
 
@@ -451,7 +507,7 @@ Observe that Azuki does not automatically insert `Box`.
 If we had used `OneOrMoreNumbers` directly in the `Many` variant,
 the generated Rust type would have infinite size.
 The `manual BoxedNumbers = @BoxedNumbers` declaration tells Azuki how to box the value.
-We explain `manual` declarations in detail [below](#manual-declarations).
+We explain manual nonterminal declarations in detail [below](#manual-nonterminal-declarations).
 
 ### `_` syntax
 
@@ -565,7 +621,7 @@ pub enum ZeroOrOneComma {
 }
 ```
 
-## `manual` declarations
+## Manual nonterminal declarations
 
 `struct` and `enum` declarations let Azuki generate Rust types for you.
 What if you want to use a type that you define yourself?
@@ -609,7 +665,7 @@ This corresponds to the following grammar:
 ```
 
 Unlike a `struct` or `enum` declaration,
-a `manual` declaration does not generate a new Rust type.
+a manual nonterminal declaration does not generate a new Rust type.
 `Numbers` names the grammar symbol,
 and `= @NumberList` selects its Rust type from the bridge module.
 The generated parser re-exports `NumberList` as `non_terminals::Numbers`.
@@ -620,7 +676,7 @@ and returns the manual nonterminal's Rust type.
 Here, `@empty` calls `empty()` with no arguments.
 `@push(Numbers $NumLit)` calls `push(numbers, value)`.
 
-Manual inputs use tuple syntax.
+Manual nonterminal inputs use tuple syntax.
 You can use `_: Symbol` to parse an input without passing it to the function.
 For example:
 
@@ -641,16 +697,16 @@ pub fn identity(value: Int) -> Int {
 Here, `= @Int` selects the bridge type `Int` for `ParenthesizedNumber`.
 The generated parser re-exports `Int` as `non_terminals::ParenthesizedNumber`.
 
-A manual declaration must have at least one variant.
-Two variants of the same manual declaration cannot have the same symbol sequence,
+A manual nonterminal declaration must have at least one variant.
+Two variants of the same manual nonterminal declaration cannot have the same symbol sequence,
 even if they call different functions or skip different inputs.
 Similarly, two variants of the same enum cannot have the same symbol sequence.
 
 Azuki checks the grammar's names and symbol sequences.
 Rust checks that the bridge types and functions exist,
 and that their signatures match the grammar.
-Manual functions return the nonterminal's value directly;
-there is no special syntax for returning a parser error from a manual function.
+Manual nonterminal functions return the nonterminal's value directly;
+there is no special syntax for returning a parser error from a manual nonterminal function.
 
 ### Shorthand for matching type names
 
@@ -690,13 +746,13 @@ The start symbol must be a nonterminal symbol.
 
 Note that a `start` declaration does _not_ define the referenced
 symbol (i.e., `FooBar`, in this case).
-You must define it separately using a `struct`, `enum`, or `manual` definition,
+You must define it separately using a `struct`, `enum`, or manual nonterminal definition,
 as explained in previous sections.
 
 ## `bridge` declarations
 
 You must specify a Rust module that supplies terminal types,
-manual types, and manual functions.
+manual terminal enums, manual nonterminal types, and manual nonterminal functions.
 Use a `bridge` declaration, like so:
 
 ```azuki
@@ -745,7 +801,7 @@ Here, `$Word` has Rust type `Text<'src>`,
 and `$Comma` has Rust type `Unit`, with no lifetime arguments.
 The bridge also needs `pub type Unit = ();`.
 
-A manual declaration can specify lifetime arguments too:
+A manual nonterminal declaration can specify lifetime arguments too:
 
 ```azuki
 manual Words = @Words 'src {
@@ -800,14 +856,15 @@ pub struct Document<'src> {
 ```
 
 Skipped fields do not contribute lifetimes to a generated struct or enum.
-A manual type uses exactly the lifetime arguments you declare,
+A manual nonterminal type uses exactly the lifetime arguments you declare,
 regardless of its function inputs.
-For example, a manual function may take borrowed text
+For example, a manual nonterminal function may take borrowed text
 and return an owned `String`.
-In that case, the manual type does not need `'src`.
+In that case, the manual nonterminal type does not need `'src`.
 
-Every lifetime used by a terminal variant or manual declaration
-must be declared in the `terminal` declaration's global lifetime list.
+Every lifetime used by a terminal variant or manual nonterminal declaration
+must be declared in the terminal declaration's global lifetime list
+(whether it uses `terminal` or `manual terminal`).
 A lifetime list cannot contain duplicates.
 If there are multiple lifetimes, separate them with whitespace:
 
@@ -817,10 +874,13 @@ terminal Token 'src 'other {
 }
 ```
 
-For terminal and manual bridge types, lifetime arguments stay in the order you write them.
+For terminal payload types and manual nonterminal bridge types,
+lifetime arguments stay in the order you write them.
 For generated structs and enums, inferred lifetimes appear in the order
 of the global lifetime list.
-The generated terminal enum includes only lifetimes used by its terminal variants.
+The terminal enum includes only lifetimes used by its terminal variants.
+For `manual terminal`, the bridge enum must accept those same lifetime arguments,
+in global declaration order; unused global lifetimes are omitted.
 
 The matching-name shorthand also works with lifetimes:
 `manual Words = @Words 'src { ... }` can be shortened to `manual Words 'src { ... }`.
@@ -838,7 +898,7 @@ manual Numbers = @NumberList {
 }
 ```
 
-Inside a `struct`, `enum`, or `manual` declaration,
+Inside a `struct`, `enum`, or manual nonterminal declaration,
 we can use `Self` as shorthand for the enclosing nonterminal's name:
 
 ```azuki
@@ -849,7 +909,7 @@ manual Numbers = @NumberList {
 ```
 
 The two declarations have the same meaning.
-`Self` can appear wherever a grammar symbol can appear in a fieldset or manual input.
+`Self` can appear wherever a grammar symbol can appear in a fieldset or manual nonterminal input.
 Inside an enum variant, `Self` means the enum, not the variant.
 Using `Self` does not insert a `Box`.
 
@@ -1042,7 +1102,7 @@ The following must start with a lowercase letter:
   }
   ```
 
-Manual function names must have the form `@lower_name`.
+Manual nonterminal function names must have the form `@lower_name`.
 Lifetime names must have the form `'lower_name`.
 The names can contain uppercase letters after their first letter.
 

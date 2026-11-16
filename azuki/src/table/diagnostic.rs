@@ -20,8 +20,8 @@ enum RuleOrigin<'a> {
         enum_name: token::UpperName<'a>,
         variant_name: token::UpperName<'a>,
     },
-    ManualVariant {
-        manual_name: token::UpperName<'a>,
+    ManualNonTerminalVariant {
+        manual_non_terminal_name: token::UpperName<'a>,
         function: token::AtLowerName<'a>,
     },
 }
@@ -175,7 +175,7 @@ impl TableConflictDiagnostic<'_> {
                 name,
                 variants: _,
             }) => *name,
-            cst::FileItem::Manual(cst::Manual {
+            cst::FileItem::ManualNonTerminal(cst::ManualNonTerminal {
                 name,
                 override_: _,
                 lifetimes: _,
@@ -183,6 +183,9 @@ impl TableConflictDiagnostic<'_> {
             }) => *name,
             cst::FileItem::Terminal(_) => {
                 unreachable!("Non-terminal definitions cannot be terminal items")
+            }
+            cst::FileItem::ManualTerminal(_) => {
+                unreachable!("Non-terminal definitions cannot be manual terminal items")
             }
             cst::FileItem::Bridge(_) => {
                 unreachable!("Non-terminal definitions cannot be bridge items")
@@ -199,10 +202,10 @@ impl Display for RuleOrigin<'_> {
                 enum_name,
                 variant_name,
             } => write!(f, "{}::{}", enum_name.raw, variant_name.raw),
-            Self::ManualVariant {
-                manual_name,
+            Self::ManualNonTerminalVariant {
+                manual_non_terminal_name,
                 function,
-            } => write!(f, "{}::{}", manual_name.raw, function.raw),
+            } => write!(f, "{}::{}", manual_non_terminal_name.raw, function.raw),
         }
     }
 }
@@ -215,8 +218,8 @@ impl<'a> RuleOrigin<'a> {
                 enum_name: _,
                 variant_name,
             } => variant_name.raw,
-            Self::ManualVariant {
-                manual_name: _,
+            Self::ManualNonTerminalVariant {
+                manual_non_terminal_name: _,
                 function,
             } => function.raw,
         }
@@ -250,24 +253,25 @@ fn get_rule_origins<'a>(preflight: &PreflightCertificate<'a>) -> Vec<RuleOrigin<
                     });
                 }
             }
-            cst::FileItem::Manual(cst::Manual {
+            cst::FileItem::ManualNonTerminal(cst::ManualNonTerminal {
                 name,
                 override_: _,
                 lifetimes: _,
                 variants,
             }) => {
-                for cst::ManualVariant {
+                for cst::ManualNonTerminalVariant {
                     function,
                     inputs: _,
                 } in variants
                 {
-                    out.push(RuleOrigin::ManualVariant {
-                        manual_name: *name,
+                    out.push(RuleOrigin::ManualNonTerminalVariant {
+                        manual_non_terminal_name: *name,
                         function: *function,
                     });
                 }
             }
             cst::FileItem::Terminal(_) => {}
+            cst::FileItem::ManualTerminal(_) => {}
             cst::FileItem::Bridge(_) => {}
         }
     }

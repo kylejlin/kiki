@@ -13,8 +13,9 @@ enum FileItem {
     Start($StartKw $UpperName)
     Struct(Struct)
     Enum(Enum)
-    Manual(Manual)
+    ManualNonTerminal(ManualNonTerminal)
     Terminal(TerminalEnum)
+    ManualTerminal(ManualTerminal)
     Bridge($BridgeKw Path)
 }
 
@@ -34,13 +35,13 @@ struct Enum {
     _: $RCurly
 }
 
-struct Manual {
+struct ManualNonTerminal {
     _: $ManualKw
     name: $UpperName
     override_: OptEqualAtUpperName
     lifetimes: OptSingleQuoteLowerNames
     _: $LCurly
-    variants: ManualVariants
+    variants: ManualNonTerminalVariants
     _: $RCurly
 }
 
@@ -48,6 +49,17 @@ struct TerminalEnum {
     prefix: OptRustStringLiteral
     _: $TerminalKw
     name: $UpperName
+    global_lifetimes: OptSingleQuoteLowerNames
+    _: $LCurly
+    variants: OptTerminalEnumVariants
+    _: $RCurly
+}
+
+struct ManualTerminal {
+    _: $ManualKw
+    _: $TerminalKw
+    name: $UpperName
+    override_: OptEqualAtUpperName
     global_lifetimes: OptSingleQuoteLowerNames
     _: $LCurly
     variants: OptTerminalEnumVariants
@@ -108,12 +120,12 @@ struct EnumVariant {
     fieldset: Fieldset
 }
 
-enum ManualVariants {
-    One(ManualVariant)
-    Snoc(ManualVariants ManualVariant)
+enum ManualNonTerminalVariants {
+    One(ManualNonTerminalVariant)
+    Snoc(ManualNonTerminalVariants ManualNonTerminalVariant)
 }
 
-struct ManualVariant {
+struct ManualNonTerminalVariant {
     function: $AtLowerName
     inputs: OptTupleFieldset
 }

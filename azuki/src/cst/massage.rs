@@ -47,8 +47,13 @@ impl<'a> Massage<'a> for r::FileItem {
             r::FileItem::Start(_, name) => Self::Out::Start(name.massage(file_source)),
             r::FileItem::Struct(value) => Self::Out::Struct(value.massage(file_source)),
             r::FileItem::Enum(value) => Self::Out::Enum(value.massage(file_source)),
-            r::FileItem::Manual(value) => Self::Out::Manual(value.massage(file_source)),
+            r::FileItem::ManualNonTerminal(value) => {
+                Self::Out::ManualNonTerminal(value.massage(file_source))
+            }
             r::FileItem::Terminal(value) => Self::Out::Terminal(value.massage(file_source)),
+            r::FileItem::ManualTerminal(value) => {
+                Self::Out::ManualTerminal(value.massage(file_source))
+            }
             r::FileItem::Bridge(_, path) => Self::Out::Bridge(path.massage(file_source)),
         }
     }
@@ -88,11 +93,11 @@ impl<'a> Massage<'a> for r::Enum {
     }
 }
 
-impl<'a> Massage<'a> for r::Manual {
-    type Out = Manual<'a>;
+impl<'a> Massage<'a> for r::ManualNonTerminal {
+    type Out = ManualNonTerminal<'a>;
 
     fn massage(&self, file_source: FileSource<'a>) -> Self::Out {
-        let r::Manual {
+        let r::ManualNonTerminal {
             name,
             override_,
             lifetimes,
@@ -120,6 +125,25 @@ impl<'a> Massage<'a> for r::TerminalEnum {
         Self::Out {
             prefix: prefix.massage(file_source),
             name: name.massage(file_source),
+            global_lifetimes: global_lifetimes.massage(file_source),
+            variants: variants.massage(file_source),
+        }
+    }
+}
+
+impl<'a> Massage<'a> for r::ManualTerminal {
+    type Out = ManualTerminal<'a>;
+
+    fn massage(&self, file_source: FileSource<'a>) -> Self::Out {
+        let r::ManualTerminal {
+            name,
+            override_,
+            global_lifetimes,
+            variants,
+        } = self;
+        Self::Out {
+            name: name.massage(file_source),
+            override_: override_.massage(file_source),
             global_lifetimes: global_lifetimes.massage(file_source),
             variants: variants.massage(file_source),
         }
@@ -275,19 +299,19 @@ impl<'a> Massage<'a> for r::EnumVariant {
     }
 }
 
-impl<'a> Massage<'a> for r::ManualVariants {
-    type Out = Vec<ManualVariant<'a>>;
+impl<'a> Massage<'a> for r::ManualNonTerminalVariants {
+    type Out = Vec<ManualNonTerminalVariant<'a>>;
 
     fn massage(&self, file_source: FileSource<'a>) -> Self::Out {
         let mut value = self;
         let mut out = Vec::new();
         loop {
             match value {
-                r::ManualVariants::One(item) => {
+                r::ManualNonTerminalVariants::One(item) => {
                     out.push(item.massage(file_source));
                     break;
                 }
-                r::ManualVariants::Snoc(left, right) => {
+                r::ManualNonTerminalVariants::Snoc(left, right) => {
                     out.push(right.massage(file_source));
                     value = left;
                 }
@@ -298,11 +322,11 @@ impl<'a> Massage<'a> for r::ManualVariants {
     }
 }
 
-impl<'a> Massage<'a> for r::ManualVariant {
-    type Out = ManualVariant<'a>;
+impl<'a> Massage<'a> for r::ManualNonTerminalVariant {
+    type Out = ManualNonTerminalVariant<'a>;
 
     fn massage(&self, file_source: FileSource<'a>) -> Self::Out {
-        let r::ManualVariant { function, inputs } = self;
+        let r::ManualNonTerminalVariant { function, inputs } = self;
         Self::Out {
             function: function.massage(file_source),
             inputs: inputs.massage(file_source),

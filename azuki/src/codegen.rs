@@ -66,7 +66,7 @@ impl<'a> SrcBuilder<'a> {
     fn new(generator: CodeGenerator<'a>) -> Self {
         let preflight = &generator.takeoff.preflight;
         let mut used = HashSet::new();
-        used.insert(preflight.terminal_enum.name.raw.raw().to_owned());
+        used.insert(preflight.terminal_enum.name().raw.raw().to_owned());
         for (_, item) in preflight.non_terminal_defs.enumerate() {
             used.insert(non_terminal_name(item).to_owned());
         }
@@ -135,8 +135,7 @@ impl<'a> SrcBuilder<'a> {
             })
             .collect::<Vec<_>>()
             .join("::");
-        let terminal_prefix = prefix_src(preflight.terminal_enum.prefix);
-        let terminal = preflight.terminal_enum.name.raw.raw();
+        let terminal = preflight.terminal_enum.name().raw.raw();
         let terminal_lifetimes = self.lifetime_list_src(&self.terminal_lifetimes);
         let node_lifetimes = self.lifetime_list_src(&self.node_lifetimes);
         let mut parse_parameters = self.lifetime_names(&self.node_lifetimes);
@@ -151,7 +150,7 @@ impl<'a> SrcBuilder<'a> {
         let state_count = self.generator.machine.states.len();
         let terminal_count = preflight.terminal_defs.len() + 1;
         let non_terminal_count = preflight.non_terminal_defs.len();
-        let terminal_variants = self.terminal_variants_src();
+        let terminal_def = self.terminal_def_src();
         let non_terminal_defs = self.non_terminal_defs_src();
         let terminal_kind_variants = self.terminal_kind_variants_src();
         let non_terminal_kind_variants = self.non_terminal_kind_variants_src();
@@ -209,9 +208,7 @@ impl<'a> SrcBuilder<'a> {
 
 use {bridge_path} as {bridge};
 
-{terminal_prefix}pub enum {terminal}{terminal_lifetimes} {{
-{terminal_variants}
-}}
+{terminal_def}
 
 pub mod non_terminals {{
 {non_terminal_defs}
@@ -355,6 +352,34 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
         }
     }
 
+    fn terminal_def_src(&self) -> String {
+        match self.generator.takeoff.preflight.terminal_enum {
+            TerminalEnum::Generated(cst::TerminalEnum {
+                prefix,
+                name,
+                global_lifetimes: _,
+                variants: _,
+            }) => {
+                let prefix = prefix_src(*prefix);
+                let name = name.raw.raw();
+                let lifetimes = self.lifetime_list_src(&self.terminal_lifetimes);
+                let variants = self.terminal_variants_src();
+                format!("{prefix}pub enum {name}{lifetimes} {{\n{variants}\n}}")
+            }
+            TerminalEnum::Manual(cst::ManualTerminal {
+                name,
+                override_,
+                global_lifetimes: _,
+                variants: _,
+            }) => {
+                let name = name.raw.raw();
+                let target = override_.map_or(name, |name| &name.raw.raw()[1..]);
+                let bridge = &self.names.bridge;
+                format!("pub use {bridge}::{target} as {name};")
+            }
+        }
+    }
+
     fn terminal_variants_src(&self) -> String {
         self.generator
             .takeoff
@@ -424,7 +449,7 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
                             .join("\n");
                         format!("{prefix}    pub enum {name}{lifetimes} {{\n{variants}\n    }}")
                     }
-                    cst::FileItem::Manual(cst::Manual {
+                    cst::FileItem::ManualNonTerminal(cst::ManualNonTerminal {
                         name,
                         override_,
                         lifetimes: _,
@@ -437,6 +462,9 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
                     }
                     cst::FileItem::Terminal(_) => {
                         unreachable!("Terminal items are not non-terminals")
+                    }
+                    cst::FileItem::ManualTerminal(_) => {
+                        unreachable!("Manual terminal items are not non-terminals")
                     }
                     cst::FileItem::Bridge(_) => unreachable!("Bridge items are not non-terminals"),
                 }
@@ -593,13 +621,13 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
                         ));
                     }
                 }
-                cst::FileItem::Manual(cst::Manual {
+                cst::FileItem::ManualNonTerminal(cst::ManualNonTerminal {
                     name: _,
                     override_: _,
                     lifetimes: _,
                     variants,
                 }) => {
-                    for (cst::ManualVariant { function, inputs }, &rule) in
+                    for (cst::ManualNonTerminalVariant { function, inputs }, &rule) in
                         variants.iter().zip(rule_ids)
                     {
                         functions.push(self.reduce_function_src(
@@ -612,6 +640,9 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
                     }
                 }
                 cst::FileItem::Terminal(_) => unreachable!("Terminal items are not non-terminals"),
+                cst::FileItem::ManualTerminal(_) => {
+                    unreachable!("Manual terminal items are not non-terminals")
+                }
                 cst::FileItem::Bridge(_) => unreachable!("Bridge items are not non-terminals"),
             }
         }
@@ -883,13 +914,16 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
                 name: _,
                 variants: _,
             }) => self.lifetime_list_src(&takeoff.non_terminal_lifetime_sets[id]),
-            cst::FileItem::Manual(cst::Manual {
+            cst::FileItem::ManualNonTerminal(cst::ManualNonTerminal {
                 name: _,
                 override_: _,
                 lifetimes,
                 variants: _,
             }) => declared_lifetime_list_src(lifetimes),
             cst::FileItem::Terminal(_) => unreachable!("Terminal items are not non-terminals"),
+            cst::FileItem::ManualTerminal(_) => {
+                unreachable!("Manual terminal items are not non-terminals")
+            }
             cst::FileItem::Bridge(_) => unreachable!("Bridge items are not non-terminals"),
         };
         let module = if in_non_terminals {
@@ -925,13 +959,16 @@ fn non_terminal_name<'a>(item: &cst::FileItem<'a>) -> &'a str {
             name,
             variants: _,
         }) => name.raw.raw(),
-        cst::FileItem::Manual(cst::Manual {
+        cst::FileItem::ManualNonTerminal(cst::ManualNonTerminal {
             name,
             override_: _,
             lifetimes: _,
             variants: _,
         }) => name.raw.raw(),
         cst::FileItem::Terminal(_) => unreachable!("Terminal items are not non-terminals"),
+        cst::FileItem::ManualTerminal(_) => {
+            unreachable!("Manual terminal items are not non-terminals")
+        }
         cst::FileItem::Bridge(_) => unreachable!("Bridge items are not non-terminals"),
     }
 }

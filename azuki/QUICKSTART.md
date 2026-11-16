@@ -137,7 +137,7 @@ You need Rust 1.98 or newer.
    ```
 
    This is the Rust module referenced by the `bridge` declaration.
-   Azuki gets terminal types and manual functions from this module.
+   Azuki gets terminal types and manual nonterminal functions from this module.
    Unlike Kiki, Azuki does not automatically wrap nonterminals in `Box`.
    The `manual BoxedExpr = @BoxedExpr` declaration tells it to use
    the bridge type `BoxedExpr` and our `boxed` function.

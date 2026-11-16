@@ -42,9 +42,16 @@ impl ErrorFormatter<'_> {
             PreflightCheckError::MultipleStartItems(first, duplicate) => {
                 self.duplicate("multiple `start` items", first.raw, duplicate.raw)
             }
-            PreflightCheckError::NoTerminalItem => self.missing_item("terminal"),
+            PreflightCheckError::NoTerminalItem => self.error(
+                "missing terminal item; exactly one `terminal` or `manual terminal` item is required",
+                self.eoi(),
+            ),
             PreflightCheckError::MultipleTerminalItems(first, duplicate) => {
-                self.duplicate("multiple `terminal` items", first.raw, duplicate.raw)
+                self.duplicate(
+                    "multiple terminal items (`terminal` or `manual terminal`)",
+                    first.raw,
+                    duplicate.raw,
+                )
             }
             PreflightCheckError::NoBridgeItem => self.missing_item("bridge"),
             PreflightCheckError::MultipleBridgeItems(first, duplicate) => {
@@ -94,7 +101,7 @@ impl ErrorFormatter<'_> {
                     self.range(name.raw),
                 );
                 out.raw.push_str(
-                    "\n\nhelp: Declare this lifetime in the `terminal` item's global lifetime list.",
+                    "\n\nhelp: Declare this lifetime in the terminal item's global lifetime list (`terminal` or `manual terminal`).",
                 );
                 out
             }

@@ -23,7 +23,7 @@ impl<'a> TakeoffCertificate<'a> {
             get_non_terminal_first_sets(&preflight, &rhs_nonterminal_to_rule_ids);
         let lifetime_ids: HashMap<_, _> = preflight
             .terminal_enum
-            .global_lifetimes
+            .global_lifetimes()
             .iter()
             .enumerate()
             .map(|(i, name)| (name.raw.raw(), LifetimeId { raw: i }))
@@ -165,7 +165,7 @@ fn get_terminal_lifetime_sets(
     TerminalIdMap::from_raw(
         preflight
             .terminal_enum
-            .variants
+            .variants()
             .iter()
             .map(
                 |cst::TerminalEnumVariant {
@@ -221,17 +221,20 @@ fn get_non_terminal_lifetime_sets(
                         .extend(get_stored_symbols(fieldset, &preflight[rule_id].rhs));
                 }
             }
-            cst::FileItem::Manual(cst::Manual {
+            cst::FileItem::ManualNonTerminal(cst::ManualNonTerminal {
                 name: _,
                 override_: _,
                 lifetimes,
                 variants: _,
             }) => {
-                // A manual type's lifetimes are independent of its conversion inputs.
+                // A manual non-terminal type's lifetimes are independent of its conversion inputs.
                 out[lhs] = get_declared_lifetime_set(lifetimes, lifetime_ids);
             }
             cst::FileItem::Terminal(_) => {
                 unreachable!("Non-terminal definitions cannot be terminal items")
+            }
+            cst::FileItem::ManualTerminal(_) => {
+                unreachable!("Non-terminal definitions cannot be manual terminal items")
             }
             cst::FileItem::Bridge(_) => {
                 unreachable!("Non-terminal definitions cannot be bridge items")
@@ -239,7 +242,7 @@ fn get_non_terminal_lifetime_sets(
         }
     }
 
-    // Manual types have no stored symbols and are never enqueued.
+    // Manual non-terminal types have no stored symbols and are never enqueued.
     let mut queue: VecDeque<OriginalNonTerminalId> = stored_symbols
         .enumerate()
         .filter_map(|(id, symbols)| (!symbols.is_empty()).then_some(id))

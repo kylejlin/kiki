@@ -4,7 +4,7 @@ pub struct PreflightCertificate<'a> {
     pub(crate) source: &'a str,
     pub(crate) file: &'a cst::File<'a>,
     pub(crate) start_symbol: token::UpperName<'a>,
-    pub(crate) terminal_enum: &'a cst::TerminalEnum<'a>,
+    pub(crate) terminal_enum: TerminalEnum<'a>,
     pub(crate) bridge_path: &'a cst::Path<'a>,
 
     /// IDs follow declaration order, starting at 1.
@@ -17,6 +17,65 @@ pub struct PreflightCertificate<'a> {
     /// The first rule is always the synthetic rule (i.e., `{synthetic_start} <- {original_start}`).
     /// Original rules follow declaration order, including variant order within each item.
     pub(crate) rules: Vec<Rule>,
+}
+
+#[derive(Clone, Copy)]
+pub(crate) enum TerminalEnum<'a> {
+    Generated(&'a cst::TerminalEnum<'a>),
+    Manual(&'a cst::ManualTerminal<'a>),
+}
+
+impl<'a> TerminalEnum<'a> {
+    pub fn name(self) -> token::UpperName<'a> {
+        match self {
+            Self::Generated(cst::TerminalEnum {
+                prefix: _,
+                name,
+                global_lifetimes: _,
+                variants: _,
+            })
+            | Self::Manual(cst::ManualTerminal {
+                name,
+                override_: _,
+                global_lifetimes: _,
+                variants: _,
+            }) => *name,
+        }
+    }
+
+    pub fn global_lifetimes(self) -> &'a [token::SingleQuoteLowerName<'a>] {
+        match self {
+            Self::Generated(cst::TerminalEnum {
+                prefix: _,
+                name: _,
+                global_lifetimes,
+                variants: _,
+            })
+            | Self::Manual(cst::ManualTerminal {
+                name: _,
+                override_: _,
+                global_lifetimes,
+                variants: _,
+            }) => global_lifetimes,
+        }
+    }
+
+    pub fn variants(self) -> &'a [cst::TerminalEnumVariant<'a>] {
+        match self {
+            Self::Generated(cst::TerminalEnum {
+                prefix: _,
+                name: _,
+                global_lifetimes: _,
+                variants,
+            })
+            | Self::Manual(cst::ManualTerminal {
+                name: _,
+                override_: _,
+                global_lifetimes: _,
+                variants,
+            }) => variants,
+        }
+    }
 }
 
 /// Paired fragments identify the first occurrence followed by its duplicate.
@@ -46,18 +105,18 @@ pub enum PreflightCheckError<'a> {
 ///
 /// Postcondition: Returns `Ok` if and only if all of the following hold:
 /// 1. There is exactly one `start` item.
-/// 2. There is exactly one `terminal` item.
+/// 2. There is exactly one terminal item, either `terminal` or `manual terminal`.
 /// 3. There is exactly one `bridge` item.
-/// 4. No two `struct`, `enum`, `manual`, or `terminal` items have the same name.
-/// 5. For any given `enum` or `terminal` item, no two variants have the same name.
-/// 6. For any given `enum` or `manual` item, no two variants have the same symbol sequence.
+/// 4. No two non-terminal or terminal items have the same name.
+/// 5. For any given `enum` or terminal item, no two variants have the same name.
+/// 6. For any given `enum` or manual non-terminal item, no two variants have the same symbol sequence.
 ///    For example, `enum Foo { Bar { a: $Lorem b: Ipsum } Baz { x: $Lorem _: Ipsum } }` is illegal
 ///    (since both `Bar` and `Baz` have the sequence `[$Lorem, Ipsum]`).
 /// 7. For any given named field set, no two fields have the same name (obviously, underscores are exempt).
-/// 8. Every terminal grammar symbol occurrence is defined in the `terminal` item.
-/// 9. Every non-terminal grammar symbol occurrence (including the `start` symbol) is defined by a non-terminal item (i.e., `struct`, `enum`, or `manual`).
+/// 8. Every terminal grammar symbol occurrence is defined in the terminal item.
+/// 9. Every non-terminal grammar symbol occurrence (including the `start` symbol) is defined by a non-terminal item (i.e., `struct`, `enum`, or manual non-terminal).
 /// 10. For any given lifetime list, there are no duplicates.
-/// 11. Any given lifetime list is a non-strict subset of the `terminal` item's global lifetime set.
+/// 11. Any given lifetime list is a non-strict subset of the terminal item's global lifetime set.
 ///
 /// Names are compared by spelling. `Self` denotes the enclosing non-terminal item,
 /// including when comparing symbol sequences. Symbol sequences include skipped fields.
@@ -67,9 +126,9 @@ pub fn preflight_check<'a>(
 ) -> Result<PreflightCertificate<'a>, PreflightCheckError<'a>> {
     let (start_symbol, terminal_enum, bridge_path) = get_required_items(source, file)?;
     let definitions = get_definitions(file, terminal_enum)?;
-    let global_lifetimes = get_lifetime_names(&terminal_enum.global_lifetimes)?;
+    let global_lifetimes = get_lifetime_names(terminal_enum.global_lifetimes())?;
 
-    for variant in &terminal_enum.variants {
+    for variant in terminal_enum.variants() {
         check_lifetimes(&variant.lifetimes, &global_lifetimes)?;
     }
 
@@ -103,16 +162,9 @@ struct PreflightDefinitions<'a> {
 fn get_required_items<'a>(
     source: &'a str,
     file: &'a cst::File<'a>,
-) -> Result<
-    (
-        token::UpperName<'a>,
-        &'a cst::TerminalEnum<'a>,
-        &'a cst::Path<'a>,
-    ),
-    PreflightCheckError<'a>,
-> {
+) -> Result<(token::UpperName<'a>, TerminalEnum<'a>, &'a cst::Path<'a>), PreflightCheckError<'a>> {
     let mut start_symbol = None;
-    let mut terminal_enum: Option<&cst::TerminalEnum<'a>> = None;
+    let mut terminal_enum: Option<TerminalEnum<'a>> = None;
     let mut bridge_path = None;
 
     for item in &file.items {
@@ -125,14 +177,24 @@ fn get_required_items<'a>(
             }
             cst::FileItem::Struct(_) => {}
             cst::FileItem::Enum(_) => {}
-            cst::FileItem::Manual(_) => {}
+            cst::FileItem::ManualNonTerminal(_) => {}
             cst::FileItem::Terminal(def) => {
                 if let Some(first) = terminal_enum {
                     return Err(PreflightCheckError::MultipleTerminalItems(
-                        first.name, def.name,
+                        first.name(),
+                        def.name,
                     ));
                 }
-                terminal_enum = Some(def);
+                terminal_enum = Some(TerminalEnum::Generated(def));
+            }
+            cst::FileItem::ManualTerminal(def) => {
+                if let Some(first) = terminal_enum {
+                    return Err(PreflightCheckError::MultipleTerminalItems(
+                        first.name(),
+                        def.name,
+                    ));
+                }
+                terminal_enum = Some(TerminalEnum::Manual(def));
             }
             cst::FileItem::Bridge(path) => {
                 if let Some(first) = bridge_path {
@@ -155,7 +217,7 @@ fn get_required_items<'a>(
 
 fn get_definitions<'a>(
     file: &'a cst::File<'a>,
-    terminal_enum: &'a cst::TerminalEnum<'a>,
+    terminal_enum: TerminalEnum<'a>,
 ) -> Result<PreflightDefinitions<'a>, PreflightCheckError<'a>> {
     let mut item_names: HashMap<&str, token::UpperName<'a>> = HashMap::new();
     let mut non_terminal_defs = Vec::new();
@@ -166,15 +228,19 @@ fn get_definitions<'a>(
             cst::FileItem::Start(_) => continue,
             cst::FileItem::Struct(def) => def.name,
             cst::FileItem::Enum(def) => def.name,
-            cst::FileItem::Manual(def) => def.name,
+            cst::FileItem::ManualNonTerminal(def) => def.name,
             cst::FileItem::Terminal(def) => def.name,
+            cst::FileItem::ManualTerminal(def) => def.name,
             cst::FileItem::Bridge(_) => continue,
         };
         let key = name.raw.raw();
         if let Some(first) = item_names.insert(key, name) {
             return Err(PreflightCheckError::ItemNameClash(first, name));
         }
-        if !matches!(item, cst::FileItem::Terminal(_)) {
+        if !matches!(
+            item,
+            cst::FileItem::Terminal(_) | cst::FileItem::ManualTerminal(_)
+        ) {
             let id = OriginalNonTerminalId {
                 raw: NonZeroUsize::new(
                     OriginalSymbolId::HIGH_BIT_MASK | (non_terminal_defs.len() + 1),
@@ -188,7 +254,7 @@ fn get_definitions<'a>(
 
     let mut terminal_defs: Vec<&cst::TerminalEnumVariant<'a>> = Vec::new();
     let mut terminal_ids: HashMap<&str, TerminalId> = HashMap::new();
-    for variant in &terminal_enum.variants {
+    for variant in terminal_enum.variants() {
         let name = variant.name;
         let key = name.raw.raw();
         if let Some(&id) = terminal_ids.get(key) {
@@ -244,11 +310,12 @@ fn get_rules<'a>(
                 });
             }
             cst::FileItem::Enum(def) => check_enum(def, definitions, &mut rules)?,
-            cst::FileItem::Manual(def) => {
+            cst::FileItem::ManualNonTerminal(def) => {
                 check_lifetimes(&def.lifetimes, global_lifetimes)?;
-                check_manual(def, definitions, &mut rules)?;
+                check_manual_non_terminal(def, definitions, &mut rules)?;
             }
             cst::FileItem::Terminal(_) => {}
+            cst::FileItem::ManualTerminal(_) => {}
             cst::FileItem::Bridge(_) => {}
         }
     }
@@ -289,12 +356,12 @@ fn check_enum<'a>(
     Ok(())
 }
 
-fn check_manual<'a>(
-    def: &cst::Manual<'a>,
+fn check_manual_non_terminal<'a>(
+    def: &cst::ManualNonTerminal<'a>,
     definitions: &PreflightDefinitions<'a>,
     rules: &mut Vec<Rule>,
 ) -> Result<(), PreflightCheckError<'a>> {
-    let cst::Manual {
+    let cst::ManualNonTerminal {
         name,
         override_: _,
         lifetimes: _,
@@ -303,7 +370,7 @@ fn check_manual<'a>(
     let lhs = definitions.non_terminal_ids[name.raw.raw()];
     let mut sequences = HashMap::new();
 
-    for cst::ManualVariant { function, inputs } in variants {
+    for cst::ManualNonTerminalVariant { function, inputs } in variants {
         let rhs = check_tuple_fields(inputs, lhs, definitions)?;
         if let Some(first) = sequences.insert(rhs.clone(), function.raw) {
             return Err(PreflightCheckError::VariantSymbolSequenceClash(
@@ -803,6 +870,6 @@ impl<'a> Index<LifetimeId> for PreflightCertificate<'a> {
     type Output = token::SingleQuoteLowerName<'a>;
 
     fn index(&self, index: LifetimeId) -> &Self::Output {
-        &self.terminal_enum.global_lifetimes[index.into_usize()]
+        &self.terminal_enum.global_lifetimes()[index.into_usize()]
     }
 }
