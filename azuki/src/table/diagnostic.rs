@@ -181,8 +181,8 @@ impl TableConflictDiagnostic<'_> {
                 lifetimes: _,
                 variants: _,
             }) => *name,
-            cst::FileItem::Terminal(_) => {
-                unreachable!("Non-terminal definitions cannot be terminal items")
+            cst::FileItem::GeneratedTerminal(_) => {
+                unreachable!("Non-terminal definitions cannot be generated terminal items")
             }
             cst::FileItem::ManualTerminal(_) => {
                 unreachable!("Non-terminal definitions cannot be manual terminal items")
@@ -270,7 +270,7 @@ fn get_rule_origins<'a>(preflight: &PreflightCertificate<'a>) -> Vec<RuleOrigin<
                     });
                 }
             }
-            cst::FileItem::Terminal(_) => {}
+            cst::FileItem::GeneratedTerminal(_) => {}
             cst::FileItem::ManualTerminal(_) => {}
             cst::FileItem::Bridge(_) => {}
         }

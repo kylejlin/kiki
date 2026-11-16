@@ -9,7 +9,7 @@ click [here](./QUICKSTART.md).
 
 - [Prerequisites](#prerequisites)
 - [Statements](#statements)
-  - [`terminal` declarations](#terminal-declarations)
+  - [Generated terminal declarations](#generated-terminal-declarations)
   - [`manual terminal` declarations](#manual-terminal-declarations)
   - [`struct` declarations](#struct-declarations)
   - [`enum` declarations](#enum-declarations)
@@ -39,7 +39,7 @@ You must understand the following terms:
 An Azuki file consists of multiple _statements_.
 A statement can be a
 
-- `terminal` declaration
+- Generated terminal declaration (`terminal Name ...`)
 - `manual terminal` declaration
 - `struct` declaration
 - `enum` declaration
@@ -54,6 +54,11 @@ and **exactly one** `bridge` declaration.
 A file can have unlimited `enum`, `struct`, and manual nonterminal declarations.
 The declarations do not have to appear in a particular order.
 
+Generated terminal declarations let Azuki generate the terminal enum.
+Likewise, `struct` and `enum` declarations define generated nonterminals:
+Azuki generates their Rust types.
+Manual terminal and manual nonterminal declarations use types supplied by the bridge.
+
 Most examples below show only the declarations relevant to that section.
 The [quickstart](./QUICKSTART.md) contains complete projects.
 When showing generated Rust, we omit parser internals and bridge import aliases
@@ -61,10 +66,10 @@ so that the relevant type definitions are easier to read.
 Unless otherwise stated, the examples assume the generated parser
 is in `crate::parser`.
 
-## `terminal` declarations
+## Generated terminal declarations
 
-`terminal` declarations let you
-define each terminal's Rust type.
+Generated terminal declarations use the `terminal` keyword.
+They let you define each terminal's Rust type and generate the terminal enum.
 For example, suppose we have a lexer
 that spits out three kinds of terminals:
 
@@ -199,7 +204,7 @@ You do not write Rust type paths directly in the grammar.
 
 ### Rust prefixes
 
-You can write a _Rust prefix_ before a terminal enum declaration.
+You can write a _Rust prefix_ before a generated terminal declaration.
 A Rust prefix has the form `rust"..."`,
 where `...` is Rust code that gets copied verbatim
 before the generated declaration.
@@ -429,7 +434,7 @@ pub struct Epsilon;
 ### Rust prefixes before structs
 
 You can write a Rust prefix before a struct.
-You use the same syntax as when you write [a Rust prefix before a terminal enum declaration](#rust-prefixes).
+You use the same syntax as when you write [a Rust prefix before a generated terminal declaration](#rust-prefixes).
 
 Example:
 
@@ -599,7 +604,7 @@ pub enum ZeroOrOneComma {
 ### Rust prefixes before enums
 
 You can write a Rust prefix before an enum.
-You use the same syntax as when you write [a Rust prefix before a terminal enum declaration](#rust-prefixes).
+You use the same syntax as when you write [a Rust prefix before a generated terminal declaration](#rust-prefixes).
 
 Example:
 

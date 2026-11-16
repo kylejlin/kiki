@@ -354,7 +354,7 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
 
     fn terminal_def_src(&self) -> String {
         match self.generator.takeoff.preflight.terminal_enum {
-            TerminalEnum::Generated(cst::TerminalEnum {
+            TerminalEnum::Generated(cst::GeneratedTerminal {
                 prefix,
                 name,
                 global_lifetimes: _,
@@ -460,8 +460,8 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
                         let bridge = &self.names.bridge;
                         format!("    pub use super::{bridge}::{target} as {name};")
                     }
-                    cst::FileItem::Terminal(_) => {
-                        unreachable!("Terminal items are not non-terminals")
+                    cst::FileItem::GeneratedTerminal(_) => {
+                        unreachable!("Generated terminal items are not non-terminals")
                     }
                     cst::FileItem::ManualTerminal(_) => {
                         unreachable!("Manual terminal items are not non-terminals")
@@ -639,7 +639,9 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
                         ));
                     }
                 }
-                cst::FileItem::Terminal(_) => unreachable!("Terminal items are not non-terminals"),
+                cst::FileItem::GeneratedTerminal(_) => {
+                    unreachable!("Generated terminal items are not non-terminals")
+                }
                 cst::FileItem::ManualTerminal(_) => {
                     unreachable!("Manual terminal items are not non-terminals")
                 }
@@ -920,7 +922,9 @@ fn get_goto(state: {state}, new_kind: {non_terminal_kind}) -> ::std::option::Opt
                 lifetimes,
                 variants: _,
             }) => declared_lifetime_list_src(lifetimes),
-            cst::FileItem::Terminal(_) => unreachable!("Terminal items are not non-terminals"),
+            cst::FileItem::GeneratedTerminal(_) => {
+                unreachable!("Generated terminal items are not non-terminals")
+            }
             cst::FileItem::ManualTerminal(_) => {
                 unreachable!("Manual terminal items are not non-terminals")
             }
@@ -965,7 +969,9 @@ fn non_terminal_name<'a>(item: &cst::FileItem<'a>) -> &'a str {
             lifetimes: _,
             variants: _,
         }) => name.raw.raw(),
-        cst::FileItem::Terminal(_) => unreachable!("Terminal items are not non-terminals"),
+        cst::FileItem::GeneratedTerminal(_) => {
+            unreachable!("Generated terminal items are not non-terminals")
+        }
         cst::FileItem::ManualTerminal(_) => {
             unreachable!("Manual terminal items are not non-terminals")
         }

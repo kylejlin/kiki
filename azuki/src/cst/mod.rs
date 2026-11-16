@@ -59,7 +59,7 @@ pub enum FileItem<'a> {
     Struct(Struct<'a>),
     Enum(Enum<'a>),
     ManualNonTerminal(ManualNonTerminal<'a>),
-    Terminal(TerminalEnum<'a>),
+    GeneratedTerminal(GeneratedTerminal<'a>),
     ManualTerminal(ManualTerminal<'a>),
     Bridge(Path<'a>),
 }
@@ -87,7 +87,7 @@ pub struct ManualNonTerminal<'a> {
 }
 
 #[derive(Debug)]
-pub struct TerminalEnum<'a> {
+pub struct GeneratedTerminal<'a> {
     pub prefix: Option<token::RustStringLiteral<'a>>,
     pub name: token::UpperName<'a>,
     pub global_lifetimes: Vec<token::SingleQuoteLowerName<'a>>,

@@ -50,7 +50,9 @@ impl<'a> Massage<'a> for r::FileItem {
             r::FileItem::ManualNonTerminal(value) => {
                 Self::Out::ManualNonTerminal(value.massage(file_source))
             }
-            r::FileItem::Terminal(value) => Self::Out::Terminal(value.massage(file_source)),
+            r::FileItem::GeneratedTerminal(value) => {
+                Self::Out::GeneratedTerminal(value.massage(file_source))
+            }
             r::FileItem::ManualTerminal(value) => {
                 Self::Out::ManualTerminal(value.massage(file_source))
             }
@@ -112,11 +114,11 @@ impl<'a> Massage<'a> for r::ManualNonTerminal {
     }
 }
 
-impl<'a> Massage<'a> for r::TerminalEnum {
-    type Out = TerminalEnum<'a>;
+impl<'a> Massage<'a> for r::GeneratedTerminal {
+    type Out = GeneratedTerminal<'a>;
 
     fn massage(&self, file_source: FileSource<'a>) -> Self::Out {
-        let r::TerminalEnum {
+        let r::GeneratedTerminal {
             prefix,
             name,
             global_lifetimes,

@@ -14,7 +14,7 @@ enum FileItem {
     Struct(Struct)
     Enum(Enum)
     ManualNonTerminal(ManualNonTerminal)
-    Terminal(TerminalEnum)
+    GeneratedTerminal(GeneratedTerminal)
     ManualTerminal(ManualTerminal)
     Bridge($BridgeKw Path)
 }
@@ -45,7 +45,7 @@ struct ManualNonTerminal {
     _: $RCurly
 }
 
-struct TerminalEnum {
+struct GeneratedTerminal {
     prefix: OptRustStringLiteral
     _: $TerminalKw
     name: $UpperName

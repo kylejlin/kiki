@@ -230,8 +230,8 @@ fn get_non_terminal_lifetime_sets(
                 // A manual non-terminal type's lifetimes are independent of its conversion inputs.
                 out[lhs] = get_declared_lifetime_set(lifetimes, lifetime_ids);
             }
-            cst::FileItem::Terminal(_) => {
-                unreachable!("Non-terminal definitions cannot be terminal items")
+            cst::FileItem::GeneratedTerminal(_) => {
+                unreachable!("Non-terminal definitions cannot be generated terminal items")
             }
             cst::FileItem::ManualTerminal(_) => {
                 unreachable!("Non-terminal definitions cannot be manual terminal items")

@@ -21,14 +21,14 @@ pub struct PreflightCertificate<'a> {
 
 #[derive(Clone, Copy)]
 pub(crate) enum TerminalEnum<'a> {
-    Generated(&'a cst::TerminalEnum<'a>),
+    Generated(&'a cst::GeneratedTerminal<'a>),
     Manual(&'a cst::ManualTerminal<'a>),
 }
 
 impl<'a> TerminalEnum<'a> {
     pub fn name(self) -> token::UpperName<'a> {
         match self {
-            Self::Generated(cst::TerminalEnum {
+            Self::Generated(cst::GeneratedTerminal {
                 prefix: _,
                 name,
                 global_lifetimes: _,
@@ -45,7 +45,7 @@ impl<'a> TerminalEnum<'a> {
 
     pub fn global_lifetimes(self) -> &'a [token::SingleQuoteLowerName<'a>] {
         match self {
-            Self::Generated(cst::TerminalEnum {
+            Self::Generated(cst::GeneratedTerminal {
                 prefix: _,
                 name: _,
                 global_lifetimes,
@@ -62,7 +62,7 @@ impl<'a> TerminalEnum<'a> {
 
     pub fn variants(self) -> &'a [cst::TerminalEnumVariant<'a>] {
         match self {
-            Self::Generated(cst::TerminalEnum {
+            Self::Generated(cst::GeneratedTerminal {
                 prefix: _,
                 name: _,
                 global_lifetimes: _,
@@ -178,7 +178,7 @@ fn get_required_items<'a>(
             cst::FileItem::Struct(_) => {}
             cst::FileItem::Enum(_) => {}
             cst::FileItem::ManualNonTerminal(_) => {}
-            cst::FileItem::Terminal(def) => {
+            cst::FileItem::GeneratedTerminal(def) => {
                 if let Some(first) = terminal_enum {
                     return Err(PreflightCheckError::MultipleTerminalItems(
                         first.name(),
@@ -229,7 +229,7 @@ fn get_definitions<'a>(
             cst::FileItem::Struct(def) => def.name,
             cst::FileItem::Enum(def) => def.name,
             cst::FileItem::ManualNonTerminal(def) => def.name,
-            cst::FileItem::Terminal(def) => def.name,
+            cst::FileItem::GeneratedTerminal(def) => def.name,
             cst::FileItem::ManualTerminal(def) => def.name,
             cst::FileItem::Bridge(_) => continue,
         };
@@ -239,7 +239,7 @@ fn get_definitions<'a>(
         }
         if !matches!(
             item,
-            cst::FileItem::Terminal(_) | cst::FileItem::ManualTerminal(_)
+            cst::FileItem::GeneratedTerminal(_) | cst::FileItem::ManualTerminal(_)
         ) {
             let id = OriginalNonTerminalId {
                 raw: NonZeroUsize::new(
@@ -314,7 +314,7 @@ fn get_rules<'a>(
                 check_lifetimes(&def.lifetimes, global_lifetimes)?;
                 check_manual_non_terminal(def, definitions, &mut rules)?;
             }
-            cst::FileItem::Terminal(_) => {}
+            cst::FileItem::GeneratedTerminal(_) => {}
             cst::FileItem::ManualTerminal(_) => {}
             cst::FileItem::Bridge(_) => {}
         }
