@@ -1,4 +1,5 @@
 pub mod bit_set;
+pub mod codegen;
 pub mod convenience;
 pub mod cst;
 pub mod lexer;
@@ -9,7 +10,6 @@ pub mod token;
 
 mod internal_prelude;
 
-mod codegen;
 mod machine;
 mod oset;
 mod table;
