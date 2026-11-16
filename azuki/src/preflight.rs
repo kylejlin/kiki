@@ -532,6 +532,12 @@ pub struct TerminalIdMap<T> {
     raw: Vec<T>,
 }
 
+impl<T> TerminalIdMap<T> {
+    pub(crate) fn len(&self) -> usize {
+        self.raw.len()
+    }
+}
+
 impl<T> Index<TerminalId> for TerminalIdMap<T> {
     type Output = T;
 

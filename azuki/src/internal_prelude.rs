@@ -14,6 +14,7 @@ pub(crate) use crate::{
     cst,
     epsilon_or_terminal_set::*,
     lexer::*,
+    machine::*,
     ntt::*,
     oset::*,
     preflight::*,
