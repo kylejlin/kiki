@@ -63,7 +63,9 @@ impl Table {
                         }
 
                         Action::Shift(_) | Action::Reduce(_) | Action::Accept => {
-                            return Err(todo!());
+                            unreachable!(
+                                "Shifts are inserted once per state/terminal pair, before reductions and accepts"
+                            );
                         }
                     }
                 }
@@ -76,7 +78,9 @@ impl Table {
                             *entry = Goto::State(dest_id);
                         }
 
-                        Goto::State(existing) => return Err(todo!()),
+                        Goto::State(_) => {
+                            unreachable!("Gotos are inserted once per state/non-terminal pair");
+                        }
                     }
 
                     *entry = Goto::State(dest_id);
@@ -101,11 +105,13 @@ impl Table {
                             }
 
                             Action::Shift(_) | Action::Reduce(_) | Action::Accept => {
-                                return Err(todo!());
+                                unreachable!(
+                                    "The augmented item sorts first, and EOI cannot be shifted"
+                                );
                             }
                         }
                     } else {
-                        todo!()
+                        unreachable!("The augmented item's lookahead must be EOI")
                     }
 
                     continue;
