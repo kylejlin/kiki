@@ -1,8 +1,10 @@
 # Azuki
 
+[![crates.io](https://img.shields.io/crates/v/azuki.svg)](https://crates.io/crates/azuki)
+
 Azuki is a minimalist parser generator for Rust.
 
-Azuki is an experimental proposed successor to [Kiki](../README.md).
+Azuki is an experimental successor to [Kiki](https://crates.io/crates/kiki).
 It is mostly a generalization of Kiki, but it is not fully backwards compatible
 (e.g., there is no auto-`Box`-ing).
 
@@ -241,5 +243,5 @@ click [here](./QUICKSTART.md).
 ## Contributing
 
 Contributions are welcome.
-Simply open a [new issue](https://github.com/kylejlin/kiki/issues/new) or pull request, and I'll take a look.
+Simply open a [new issue](https://github.com/kylejlin/azuki/issues/new) or [pull request](https://github.com/kylejlin/azuki/pulls), and I'll take a look.
 All forms of contribution (e.g., bugfixes, tests, documentation, typo correction) are helpful.

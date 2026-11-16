@@ -25,10 +25,7 @@ So, I recommend that you read them if you have time.
 
 ## Essential tutorial
 
-You need Rust 1.98 or newer and a local checkout of this repository.
-The dependency below assumes the checkout is called `kiki`
-and is next to the `azuki_quickstart` directory.
-If it is somewhere else, change the dependency path accordingly.
+You need Rust 1.98 or newer.
 
 1. Initialize the project using Cargo.
    To do this, open a terminal and run:
@@ -42,7 +39,7 @@ If it is somewhere else, change the dependency path accordingly.
 
    ```toml
    [build-dependencies]
-   azuki = { path = "../kiki/azuki" }
+   azuki = "0.1"
    walkdir = "2"
    ```
 
