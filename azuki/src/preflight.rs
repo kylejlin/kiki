@@ -594,7 +594,7 @@ pub enum EpsilonOrTerminal {
 }
 impl PartialEq for EpsilonOrTerminal {
     fn eq(&self, other: &Self) -> bool {
-        self.as_usize().eq(&other.as_usize())
+        self.into_usize().eq(&other.into_usize())
     }
 }
 impl Eq for EpsilonOrTerminal {}
@@ -605,40 +605,32 @@ impl PartialOrd for EpsilonOrTerminal {
 }
 impl Ord for EpsilonOrTerminal {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.as_usize().cmp(&other.as_usize())
+        self.into_usize().cmp(&other.into_usize())
     }
 }
 impl Hash for EpsilonOrTerminal {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.as_usize().hash(state);
+        self.into_usize().hash(state);
     }
 }
 
 impl UsizePun for EpsilonOrTerminal {
     fn into_usize(self) -> usize {
-        self.as_usize()
-    }
-
-    fn from_usize(n: usize) -> Self {
-        Self::from_usize(n)
-    }
-}
-
-impl EpsilonOrTerminal {
-    pub const fn as_usize(self) -> usize {
         match self {
             Self::Epsilon => 0,
             Self::Terminal(id) => id.raw.get(),
         }
     }
 
-    pub const fn from_usize(n: usize) -> Self {
+    fn from_usize(n: usize) -> Self {
         match NonZeroUsize::new(n) {
             None => Self::Epsilon,
             Some(n) => Self::Terminal(TerminalId { raw: n }),
         }
     }
+}
 
+impl EpsilonOrTerminal {
     pub const fn into_terminal(self) -> Option<TerminalId> {
         match self {
             Self::Epsilon => None,
@@ -654,7 +646,7 @@ pub enum EoiOrTerminal {
 }
 impl PartialEq for EoiOrTerminal {
     fn eq(&self, other: &Self) -> bool {
-        self.as_usize().eq(&other.as_usize())
+        self.into_usize().eq(&other.into_usize())
     }
 }
 impl Eq for EoiOrTerminal {}
@@ -665,17 +657,17 @@ impl PartialOrd for EoiOrTerminal {
 }
 impl Ord for EoiOrTerminal {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.as_usize().cmp(&other.as_usize())
+        self.into_usize().cmp(&other.into_usize())
     }
 }
 impl Hash for EoiOrTerminal {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.as_usize().hash(state);
+        self.into_usize().hash(state);
     }
 }
 
 impl EoiOrTerminal {
-    pub const fn as_usize(self) -> usize {
+    pub const fn into_usize(self) -> usize {
         match self {
             Self::Eoi => 0,
             Self::Terminal(id) => id.raw.get(),
@@ -705,7 +697,7 @@ pub enum RuleId {
 
 impl PartialEq for RuleId {
     fn eq(&self, other: &Self) -> bool {
-        self.as_usize().eq(&other.as_usize())
+        self.into_usize().eq(&other.into_usize())
     }
 }
 impl Eq for RuleId {}
@@ -716,17 +708,17 @@ impl PartialOrd for RuleId {
 }
 impl Ord for RuleId {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.as_usize().cmp(&other.as_usize())
+        self.into_usize().cmp(&other.into_usize())
     }
 }
 impl Hash for RuleId {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.as_usize().hash(state);
+        self.into_usize().hash(state);
     }
 }
 
 impl RuleId {
-    pub const fn as_usize(self) -> usize {
+    pub const fn into_usize(self) -> usize {
         match self {
             Self::Augmented => 0,
             Self::Original(id) => id.raw.get(),
@@ -755,6 +747,6 @@ impl Index<RuleId> for PreflightCertificate<'_> {
     type Output = Rule;
 
     fn index(&self, index: RuleId) -> &Self::Output {
-        &self.rules[index.as_usize()]
+        &self.rules[index.into_usize()]
     }
 }
