@@ -11,8 +11,8 @@ pub use std::{
 };
 
 pub(crate) use crate::{
+    bitset::*,
     cst,
-    epsilon_or_terminal_set::*,
     lexer::*,
     machine::*,
     ntt::*,

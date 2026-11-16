@@ -1,5 +1,5 @@
+pub mod bitset;
 pub mod cst;
-pub mod epsilon_or_terminal_set;
 pub mod lexer;
 pub mod ntt;
 pub mod preflight;

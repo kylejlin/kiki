@@ -614,6 +614,16 @@ impl Hash for EpsilonOrTerminal {
     }
 }
 
+impl UsizePun for EpsilonOrTerminal {
+    fn into_usize(self) -> usize {
+        self.as_usize()
+    }
+
+    fn from_usize(n: usize) -> Self {
+        Self::from_usize(n)
+    }
+}
+
 impl EpsilonOrTerminal {
     pub const fn as_usize(self) -> usize {
         match self {
