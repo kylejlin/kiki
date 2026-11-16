@@ -437,6 +437,7 @@ pub struct SymbolId {
 
 impl SymbolId {
     const HIGH_BIT_MASK: usize = 1 << (usize::BITS - 1);
+    const SYNTHETIC_START_SYMBOL: usize = Self::HIGH_BIT_MASK;
 
     pub const fn as_terminal(self) -> Result<TerminalId, NonTerminalId> {
         let Self { raw } = self;
@@ -489,6 +490,22 @@ pub struct NonTerminalId {
     raw: NonZeroUsize,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct OriginalNonTerminalId {
+    /// INVARIANT: The most significant bit is one, and at least one other bit is one.
+    raw: NonZeroUsize,
+}
+
+impl NonTerminalId {
+    pub const fn into_original(self) -> Option<OriginalNonTerminalId> {
+        if self.raw.get() == SymbolId::SYNTHETIC_START_SYMBOL {
+            None
+        } else {
+            Some(OriginalNonTerminalId { raw: self.raw })
+        }
+    }
+}
+
 pub struct TerminalIdMap<T> {
     raw: Vec<T>,
 }
@@ -507,15 +524,13 @@ pub struct OriginalNonTerminalIdMap<T> {
     raw: Vec<T>,
 }
 
-impl<T> Index<NonTerminalId> for OriginalNonTerminalIdMap<T> {
+impl<T> Index<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
     type Output = T;
 
-    fn index(&self, index: NonTerminalId) -> &Self::Output {
+    fn index(&self, index: OriginalNonTerminalId) -> &Self::Output {
         let raw_index = index.raw.get() & !SymbolId::HIGH_BIT_MASK;
 
-        // _Original_ non-terminals have a non-zero index.
-        // The zeroth index is reserved for the synthetic start symbol.
-        let index = raw_index.checked_sub(1).unwrap();
+        let index = raw_index - 1;
         &self.raw[index]
     }
 }
