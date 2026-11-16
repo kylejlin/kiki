@@ -3,6 +3,7 @@ use crate::internal_prelude::*;
 use non_normalized::*;
 
 mod non_normalized;
+mod normalization;
 
 pub struct Machine {
     pub start_id: StateId,
@@ -46,11 +47,5 @@ impl Machine {
     pub fn new(takeoff: &TakeoffCertificate) -> Self {
         let non_normalized = NonNormalizedMachine::new(takeoff);
         non_normalized.normalize()
-    }
-}
-
-impl NonNormalizedMachine {
-    fn normalize(self) -> Machine {
-        todo!()
     }
 }
