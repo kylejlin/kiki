@@ -1,18 +1,18 @@
-use super::*;
+use crate::internal_prelude::*;
 
-pub struct BitSet {
-    buf: BitSetBuf,
+pub struct EpsilonOrTerminalSet {
+    buf: EpsilonOrTerminalSetBuf,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SingletonBitSet {
-    pub value: usize,
+pub struct EpsilonOrTerminalSingletonSet {
+    pub value: EpsilonOrTerminal,
 }
 
-impl BitSet {
+impl EpsilonOrTerminalSet {
     pub fn empty() -> Self {
         Self {
-            buf: BitSetBuf::empty(),
+            buf: EpsilonOrTerminalSetBuf::empty(),
         }
     }
 
@@ -20,7 +20,7 @@ impl BitSet {
         self.buf.cardinality()
     }
 
-    pub fn contains(&self, needle: usize) -> bool {
+    pub fn contains(&self, needle: EpsilonOrTerminal) -> bool {
         self.buf.contains(needle)
     }
 
@@ -29,68 +29,68 @@ impl BitSet {
     }
 }
 
-impl BitOrAssign<&Self> for BitSet {
+impl BitOrAssign<&Self> for EpsilonOrTerminalSet {
     fn bitor_assign(&mut self, rhs: &Self) {
         self.buf |= &rhs.buf;
     }
 }
 
-impl BitOrAssign<SingletonBitSet> for BitSet {
-    fn bitor_assign(&mut self, rhs: SingletonBitSet) {
+impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
+    fn bitor_assign(&mut self, rhs: EpsilonOrTerminalSingletonSet) {
         self.buf |= rhs;
     }
 }
 
-impl SubAssign<&Self> for BitSet {
+impl SubAssign<&Self> for EpsilonOrTerminalSet {
     fn sub_assign(&mut self, rhs: &Self) {
         self.buf -= &rhs.buf;
     }
 }
 
-impl SubAssign<SingletonBitSet> for BitSet {
-    fn sub_assign(&mut self, rhs: SingletonBitSet) {
+impl SubAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
+    fn sub_assign(&mut self, rhs: EpsilonOrTerminalSingletonSet) {
         self.buf -= rhs;
     }
 }
 
-impl IntoIterator for BitSet {
-    type Item = usize;
-    type IntoIter = BitSetBufIter;
+impl IntoIterator for EpsilonOrTerminalSet {
+    type Item = EpsilonOrTerminal;
+    type IntoIter = EpsilonOrTerminalSetBufIter;
 
     fn into_iter(self) -> Self::IntoIter {
         self.buf.into_iter()
     }
 }
 
-impl<'a> IntoIterator for &'a BitSet {
-    type Item = usize;
-    type IntoIter = BitSetBufRefIter<'a>;
+impl<'a> IntoIterator for &'a EpsilonOrTerminalSet {
+    type Item = EpsilonOrTerminal;
+    type IntoIter = EpsilonOrTerminalSetBufRefIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
         (&self.buf).into_iter()
     }
 }
 
-impl<'a> BitSet {
+impl<'a> EpsilonOrTerminalSet {
     pub fn iter(&'a self) -> <&'a Self as IntoIterator>::IntoIter {
         (&self.buf).into_iter()
     }
 }
 
-impl From<SingletonBitSet> for BitSet {
-    fn from(value: SingletonBitSet) -> Self {
-        let mut out = BitSet::empty();
+impl From<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSet {
+    fn from(value: EpsilonOrTerminalSingletonSet) -> Self {
+        let mut out = EpsilonOrTerminalSet::empty();
         out |= value;
         out
     }
 }
 
-enum BitSetBuf {
+enum EpsilonOrTerminalSetBuf {
     Small([usize; Self::MIN_CHUNK_COUNT]),
     Big(Vec<usize>),
 }
 
-impl BitSetBuf {
+impl EpsilonOrTerminalSetBuf {
     /// Thanks for `Vec`'s non-zero niche, we get two words for free.
     const MIN_CHUNK_COUNT: usize = 2;
 
@@ -125,8 +125,8 @@ impl BitSetBuf {
         self.as_slice().len()
     }
 
-    fn contains(&self, needle: usize) -> bool {
-        let i = needle;
+    fn contains(&self, needle: EpsilonOrTerminal) -> bool {
+        let i = needle.as_usize();
 
         let chunk_index = i / Self::CHUNK_WIDTH;
         let Some(chunk) = self.as_slice().get(chunk_index) else {
@@ -168,7 +168,7 @@ impl BitSetBuf {
     }
 }
 
-impl BitOrAssign<&Self> for BitSetBuf {
+impl BitOrAssign<&Self> for EpsilonOrTerminalSetBuf {
     fn bitor_assign(&mut self, rhs: &Self) {
         self.grow_if_needed(rhs.chunk_count());
 
@@ -178,9 +178,9 @@ impl BitOrAssign<&Self> for BitSetBuf {
     }
 }
 
-impl BitOrAssign<SingletonBitSet> for BitSetBuf {
-    fn bitor_assign(&mut self, rhs: SingletonBitSet) {
-        let i = rhs.value;
+impl BitOrAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSetBuf {
+    fn bitor_assign(&mut self, rhs: EpsilonOrTerminalSingletonSet) {
+        let i = rhs.value.as_usize();
 
         let chunk_index = i / Self::CHUNK_WIDTH;
         self.grow_if_needed(chunk_index + 1);
@@ -192,7 +192,7 @@ impl BitOrAssign<SingletonBitSet> for BitSetBuf {
     }
 }
 
-impl SubAssign<&Self> for BitSetBuf {
+impl SubAssign<&Self> for EpsilonOrTerminalSetBuf {
     fn sub_assign(&mut self, rhs: &Self) {
         for (l, r) in self.as_mut().into_iter().zip(rhs.as_slice()) {
             *l &= !*r;
@@ -200,9 +200,9 @@ impl SubAssign<&Self> for BitSetBuf {
     }
 }
 
-impl SubAssign<SingletonBitSet> for BitSetBuf {
-    fn sub_assign(&mut self, rhs: SingletonBitSet) {
-        let i = rhs.value;
+impl SubAssign<EpsilonOrTerminalSingletonSet> for EpsilonOrTerminalSetBuf {
+    fn sub_assign(&mut self, rhs: EpsilonOrTerminalSingletonSet) {
+        let i = rhs.value.as_usize();
 
         let chunk_index = i / Self::CHUNK_WIDTH;
         let Some(chunk) = self.as_mut().get_mut(chunk_index) else {
@@ -215,26 +215,26 @@ impl SubAssign<SingletonBitSet> for BitSetBuf {
     }
 }
 
-impl IntoIterator for BitSetBuf {
-    type Item = usize;
-    type IntoIter = BitSetBufIter;
+impl IntoIterator for EpsilonOrTerminalSetBuf {
+    type Item = EpsilonOrTerminal;
+    type IntoIter = EpsilonOrTerminalSetBufIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        BitSetBufIter {
+        EpsilonOrTerminalSetBufIter {
             buf: self,
             chunk_index: 0,
         }
     }
 }
 
-impl<'a> IntoIterator for &'a BitSetBuf {
-    type Item = usize;
-    type IntoIter = BitSetBufRefIter<'a>;
+impl<'a> IntoIterator for &'a EpsilonOrTerminalSetBuf {
+    type Item = EpsilonOrTerminal;
+    type IntoIter = EpsilonOrTerminalSetBufRefIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
         let buf = self.as_slice();
         let chunk = buf[0];
-        BitSetBufRefIter {
+        EpsilonOrTerminalSetBufRefIter {
             buf,
             chunk,
             chunk_index: 0,
@@ -242,13 +242,13 @@ impl<'a> IntoIterator for &'a BitSetBuf {
     }
 }
 
-pub struct BitSetBufIter {
-    buf: BitSetBuf,
+pub struct EpsilonOrTerminalSetBufIter {
+    buf: EpsilonOrTerminalSetBuf,
     chunk_index: usize,
 }
 
-impl Iterator for BitSetBufIter {
-    type Item = usize;
+impl Iterator for EpsilonOrTerminalSetBufIter {
+    type Item = EpsilonOrTerminal;
 
     fn next(&mut self) -> Option<Self::Item> {
         let s = self.buf.as_mut();
@@ -259,21 +259,22 @@ impl Iterator for BitSetBufIter {
                 continue;
             }
 
-            let i = self.chunk_index * BitSetBuf::CHUNK_WIDTH + (chunk.trailing_zeros() as usize);
+            let i = self.chunk_index * EpsilonOrTerminalSetBuf::CHUNK_WIDTH
+                + (chunk.trailing_zeros() as usize);
             *chunk &= *chunk - 1;
-            break Some(i);
+            break Some(EpsilonOrTerminal::from_usize(i));
         }
     }
 }
 
-pub struct BitSetBufRefIter<'a> {
+pub struct EpsilonOrTerminalSetBufRefIter<'a> {
     buf: &'a [usize],
     chunk: usize,
     chunk_index: usize,
 }
 
-impl Iterator for BitSetBufRefIter<'_> {
-    type Item = usize;
+impl Iterator for EpsilonOrTerminalSetBufRefIter<'_> {
+    type Item = EpsilonOrTerminal;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -287,10 +288,10 @@ impl Iterator for BitSetBufRefIter<'_> {
                 continue;
             }
 
-            let i =
-                self.chunk_index * BitSetBuf::CHUNK_WIDTH + (self.chunk.trailing_zeros() as usize);
+            let i = self.chunk_index * EpsilonOrTerminalSetBuf::CHUNK_WIDTH
+                + (self.chunk.trailing_zeros() as usize);
             self.chunk &= self.chunk - 1;
-            break Some(i);
+            break Some(EpsilonOrTerminal::from_usize(i));
         }
     }
 }

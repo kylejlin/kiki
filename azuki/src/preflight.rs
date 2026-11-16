@@ -523,3 +523,53 @@ pub struct Rule {
     pub lhs: NonTerminalId,
     pub rhs: Vec<SymbolId>,
 }
+
+#[derive(Debug, Clone, Copy)]
+pub enum EpsilonOrTerminal {
+    Epsilon,
+    Terminal(TerminalId),
+}
+impl PartialEq for EpsilonOrTerminal {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_usize().eq(&other.as_usize())
+    }
+}
+impl Eq for EpsilonOrTerminal {}
+impl PartialOrd for EpsilonOrTerminal {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for EpsilonOrTerminal {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_usize().cmp(&other.as_usize())
+    }
+}
+impl Hash for EpsilonOrTerminal {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_usize().hash(state);
+    }
+}
+
+impl EpsilonOrTerminal {
+    pub const fn as_usize(self) -> usize {
+        match self {
+            Self::Epsilon => 0,
+            Self::Terminal(id) => id.raw.get(),
+        }
+    }
+
+    pub const fn from_usize(n: usize) -> Self {
+        match NonZeroUsize::new(n) {
+            None => Self::Epsilon,
+            Some(n) => Self::Terminal(TerminalId { raw: n }),
+        }
+    }
+
+    pub const fn terminal(self) -> Option<TerminalId> {
+        match self {
+            Self::Epsilon => None,
+            Self::Terminal(id) => Some(id),
+        }
+    }
+}

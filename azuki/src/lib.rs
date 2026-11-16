@@ -1,4 +1,5 @@
 pub mod cst;
+pub mod epsilon_or_terminal_set;
 pub mod lexer;
 pub mod ntt;
 pub mod preflight;
@@ -7,5 +8,4 @@ pub mod token;
 
 mod internal_prelude;
 
-mod bitset;
 mod takeoff;
