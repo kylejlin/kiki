@@ -8,6 +8,6 @@ pub mod token;
 
 mod internal_prelude;
 
-mod machine;
+mod non_normalized_machine;
 mod oset;
 mod takeoff;

@@ -1,7 +1,8 @@
 use crate::internal_prelude::*;
 
-pub struct Machine {
-    pub states: Oset<State>,
+pub struct NonNormalizedMachine {
+    pub states: Vec<State>,
+    pub transitions: Vec<NonNormalizedTransition>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -19,7 +20,27 @@ pub struct Item {
     pub lookahead: EoiOrTerminal,
 }
 
-impl Machine {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct NonNormalizedTransition {
+    pub start_id: NonNormalizedStateId,
+    pub dest_id: NonNormalizedStateId,
+    pub symbol_id: OriginalSymbolId,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct NonNormalizedStateId {
+    pub raw: usize,
+}
+impl NonNormalizedStateId {
+    pub const START: Self = Self { raw: 0 };
+}
+impl Debug for NonNormalizedStateId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(&self.raw, f)
+    }
+}
+
+impl NonNormalizedMachine {
     pub fn new(takeoff: &TakeoffCertificate) -> Self {
         use std::collections::hash_map::Entry;
 
@@ -32,32 +53,44 @@ impl Machine {
             takeoff,
         );
 
-        // Normally, we'd use `HashSet`.
-        // However, at the time of writing, `HashSet::entry` is not available on stable.
-        // So, we use `HashMap<State, ()>` instead.
-        let mut states = HashMap::from([(initial_state.clone(), ())]);
+        let mut states = vec![initial_state.clone()];
+        let mut ids = HashMap::from([(initial_state, NonNormalizedStateId::START)]);
+        let mut queue = VecDeque::from([NonNormalizedStateId::START]);
+        let mut transitions = vec![];
 
-        let mut queue = VecDeque::from([initial_state]);
-
-        while let Some(start) = queue.pop_front() {
+        while let Some(start_id) = queue.pop_front() {
+            let start = &states[start_id.raw];
             for symbol_id in start.next_symbols(takeoff) {
-                let dest = goto(&start, symbol_id, takeoff);
+                let start = &states[start_id.raw];
+                let dest = goto(start, symbol_id, takeoff);
                 assert_ne!(dest.items.len(), 0);
 
-                match states.entry(dest) {
-                    Entry::Vacant(entry) => {
-                        queue.push_back(entry.key().clone());
-                        entry.insert(());
-                    }
+                let dest_id = {
+                    let fresh_id = NonNormalizedStateId { raw: states.len() };
 
-                    // `dest` was already added, so no need to do anything.
-                    Entry::Occupied(_) => {}
-                }
+                    match ids.entry(dest) {
+                        Entry::Vacant(entry) => {
+                            states.push(entry.key().clone());
+                            queue.push_back(fresh_id);
+                            entry.insert(fresh_id);
+                            fresh_id
+                        }
+
+                        Entry::Occupied(entry) => *entry.get(),
+                    }
+                };
+
+                transitions.push(NonNormalizedTransition {
+                    start_id,
+                    dest_id,
+                    symbol_id,
+                });
             }
         }
 
         Self {
-            states: states.into_keys().collect(),
+            states,
+            transitions,
         }
     }
 }
@@ -184,12 +217,10 @@ fn goto(start: &State, symbol_id: OriginalSymbolId, takeoff: &TakeoffCertificate
 }
 
 impl State {
-    fn next_symbols(&self, takeoff: &TakeoffCertificate) -> impl Iterator<Item = OriginalSymbolId> {
-        let out: HashSet<OriginalSymbolId> = self
-            .items
+    fn next_symbols(&self, takeoff: &TakeoffCertificate) -> HashSet<OriginalSymbolId> {
+        self.items
             .iter()
             .filter_map(|item| item.next_symbol(takeoff))
-            .collect();
-        out.into_iter()
+            .collect()
     }
 }
