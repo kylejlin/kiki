@@ -6,7 +6,7 @@ pub use std::{
     iter,
     marker::PhantomData,
     num::{NonZeroU64, NonZeroUsize},
-    ops::{BitOrAssign, Index, SubAssign},
+    ops::{BitOrAssign, Index, IndexMut, SubAssign},
     range::Range,
 };
 

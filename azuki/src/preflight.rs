@@ -550,6 +550,10 @@ impl<T> OriginalNonTerminalIdMap<T> {
     pub(crate) fn from_raw(raw: Vec<T>) -> Self {
         Self { raw }
     }
+
+    pub(crate) fn len(&self) -> usize {
+        self.raw.len()
+    }
 }
 
 impl<T> Index<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
@@ -560,6 +564,15 @@ impl<T> Index<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
 
         let index = raw_index - 1;
         &self.raw[index]
+    }
+}
+
+impl<T> IndexMut<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
+    fn index_mut(&mut self, index: OriginalNonTerminalId) -> &mut Self::Output {
+        let raw_index = index.raw.get() & !OriginalSymbolId::HIGH_BIT_MASK;
+
+        let index = raw_index - 1;
+        &mut self.raw[index]
     }
 }
 
