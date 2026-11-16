@@ -5,6 +5,17 @@ pub struct NonNormalizedMachine {
     pub transitions: Vec<NonNormalizedTransition>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct StateCore {
+    items: Oset<ItemCore>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct ItemCore {
+    rule_id: RuleId,
+    dot_index: usize,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NonNormalizedTransition {
     pub start_id: NonNormalizedStateId,
@@ -38,12 +49,15 @@ impl NonNormalizedMachine {
             takeoff,
         );
 
-        let mut states = vec![initial_state.clone()];
-        let mut ids = HashMap::from([(initial_state, NonNormalizedStateId::START)]);
+        let mut ids = HashMap::from([(initial_state.core(), NonNormalizedStateId::START)]);
+        let mut states = vec![initial_state];
         let mut queue = VecDeque::from([NonNormalizedStateId::START]);
-        let mut transitions = vec![];
+        let mut currently_enqueued = vec![true];
+        let mut transitions = HashSet::new();
 
         while let Some(start_id) = queue.pop_front() {
+            currently_enqueued[start_id.raw] = false;
+
             let start = &states[start_id.raw];
             for symbol_id in start.next_symbols(takeoff) {
                 let start = &states[start_id.raw];
@@ -53,19 +67,36 @@ impl NonNormalizedMachine {
                 let dest_id = {
                     let fresh_id = NonNormalizedStateId { raw: states.len() };
 
-                    match ids.entry(dest) {
+                    match ids.entry(dest.core()) {
                         Entry::Vacant(entry) => {
-                            states.push(entry.key().clone());
+                            states.push(dest);
                             queue.push_back(fresh_id);
+                            currently_enqueued.push(true);
                             entry.insert(fresh_id);
                             fresh_id
                         }
 
-                        Entry::Occupied(entry) => *entry.get(),
+                        Entry::Occupied(entry) => {
+                            let id = *entry.get();
+                            let existing = &mut states[id.raw];
+                            let original_item_count = existing.items.len();
+
+                            // Both states are closed, so their union is already closed.
+                            existing.items.extend(dest.items);
+
+                            if existing.items.len() != original_item_count
+                                && !currently_enqueued[id.raw]
+                            {
+                                currently_enqueued[id.raw] = true;
+                                queue.push_back(id);
+                            }
+
+                            id
+                        }
                     }
                 };
 
-                transitions.push(NonNormalizedTransition {
+                transitions.insert(NonNormalizedTransition {
                     start_id,
                     dest_id,
                     symbol_id,
@@ -75,7 +106,7 @@ impl NonNormalizedMachine {
 
         Self {
             states,
-            transitions,
+            transitions: transitions.into_iter().collect(),
         }
     }
 }
@@ -202,6 +233,22 @@ fn goto(start: &State, symbol_id: OriginalSymbolId, takeoff: &TakeoffCertificate
 }
 
 impl State {
+    fn core(&self) -> StateCore {
+        StateCore {
+            items: self
+                .items
+                .iter()
+                .map(
+                    |&Item {
+                         rule_id,
+                         dot_index,
+                         lookahead: _,
+                     }| ItemCore { rule_id, dot_index },
+                )
+                .collect(),
+        }
+    }
+
     fn next_symbols(&self, takeoff: &TakeoffCertificate) -> HashSet<OriginalSymbolId> {
         self.items
             .iter()
