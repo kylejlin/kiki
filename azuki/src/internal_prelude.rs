@@ -12,6 +12,7 @@ pub use std::{
 
 pub(crate) use crate::{
     cst,
+    epsilon_or_terminal_set::*,
     lexer::*,
     ntt::*,
     preflight::*,

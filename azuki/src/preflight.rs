@@ -10,7 +10,8 @@ pub struct PreflightCertificate<'a> {
     /// IDs follow declaration order, starting at 1.
     pub(crate) terminal_defs: TerminalIdMap<&'a cst::TerminalEnumVariant<'a>>,
 
-    /// IDs follow declaration order, with index 0 reserved for the synthetic start symbol.
+    /// IDs follow declaration order, starting at 1.
+    /// (Index 0 is reserved for the synthetic start symbol.)
     pub(crate) non_terminal_defs: OriginalNonTerminalIdMap<&'a cst::FileItem<'a>>,
 
     /// The first rule is always the synthetic rule (i.e., `{synthetic_start} <- {original_start}`).
@@ -571,5 +572,59 @@ impl EpsilonOrTerminal {
             Self::Epsilon => None,
             Self::Terminal(id) => Some(id),
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum RuleId {
+    Augmented,
+    Original(OriginalRuleId),
+}
+
+impl PartialEq for RuleId {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_usize().eq(&other.as_usize())
+    }
+}
+impl Eq for RuleId {}
+impl PartialOrd for RuleId {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for RuleId {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_usize().cmp(&other.as_usize())
+    }
+}
+impl Hash for RuleId {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_usize().hash(state);
+    }
+}
+
+impl RuleId {
+    pub const fn as_usize(self) -> usize {
+        match self {
+            Self::Augmented => 0,
+            Self::Original(id) => id.raw.get(),
+        }
+    }
+
+    pub const fn from_usize(n: usize) -> Self {
+        match NonZeroUsize::new(n) {
+            None => Self::Augmented,
+            Some(n) => Self::Original(OriginalRuleId { raw: n }),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct OriginalRuleId {
+    pub raw: NonZeroUsize,
+}
+impl Debug for OriginalRuleId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(&self.raw, f)
     }
 }
