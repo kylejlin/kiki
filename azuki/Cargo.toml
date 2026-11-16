@@ -3,6 +3,8 @@ name = "azuki"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.98"
+license = "MIT"
+description = "A minimalist parser generator for Rust."
 
 [dependencies]
 sha256 = "1.6.0"
