@@ -8,6 +8,8 @@ pub struct PreflightCertificate<'a> {
     pub(crate) bridge_path: &'a cst::Path<'a>,
     pub(crate) terminal_defs: TerminalIdMap<&'a cst::TerminalEnumVariant<'a>>,
     pub(crate) non_terminal_defs: OriginalNonTerminalIdMap<&'a cst::FileItem<'a>>,
+
+    /// The first rule is always the synthetic rule (i.e., `{synthetic_start} <- {original_start}`).
     pub(crate) rules: Vec<Rule>,
 }
 
