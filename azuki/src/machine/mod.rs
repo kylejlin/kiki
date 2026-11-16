@@ -1,6 +1,6 @@
 use crate::internal_prelude::*;
 
-use non_normalized::*;
+pub(crate) use non_normalized::*;
 
 mod non_normalized;
 mod normalization;

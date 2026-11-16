@@ -35,6 +35,15 @@ impl Debug for NonNormalizedStateId {
         Debug::fmt(&self.raw, f)
     }
 }
+impl UsizePun for NonNormalizedStateId {
+    fn into_usize(self) -> usize {
+        self.raw
+    }
+
+    fn from_usize(n: usize) -> Self {
+        Self { raw: n }
+    }
+}
 
 impl NonNormalizedMachine {
     pub fn new(takeoff: &TakeoffCertificate) -> Self {
@@ -52,11 +61,14 @@ impl NonNormalizedMachine {
         let mut ids = HashMap::from([(initial_state.core(), NonNormalizedStateId::START)]);
         let mut states = vec![initial_state];
         let mut queue = VecDeque::from([NonNormalizedStateId::START]);
-        let mut currently_enqueued = vec![true];
+        let mut currently_enqueued =
+            NonNormalizedStateIdSet::from(NonNormalizedStateIdSingletonSet {
+                value: NonNormalizedStateId::START,
+            });
         let mut transitions = HashSet::new();
 
         while let Some(start_id) = queue.pop_front() {
-            currently_enqueued[start_id.raw] = false;
+            currently_enqueued -= NonNormalizedStateIdSingletonSet { value: start_id };
 
             let start = &states[start_id.raw];
             for symbol_id in start.next_symbols(takeoff) {
@@ -71,7 +83,8 @@ impl NonNormalizedMachine {
                         Entry::Vacant(entry) => {
                             states.push(dest);
                             queue.push_back(fresh_id);
-                            currently_enqueued.push(true);
+                            currently_enqueued |=
+                                NonNormalizedStateIdSingletonSet { value: fresh_id };
                             entry.insert(fresh_id);
                             fresh_id
                         }
@@ -85,9 +98,10 @@ impl NonNormalizedMachine {
                             existing.items.extend(dest.items);
 
                             if existing.items.len() != original_item_count
-                                && !currently_enqueued[id.raw]
+                                && !currently_enqueued.contains(id)
                             {
-                                currently_enqueued[id.raw] = true;
+                                currently_enqueued |=
+                                    NonNormalizedStateIdSingletonSet { value: id };
                                 queue.push_back(id);
                             }
 

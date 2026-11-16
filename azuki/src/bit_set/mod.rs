@@ -11,8 +11,10 @@ pub trait UsizePun {
 }
 
 pub type EpsilonOrTerminalSet = TaggedBitSet<EpsilonOrTerminal>;
-
 pub type EpsilonOrTerminalSingletonSet = TaggedSingletonBitSet<EpsilonOrTerminal>;
+
+pub type NonNormalizedStateIdSet = TaggedBitSet<NonNormalizedStateId>;
+pub type NonNormalizedStateIdSingletonSet = TaggedSingletonBitSet<NonNormalizedStateId>;
 
 pub struct TaggedBitSet<K> {
     raw: RawBitSet,
