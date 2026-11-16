@@ -106,7 +106,7 @@ You need Rust 1.98 or newer.
        )
    }
 
-   manual BoxedExpr {
+   manual BoxedExpr = @BoxedExpr {
        @boxed(Expr)
    }
 
@@ -139,7 +139,8 @@ You need Rust 1.98 or newer.
    This is the Rust module referenced by the `bridge` declaration.
    Azuki gets terminal types and manual functions from this module.
    Unlike Kiki, Azuki does not automatically wrap nonterminals in `Box`.
-   The `manual BoxedExpr` declaration tells it to use our `boxed` function.
+   The `manual BoxedExpr = @BoxedExpr` declaration tells it to use
+   the bridge type `BoxedExpr` and our `boxed` function.
 
 7. Delete the original contents of `lib.rs`.
    Then, paste the following:
@@ -177,6 +178,18 @@ You need Rust 1.98 or newer.
    That test should pass.
 
 Congratulations! You created your first Azuki project.
+
+The full form `manual BoxedExpr = @BoxedExpr` names both
+the grammar symbol (on the left) and its bridge type (after `@`).
+Since those names are the same, you can omit `= @BoxedExpr`:
+
+```azuki
+manual BoxedExpr {
+    @boxed(Expr)
+}
+```
+
+This is shorthand for the full declaration above.
 
 ## Bonus activity 1: using named fieldsets
 
@@ -243,7 +256,7 @@ Notice the differing syntax.
         _: $RParen
     }
 
-    manual BoxedExpr {
+    manual BoxedExpr = @BoxedExpr {
         @boxed(Expr)
     }
 
@@ -315,7 +328,7 @@ However, structs may also use tuple fieldsets.
         }
     }
 
-    manual BoxedExpr {
+    manual BoxedExpr = @BoxedExpr {
         @boxed(Expr)
     }
 
@@ -430,9 +443,9 @@ and store them in a `Vec<&str>`.
         words: Words
     }
 
-    manual Words 'src {
+    manual Words = @Words 'src {
         @empty
-        @push(Self $Word)
+        @push(Words $Word)
     }
 
     rust"#[derive(Clone, Debug, PartialEq, Eq)]"
@@ -493,8 +506,7 @@ Observe that `Words` is a manual nonterminal,
 just like `BoxedExpr` in the Essential Tutorial.
 This time, it has two rules:
 `@empty` creates an empty vector,
-and `@push(Self $Word)` adds a word to an existing vector.
-Here, `Self` means `Words`.
+and `@push(Words $Word)` adds a word to an existing vector.
 
 The `terminal Token 'src` declaration introduces the lifetime `'src`.
 The `$Word` and `manual Words` declarations say that their Rust types
@@ -502,3 +514,16 @@ use that lifetime.
 Azuki infers that `Document` also needs `'src`,
 since it stores a `Words`.
 You do not write the lifetime on `Document` or on the `words` field.
+
+Now that we've seen the full form, we can shorten the declaration:
+
+```azuki
+manual Words 'src {
+    @empty
+    @push(Self $Word)
+}
+```
+
+We omitted `= @Words` because the grammar symbol and bridge type
+have the same name.
+We also used `Self` as shorthand for the enclosing nonterminal, `Words`.

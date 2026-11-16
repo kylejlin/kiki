@@ -73,9 +73,9 @@ We write:
 
 ```azuki
 terminal Token {
-    $StringLiteral
-    $NumberLiteral
-    $Comma
+    $StringLiteral = @StringLiteral
+    $NumberLiteral = @NumberLiteral
+    $Comma = @Comma
 }
 
 bridge crate::azuki_bridge
@@ -101,12 +101,14 @@ pub enum Token {
 
 Terminal names must begin with `$`.
 The first letter after `$` must be uppercase.
-By default, `$Foo` gets its Rust type from `Foo` in the bridge module.
+Each entry has the form `$TerminalName = @TypeName`.
+The name on the left identifies the terminal.
+The name after `@` selects its Rust type from the bridge module.
 
-### Overriding terminal types
+### Sharing terminal types
 
 What if two terminals have the same Rust type?
-We can use `= @TypeName` to choose a type from the bridge:
+We can select the same bridge type for both terminals:
 
 ```azuki
 terminal Token {
@@ -121,9 +123,29 @@ In the bridge module, we write:
 pub type Unit = ();
 ```
 
-Both variants now store `Unit`.
+Both variants store `Unit`.
 The variant names are still `LParen` and `RParen`.
-The `@` name changes the Rust type, not the terminal's name.
+The terminal's name and its bridge type's name do not have to match.
+
+### Shorthand for matching type names
+
+If the terminal and bridge type have the same name,
+you can omit `= @TypeName`.
+For example, the full declaration at the beginning of this section
+can be shortened to:
+
+```azuki
+terminal Token {
+    $StringLiteral
+    $NumberLiteral
+    $Comma
+}
+
+bridge crate::azuki_bridge
+```
+
+Here, `$StringLiteral` is shorthand for `$StringLiteral = @StringLiteral`,
+and similarly for the other two terminals.
 
 ### Crate-defined types
 
@@ -157,9 +179,9 @@ We can write the following Azuki:
 
 ```azuki
 terminal Token {
-    $Ident
-    $NumLit
-    $StrLit
+    $Ident = @Ident
+    $NumLit = @NumLit
+    $StrLit = @StrLit
 }
 ```
 
@@ -403,7 +425,7 @@ enum OneOrMoreNumbers {
     )
 }
 
-manual BoxedNumbers {
+manual BoxedNumbers = @BoxedNumbers {
     @boxed_numbers(OneOrMoreNumbers)
 }
 
@@ -428,7 +450,7 @@ pub fn boxed_numbers(inner: OneOrMoreNumbers) -> BoxedNumbers {
 Observe that Azuki does not automatically insert `Box`.
 If we had used `OneOrMoreNumbers` directly in the `Many` variant,
 the generated Rust type would have infinite size.
-The `manual BoxedNumbers` declaration tells Azuki how to box the value.
+The `manual BoxedNumbers = @BoxedNumbers` declaration tells Azuki how to box the value.
 We explain `manual` declarations in detail [below](#manual-declarations).
 
 ### `_` syntax
@@ -452,7 +474,7 @@ terminal Token {
 }
 ```
 
-Keep the same `manual BoxedNumbers` declaration and bridge code,
+Keep the same `manual BoxedNumbers = @BoxedNumbers` declaration and bridge code,
 and add `pub type Unit = ();` to the bridge.
 
 This results in a Rust enum equivalent to:
@@ -481,7 +503,7 @@ enum OneOrMoreNumbers {
 }
 ```
 
-Once again, keep the same `manual BoxedNumbers` declaration,
+Once again, keep the same `manual BoxedNumbers = @BoxedNumbers` declaration,
 terminal declaration, and bridge code.
 
 This results in a Rust enum equivalent to:
@@ -553,9 +575,9 @@ stored in a `Vec<isize>`.
 We write:
 
 ```azuki
-manual Numbers {
+manual Numbers = @NumberList {
     @empty
-    @push(Self $NumLit)
+    @push(Numbers $NumLit)
 }
 
 terminal Token {
@@ -567,13 +589,13 @@ In the bridge module, we write:
 
 ```rs
 pub type Int = isize;
-pub type Numbers = Vec<Int>;
+pub type NumberList = Vec<Int>;
 
-pub fn empty() -> Numbers {
+pub fn empty() -> NumberList {
     Vec::new()
 }
 
-pub fn push(mut numbers: Numbers, value: Int) -> Numbers {
+pub fn push(mut numbers: NumberList, value: Int) -> NumberList {
     numbers.push(value);
     numbers
 }
@@ -588,14 +610,15 @@ This corresponds to the following grammar:
 
 Unlike a `struct` or `enum` declaration,
 a `manual` declaration does not generate a new Rust type.
-It re-exports the type from the bridge module into `non_terminals`.
+`Numbers` names the grammar symbol,
+and `= @NumberList` selects its Rust type from the bridge module.
+The generated parser re-exports `NumberList` as `non_terminals::Numbers`.
 Each variant names a bridge function to call.
 The function takes the stored inputs, in order,
 and returns the manual nonterminal's Rust type.
 
 Here, `@empty` calls `empty()` with no arguments.
-`@push(Self $NumLit)` calls `push(numbers, value)`.
-The `Self` symbol refers to the enclosing nonterminal (i.e., `Numbers`).
+`@push(Numbers $NumLit)` calls `push(numbers, value)`.
 
 Manual inputs use tuple syntax.
 You can use `_: Symbol` to parse an input without passing it to the function.
@@ -615,8 +638,7 @@ pub fn identity(value: Int) -> Int {
 }
 ```
 
-The `= @Int` override means that `ParenthesizedNumber`
-uses the bridge type `Int` instead of a bridge type named `ParenthesizedNumber`.
+Here, `= @Int` selects the bridge type `Int` for `ParenthesizedNumber`.
 The generated parser re-exports `Int` as `non_terminals::ParenthesizedNumber`.
 
 A manual declaration must have at least one variant.
@@ -629,6 +651,31 @@ Rust checks that the bridge types and functions exist,
 and that their signatures match the grammar.
 Manual functions return the nonterminal's value directly;
 there is no special syntax for returning a parser error from a manual function.
+
+### Shorthand for matching type names
+
+If the grammar symbol and bridge type have the same name,
+you can omit `= @TypeName`.
+For example, suppose the bridge also defines `pub type Numbers = NumberList;`.
+We can write the full declaration:
+
+```azuki
+manual Numbers = @Numbers {
+    @empty
+    @push(Numbers $NumLit)
+}
+```
+
+Or, we can use the shorthand:
+
+```azuki
+manual Numbers {
+    @empty
+    @push(Numbers $NumLit)
+}
+```
+
+Both declarations select the bridge type `Numbers`.
 
 ## `start` declarations
 
@@ -701,9 +748,9 @@ The bridge also needs `pub type Unit = ();`.
 A manual declaration can specify lifetime arguments too:
 
 ```azuki
-manual Words 'src {
+manual Words = @Words 'src {
     @empty
-    @push(Self $Word)
+    @push(Words $Word)
 }
 ```
 
@@ -722,13 +769,14 @@ pub fn push<'src>(mut words: Words<'src>, word: Text<'src>) -> Words<'src> {
 }
 ```
 
-If a manual type has a different name in the bridge,
-the override goes before its lifetimes:
+The bridge type's name goes after `@`, followed by its lifetime arguments.
+For example, we can name the grammar symbol `WordList`
+while still selecting the bridge type `Words`:
 
 ```azuki
 manual WordList = @Words 'src {
     @empty
-    @push(Self $Word)
+    @push(WordList $Word)
 }
 ```
 
@@ -774,21 +822,34 @@ For generated structs and enums, inferred lifetimes appear in the order
 of the global lifetime list.
 The generated terminal enum includes only lifetimes used by its terminal variants.
 
+The matching-name shorthand also works with lifetimes:
+`manual Words = @Words 'src { ... }` can be shortened to `manual Words 'src { ... }`.
+Likewise, `$Text = @Text 'src` can be shortened to `$Text 'src`.
+
 ## `Self`
 
-Inside a `struct`, `enum`, or `manual` declaration,
-`Self` means the enclosing nonterminal.
-It can appear wherever a grammar symbol can appear in a fieldset or manual input.
-For example:
+We can refer to a nonterminal by its name inside its own declaration.
+For example, here is the full form of the number-list example:
 
 ```azuki
-manual Numbers {
+manual Numbers = @NumberList {
+    @empty
+    @push(Numbers $NumLit)
+}
+```
+
+Inside a `struct`, `enum`, or `manual` declaration,
+we can use `Self` as shorthand for the enclosing nonterminal's name:
+
+```azuki
+manual Numbers = @NumberList {
     @empty
     @push(Self $NumLit)
 }
 ```
 
-Here, `Self` means `Numbers`.
+The two declarations have the same meaning.
+`Self` can appear wherever a grammar symbol can appear in a fieldset or manual input.
 Inside an enum variant, `Self` means the enum, not the variant.
 Using `Self` does not insert a `Box`.
 
@@ -1004,7 +1065,7 @@ enum Expr {
     )
 }
 
-manual BoxedExpr {
+manual BoxedExpr = @BoxedExpr {
     @boxed(Expr)
 }
 

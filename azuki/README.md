@@ -200,7 +200,7 @@ enum Term {
     )
 }
 
-manual BoxedExpr {
+manual BoxedExpr = @BoxedExpr {
     @boxed(Expr)
 }
 
@@ -227,7 +227,7 @@ The [quickstart](./QUICKSTART.md) shows how to set up these files.
 
 Observe that most of the grammar and semantic actions
 are inferred from the syntax tree type definitions.
-The `manual BoxedExpr` declaration is the exception:
+The `manual BoxedExpr = @BoxedExpr` declaration is the exception:
 it tells Azuki to call our `boxed` function when it parses an `Expr`.
 This lets us choose where to use `Box`.
 
