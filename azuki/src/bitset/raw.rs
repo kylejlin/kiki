@@ -1,4 +1,4 @@
-use crate::internal_prelude::*;
+use super::*;
 
 pub struct BitSet {
     buf: BitSetBuf,
