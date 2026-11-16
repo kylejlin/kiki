@@ -2,7 +2,7 @@ use crate::internal_prelude::*;
 
 mod kiki_bridge;
 mod massage;
-mod raw_parser;
+include!(concat!(env!("OUT_DIR"), "/cst/raw_parser.rs"));
 
 #[derive(Debug, Clone)]
 pub struct ParseError<'a> {
