@@ -11,6 +11,7 @@ pub use std::{
 };
 
 pub(crate) use crate::{
+    RustCode,
     bit_set::*,
     cst,
     lexer::*,
