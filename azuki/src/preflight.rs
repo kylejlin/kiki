@@ -41,13 +41,6 @@ pub enum PreflightCheckError<'a> {
     UndefinedLifetime(token::SingleQuoteLowerName<'a>),
 }
 
-struct PreflightDefinitions<'a> {
-    terminal_defs: TerminalIdMap<&'a cst::TerminalEnumVariant<'a>>,
-    terminal_ids: HashMap<&'a str, TerminalId>,
-    non_terminal_defs: OriginalNonTerminalIdMap<&'a cst::FileItem<'a>>,
-    non_terminal_ids: HashMap<&'a str, NonTerminalId>,
-}
-
 /// Precondition: `file` must be the parse result of `source`.
 ///
 /// Postcondition: Returns `Ok` if and only if all of the following hold:
@@ -97,6 +90,13 @@ pub fn preflight_check<'a>(
         non_terminal_defs,
         rules,
     })
+}
+
+struct PreflightDefinitions<'a> {
+    terminal_defs: TerminalIdMap<&'a cst::TerminalEnumVariant<'a>>,
+    terminal_ids: HashMap<&'a str, TerminalId>,
+    non_terminal_defs: OriginalNonTerminalIdMap<&'a cst::FileItem<'a>>,
+    non_terminal_ids: HashMap<&'a str, NonTerminalId>,
 }
 
 fn get_required_items<'a>(
