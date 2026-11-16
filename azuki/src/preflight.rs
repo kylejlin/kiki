@@ -123,7 +123,7 @@ impl<T> Index<NonTerminalId> for OriginalNonTerminalIdMap<T> {
         let raw_index = index.raw.get() & !SymbolId::HIGH_BIT_MASK;
 
         // _Original_ non-terminals have a non-zero index.
-        // The zeroth index is reserved for the augmented non-terminal.
+        // The zeroth index is reserved for the synthetic start symbol.
         let index = raw_index.checked_sub(1).unwrap();
         &self.raw[index]
     }
