@@ -9,6 +9,7 @@ pub mod token;
 
 mod internal_prelude;
 
+mod codegen;
 mod machine;
 mod oset;
 mod table;

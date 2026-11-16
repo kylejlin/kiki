@@ -13,6 +13,7 @@ pub use std::{
 pub(crate) use crate::{
     RustCode,
     bit_set::*,
+    codegen::*,
     cst,
     lexer::*,
     machine::*,
@@ -20,6 +21,7 @@ pub(crate) use crate::{
     oset::*,
     preflight::*,
     source_text::*,
+    table::*,
     takeoff::*,
     token::{self, Token},
 };
