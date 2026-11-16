@@ -543,6 +543,10 @@ pub struct TerminalIdMap<T> {
 }
 
 impl<T> TerminalIdMap<T> {
+    pub(crate) fn from_raw(raw: Vec<T>) -> Self {
+        Self { raw }
+    }
+
     pub(crate) fn len(&self) -> usize {
         self.raw.len()
     }
@@ -569,6 +573,15 @@ impl<T> OriginalNonTerminalIdMap<T> {
 
     pub(crate) fn len(&self) -> usize {
         self.raw.len()
+    }
+
+    pub(crate) fn enumerate(&self) -> impl Iterator<Item = (OriginalNonTerminalId, &T)> {
+        self.raw.iter().enumerate().map(|(i, value)| {
+            let id = OriginalNonTerminalId {
+                raw: NonZeroUsize::new(OriginalSymbolId::HIGH_BIT_MASK | (i + 1)).unwrap(),
+            };
+            (id, value)
+        })
     }
 }
 

@@ -16,6 +16,9 @@ pub type EpsilonOrTerminalSingletonSet = TaggedSingletonBitSet<EpsilonOrTerminal
 pub type NonNormalizedStateIdSet = TaggedBitSet<NonNormalizedStateId>;
 pub type NonNormalizedStateIdSingletonSet = TaggedSingletonBitSet<NonNormalizedStateId>;
 
+pub type LifetimeSet = TaggedBitSet<LifetimeId>;
+pub type LifetimeSingletonSet = TaggedSingletonBitSet<LifetimeId>;
+
 pub struct TaggedBitSet<K> {
     raw: RawBitSet,
     _ntt: Ntt<K>,
