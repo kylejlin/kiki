@@ -9,7 +9,7 @@ fn main() {
     let out_dir = env::var_os("OUT_DIR").unwrap();
     let out_dir = Path::new(&out_dir);
 
-    for case in ["balanced_parens", "borrowed_tokens"] {
+    for case in ["balanced_parens", "borrowed_tokens", "lifetime_subsets"] {
         let grammar_path = format!("src/{case}/grammar.azuki");
         println!("cargo::rerun-if-changed={grammar_path}");
 

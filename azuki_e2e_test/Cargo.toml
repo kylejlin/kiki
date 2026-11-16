@@ -17,3 +17,7 @@ path = "src/balanced_parens/mod.rs"
 [[test]]
 name = "borrowed_tokens"
 path = "src/borrowed_tokens/mod.rs"
+
+[[test]]
+name = "lifetime_subsets"
+path = "src/lifetime_subsets/mod.rs"

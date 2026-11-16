@@ -1,0 +1,45 @@
+start Document
+
+rust"#[derive(Debug, PartialEq, Eq)]"
+struct Document {
+    pair: Pair
+    middle: Middle
+    summary: Summary
+}
+
+rust"#[derive(Debug, PartialEq, Eq)]"
+struct Pair {
+    left: Left
+    right: Right
+}
+
+rust"#[derive(Debug, PartialEq, Eq)]"
+struct Left {
+    text: $Left
+    _: $Middle
+}
+
+rust"#[derive(Debug, PartialEq, Eq)]"
+struct Right($Right)
+
+rust"#[derive(Debug, PartialEq, Eq)]"
+enum Middle {
+    Word($Middle)
+}
+
+rust"#[derive(Debug, PartialEq, Eq)]"
+struct Summary(Owned)
+
+manual Owned {
+    @own($BorrowedPair)
+}
+
+rust"#[derive(Debug)]"
+terminal Token 'left 'middle 'right {
+    $Left = @Text 'left
+    $Middle = @Text 'middle
+    $Right = @Text 'right
+    $BorrowedPair 'right 'left
+}
+
+bridge crate::azuki_bridge
