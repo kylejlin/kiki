@@ -5,7 +5,6 @@ pub use diagnostic::*;
 mod diagnostic;
 
 pub struct Table {
-    start_id: StateId,
     terminal_count: usize,
     actions: Vec<Action>,
     original_non_terminal_count: usize,
@@ -38,7 +37,6 @@ impl Table {
         machine: &Machine,
         takeoff: &TakeoffCertificate,
     ) -> Result<Self, TableConflictError> {
-        let start_id = machine.start_id;
         let terminal_count = takeoff.preflight.terminal_defs.len();
         let original_non_terminal_count = takeoff.preflight.non_terminal_defs.len();
         let state_count = machine.states.len();
@@ -46,7 +44,6 @@ impl Table {
         let gotos = vec![Goto::Err; state_count * original_non_terminal_count];
 
         let mut out = Self {
-            start_id,
             terminal_count,
             actions,
             original_non_terminal_count,

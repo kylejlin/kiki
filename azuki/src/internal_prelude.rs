@@ -5,7 +5,7 @@ pub use std::{
     hash::{Hash, Hasher},
     iter,
     marker::PhantomData,
-    num::{NonZeroU64, NonZeroUsize},
+    num::NonZeroUsize,
     ops::{BitOrAssign, Deref, Index, IndexMut, SubAssign},
     range::Range,
 };

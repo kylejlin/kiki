@@ -5,8 +5,6 @@ pub struct TakeoffCertificate<'a> {
 
     pub lhs_to_rule_ids: OriginalNonTerminalIdMap<Vec<RuleId>>,
 
-    pub rhs_nonterminal_to_rule_ids: OriginalNonTerminalIdMap<Vec<RuleId>>,
-
     pub non_terminal_first_sets: OriginalNonTerminalIdMap<EpsilonOrTerminalSet>,
 
     pub terminal_lifetime_sets: TerminalIdMap<LifetimeSet>,
@@ -40,7 +38,6 @@ impl<'a> TakeoffCertificate<'a> {
         Self {
             preflight,
             lhs_to_rule_ids,
-            rhs_nonterminal_to_rule_ids,
             non_terminal_first_sets,
             terminal_lifetime_sets,
             non_terminal_lifetime_sets,

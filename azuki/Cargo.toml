@@ -8,20 +8,9 @@ description = "A minimalist parser generator for Rust."
 
 [dependencies]
 sha256 = "1.6.0"
-nohash-hasher = "0.2.0"
 logos = "0.16.1"
-derivative = "2.2.0"
-bitvec = "1"
-leb128 = "0.2.5"
-
-[dependencies.xxhash-rust]
-version = "0.8.12"
-features = ["xxh3"]
 
 [build-dependencies]
 # Pin the published bootstrap version so later releases cannot depend on themselves.
 azuki = "=1.0.0"
 walkdir = "2"
-
-[dev-dependencies]
-insta = "1.48.0"
