@@ -1,7 +1,7 @@
 use crate::internal_prelude::*;
 
 pub struct Machine {
-    pub states: Vec<State>,
+    pub states: Oset<State>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -30,7 +30,24 @@ impl Machine {
             takeoff,
         );
 
-        todo!()
+        let mut states = HashSet::from([initial_state.clone()]);
+        let mut queue = VecDeque::from([initial_state]);
+
+        while let Some(start) = queue.pop_front() {
+            for symbol_id in start.next_symbols(takeoff) {
+                let dest = goto(&start, symbol_id, takeoff);
+                assert_ne!(dest.items.len(), 0);
+
+                let was_newly_inserted = states.insert(dest.clone());
+                if was_newly_inserted {
+                    queue.push_back(dest);
+                }
+            }
+        }
+
+        Self {
+            states: states.into(),
+        }
     }
 }
 
@@ -128,4 +145,19 @@ where
     }
 
     out
+}
+
+fn goto(start: &State, symbol_id: OriginalSymbolId, takeoff: &TakeoffCertificate) -> State {
+    todo!()
+}
+
+impl State {
+    fn next_symbols(&self, takeoff: &TakeoffCertificate) -> impl Iterator<Item = OriginalSymbolId> {
+        let out: HashSet<OriginalSymbolId> = self
+            .items
+            .iter()
+            .filter_map(|item| item.next(takeoff))
+            .collect();
+        out.into_iter()
+    }
 }

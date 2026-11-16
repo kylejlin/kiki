@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use crate::internal_prelude::*;
 
 /// An ordered set.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -43,7 +43,7 @@ where
         I: IntoIterator<Item = T>,
     {
         let mut raw: Vec<T> = iter.into_iter().collect();
-        raw.sort();
+        raw.sort_unstable();
         raw.dedup();
         Self { raw }
     }
@@ -86,5 +86,21 @@ where
         self.raw.extend(iter);
         self.raw.sort_unstable();
         self.raw.dedup();
+    }
+}
+
+impl<T> From<HashSet<T>> for Oset<T>
+where
+    T: Ord,
+{
+    fn from(s: HashSet<T>) -> Self {
+        let mut raw: Vec<T> = s.into_iter().collect();
+
+        raw.sort_unstable();
+
+        // We can safely skip the dedup step,
+        // since hash sets cannot have duplicate values.
+
+        Self { raw }
     }
 }
