@@ -97,7 +97,7 @@ struct PreflightDefinitions<'a> {
     terminal_defs: TerminalIdMap<&'a cst::TerminalEnumVariant<'a>>,
     terminal_ids: HashMap<&'a str, TerminalId>,
     non_terminal_defs: OriginalNonTerminalIdMap<&'a cst::FileItem<'a>>,
-    non_terminal_ids: HashMap<&'a str, NonTerminalId>,
+    non_terminal_ids: HashMap<&'a str, OriginalNonTerminalId>,
 }
 
 fn get_required_items<'a>(
@@ -175,9 +175,11 @@ fn get_definitions<'a>(
             return Err(PreflightCheckError::ItemNameClash(first, name));
         }
         if !matches!(item, cst::FileItem::Terminal(_)) {
-            let id = NonTerminalId {
-                raw: NonZeroUsize::new(SymbolId::HIGH_BIT_MASK | (non_terminal_defs.len() + 1))
-                    .unwrap(),
+            let id = OriginalNonTerminalId {
+                raw: NonZeroUsize::new(
+                    OriginalSymbolId::HIGH_BIT_MASK | (non_terminal_defs.len() + 1),
+                )
+                .unwrap(),
             };
             non_terminal_defs.push(item);
             non_terminal_ids.insert(key, id);
@@ -221,7 +223,7 @@ fn get_rules<'a>(
     let start_id = check_non_terminal(start_symbol, definitions)?;
     let mut rules = vec![Rule {
         lhs: NonTerminalId {
-            raw: NonZeroUsize::new(SymbolId::HIGH_BIT_MASK).unwrap(),
+            raw: NonZeroUsize::new(NonTerminalId::SYNTHETIC_START_SYMBOL).unwrap(),
         },
         rhs: vec![start_id.into()],
     }];
@@ -236,7 +238,10 @@ fn get_rules<'a>(
             }) => {
                 let lhs = definitions.non_terminal_ids[name.raw.raw()];
                 let rhs = check_fieldset(fieldset, lhs, definitions)?;
-                rules.push(Rule { lhs, rhs });
+                rules.push(Rule {
+                    lhs: lhs.into(),
+                    rhs,
+                });
             }
             cst::FileItem::Enum(def) => check_enum(def, definitions, &mut rules)?,
             cst::FileItem::Manual(def) => {
@@ -275,7 +280,10 @@ fn check_enum<'a>(
                 first, name.raw,
             ));
         }
-        rules.push(Rule { lhs, rhs });
+        rules.push(Rule {
+            lhs: lhs.into(),
+            rhs,
+        });
     }
 
     Ok(())
@@ -303,7 +311,10 @@ fn check_manual<'a>(
                 function.raw,
             ));
         }
-        rules.push(Rule { lhs, rhs });
+        rules.push(Rule {
+            lhs: lhs.into(),
+            rhs,
+        });
     }
 
     Ok(())
@@ -311,9 +322,9 @@ fn check_manual<'a>(
 
 fn check_fieldset<'a>(
     fieldset: &cst::Fieldset<'a>,
-    lhs: NonTerminalId,
+    lhs: OriginalNonTerminalId,
     definitions: &PreflightDefinitions<'a>,
-) -> Result<Vec<SymbolId>, PreflightCheckError<'a>> {
+) -> Result<Vec<OriginalSymbolId>, PreflightCheckError<'a>> {
     match fieldset {
         cst::Fieldset::Empty => Ok(Vec::new()),
         cst::Fieldset::Named(cst::NamedFieldset { fields }) => {
@@ -342,9 +353,9 @@ fn check_fieldset<'a>(
 
 fn check_tuple_fields<'a>(
     fields: &[cst::TupleField<'a>],
-    lhs: NonTerminalId,
+    lhs: OriginalNonTerminalId,
     definitions: &PreflightDefinitions<'a>,
-) -> Result<Vec<SymbolId>, PreflightCheckError<'a>> {
+) -> Result<Vec<OriginalSymbolId>, PreflightCheckError<'a>> {
     fields
         .iter()
         .map(|field| {
@@ -358,18 +369,18 @@ fn check_tuple_fields<'a>(
 
 fn check_grammar_symbol<'a>(
     symbol: &cst::GrammarSymbolOrSelf<'a>,
-    lhs: NonTerminalId,
+    lhs: OriginalNonTerminalId,
     definitions: &PreflightDefinitions<'a>,
-) -> Result<SymbolId, PreflightCheckError<'a>> {
+) -> Result<OriginalSymbolId, PreflightCheckError<'a>> {
     match symbol {
         cst::GrammarSymbolOrSelf::Upper(name) => {
-            check_non_terminal(*name, definitions).map(SymbolId::from_non_terminal)
+            check_non_terminal(*name, definitions).map(OriginalSymbolId::from_non_terminal)
         }
         cst::GrammarSymbolOrSelf::DollarUpper(name) => definitions
             .terminal_ids
             .get(name.raw.raw())
             .copied()
-            .map(SymbolId::from_terminal)
+            .map(OriginalSymbolId::from_terminal)
             .ok_or(PreflightCheckError::UndefinedTerminal(*name)),
         cst::GrammarSymbolOrSelf::Self_(_) => Ok(lhs.into()),
     }
@@ -378,7 +389,7 @@ fn check_grammar_symbol<'a>(
 fn check_non_terminal<'a>(
     name: token::UpperName<'a>,
     definitions: &PreflightDefinitions<'a>,
-) -> Result<NonTerminalId, PreflightCheckError<'a>> {
+) -> Result<OriginalNonTerminalId, PreflightCheckError<'a>> {
     definitions
         .non_terminal_ids
         .get(name.raw.raw())
@@ -431,31 +442,31 @@ fn path_fragment<'a>(source: &'a str, path: &cst::Path<'a>) -> SourceFragment<'a
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SymbolId {
+pub struct OriginalSymbolId {
+    /// INVARIANT: At least one bit other than the most significant bit is one.
     raw: NonZeroUsize,
 }
 
-impl SymbolId {
+impl OriginalSymbolId {
     const HIGH_BIT_MASK: usize = 1 << (usize::BITS - 1);
-    const SYNTHETIC_START_SYMBOL: usize = Self::HIGH_BIT_MASK;
 
-    pub const fn as_terminal(self) -> Result<TerminalId, NonTerminalId> {
+    pub const fn as_terminal(self) -> Result<TerminalId, OriginalNonTerminalId> {
         let Self { raw } = self;
 
         if (raw.get() & Self::HIGH_BIT_MASK) == 0 {
             Ok(TerminalId { raw })
         } else {
-            Err(NonTerminalId { raw })
+            Err(OriginalNonTerminalId { raw })
         }
     }
 
-    pub const fn as_non_terminal(self) -> Result<NonTerminalId, TerminalId> {
+    pub const fn as_non_terminal(self) -> Result<OriginalNonTerminalId, TerminalId> {
         let Self { raw } = self;
 
         if (raw.get() & Self::HIGH_BIT_MASK) == 0 {
             Err(TerminalId { raw })
         } else {
-            Ok(NonTerminalId { raw })
+            Ok(OriginalNonTerminalId { raw })
         }
     }
 
@@ -463,17 +474,17 @@ impl SymbolId {
         Self { raw: id.raw }
     }
 
-    pub const fn from_non_terminal(id: NonTerminalId) -> Self {
+    pub const fn from_non_terminal(id: OriginalNonTerminalId) -> Self {
         Self { raw: id.raw }
     }
 }
-impl From<TerminalId> for SymbolId {
+impl From<TerminalId> for OriginalSymbolId {
     fn from(id: TerminalId) -> Self {
         Self::from_terminal(id)
     }
 }
-impl From<NonTerminalId> for SymbolId {
-    fn from(id: NonTerminalId) -> Self {
+impl From<OriginalNonTerminalId> for OriginalSymbolId {
+    fn from(id: OriginalNonTerminalId) -> Self {
         Self::from_non_terminal(id)
     }
 }
@@ -497,12 +508,23 @@ pub struct OriginalNonTerminalId {
 }
 
 impl NonTerminalId {
+    const SYNTHETIC_START_SYMBOL: usize = OriginalSymbolId::HIGH_BIT_MASK;
+
     pub const fn into_original(self) -> Option<OriginalNonTerminalId> {
-        if self.raw.get() == SymbolId::SYNTHETIC_START_SYMBOL {
+        if self.raw.get() == Self::SYNTHETIC_START_SYMBOL {
             None
         } else {
             Some(OriginalNonTerminalId { raw: self.raw })
         }
+    }
+
+    pub const fn from_original(id: OriginalNonTerminalId) -> Self {
+        Self { raw: id.raw }
+    }
+}
+impl From<OriginalNonTerminalId> for NonTerminalId {
+    fn from(id: OriginalNonTerminalId) -> Self {
+        Self::from_original(id)
     }
 }
 
@@ -528,7 +550,7 @@ impl<T> Index<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
     type Output = T;
 
     fn index(&self, index: OriginalNonTerminalId) -> &Self::Output {
-        let raw_index = index.raw.get() & !SymbolId::HIGH_BIT_MASK;
+        let raw_index = index.raw.get() & !OriginalSymbolId::HIGH_BIT_MASK;
 
         let index = raw_index - 1;
         &self.raw[index]
@@ -537,7 +559,7 @@ impl<T> Index<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
 
 pub struct Rule {
     pub lhs: NonTerminalId,
-    pub rhs: Vec<SymbolId>,
+    pub rhs: Vec<OriginalSymbolId>,
 }
 
 #[derive(Debug, Clone, Copy)]
