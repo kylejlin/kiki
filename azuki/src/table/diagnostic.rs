@@ -5,10 +5,10 @@ use super::*;
 /// `error` must refer to `machine`, which must have been built from `takeoff`.
 /// `file_name` is printed as supplied. Lines and character columns start at 1.
 /// Both `{:?}` and `{:#?}` produce the same diagnostic.
-pub struct TableConflictDiagnostic<'a, 'source> {
+pub struct TableConflictDiagnostic<'a> {
     pub error: TableConflictError,
     pub machine: &'a Machine,
-    pub takeoff: &'a TakeoffCertificate<'source>,
+    pub takeoff: &'a TakeoffCertificate<'a>,
     pub file_name: &'a str,
 }
 
@@ -26,7 +26,7 @@ enum RuleOrigin<'a> {
     },
 }
 
-impl Debug for TableConflictDiagnostic<'_, '_> {
+impl Debug for TableConflictDiagnostic<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let Self {
             error,
@@ -124,7 +124,7 @@ impl Debug for TableConflictDiagnostic<'_, '_> {
     }
 }
 
-impl TableConflictDiagnostic<'_, '_> {
+impl TableConflictDiagnostic<'_> {
     fn write_rule(&self, f: &mut Formatter<'_>, rule_id: RuleId, dot_index: usize) -> fmt::Result {
         let Rule { lhs, rhs } = &self.takeoff[rule_id];
         let lhs = lhs
