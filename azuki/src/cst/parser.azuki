@@ -1,0 +1,230 @@
+start File
+
+rust"#[derive(Debug)]"
+struct File {
+    items: Items
+}
+
+manual Items 'a {
+    @vec_empty
+    @vec_push(Self FileItem)
+}
+
+rust"#[derive(Debug)]"
+enum FileItem {
+    Start(_: $StartKw $UpperName)
+    Struct(Struct)
+    Enum(Enum)
+    ManualNonTerminal(ManualNonTerminal)
+    GeneratedTerminal(GeneratedTerminal)
+    ManualTerminal(ManualTerminal)
+    Bridge(_: $BridgeKw Path)
+}
+
+rust"#[derive(Debug)]"
+struct Struct {
+    prefix: OptRustStringLiteral
+    _: $StructKw
+    name: $UpperName
+    fieldset: Fieldset
+}
+
+rust"#[derive(Debug)]"
+struct Enum {
+    prefix: OptRustStringLiteral
+    _: $EnumKw
+    name: $UpperName
+    _: $LCurly
+    variants: EnumVariants
+    _: $RCurly
+}
+
+rust"#[derive(Debug)]"
+struct ManualNonTerminal {
+    _: $ManualKw
+    name: $UpperName
+    override_: OptEqualAtUpperName
+    lifetimes: Lifetimes
+    _: $LCurly
+    variants: ManualNonTerminalVariants
+    _: $RCurly
+}
+
+rust"#[derive(Debug)]"
+struct GeneratedTerminal {
+    prefix: OptRustStringLiteral
+    _: $TerminalKw
+    name: $UpperName
+    global_lifetimes: Lifetimes
+    _: $LCurly
+    variants: TerminalEnumVariants
+    _: $RCurly
+}
+
+rust"#[derive(Debug)]"
+struct ManualTerminal {
+    _: $ManualKw
+    _: $TerminalKw
+    name: $UpperName
+    override_: OptEqualAtUpperName
+    global_lifetimes: Lifetimes
+    _: $LCurly
+    variants: TerminalEnumVariants
+    _: $RCurly
+}
+
+manual OptRustStringLiteral 'a {
+    @option_none
+    @option_some($RustStringLiteral)
+}
+
+rust"#[derive(Debug)]"
+enum Fieldset {
+    Empty
+    Named(NamedFieldset)
+    Tuple(TupleFieldset)
+}
+
+rust"#[derive(Debug)]"
+struct NamedFieldset {
+    _: $LCurly
+    fields: NamedFields
+    _: $RCurly
+}
+
+manual NamedFields 'a {
+    @vec_one(NamedField)
+    @vec_push(Self NamedField)
+}
+
+rust"#[derive(Debug)]"
+struct NamedField {
+    name: UnderscoreOrLowerName
+    _: $Colon
+    symbol: GrammarSymbolOrSelf
+}
+
+rust"#[derive(Debug)]"
+struct TupleFieldset {
+    _: $LParen
+    fields: TupleFields
+    _: $RParen
+}
+
+manual TupleFields 'a {
+    @vec_one(TupleField)
+    @vec_push(Self TupleField)
+}
+
+rust"#[derive(Debug)]"
+enum TupleField {
+    Used(GrammarSymbolOrSelf)
+    Skipped(_: $Underscore _: $Colon GrammarSymbolOrSelf)
+}
+
+manual EnumVariants 'a {
+    @vec_one(EnumVariant)
+    @vec_push(Self EnumVariant)
+}
+
+rust"#[derive(Debug)]"
+struct EnumVariant {
+    name: $UpperName
+    fieldset: Fieldset
+}
+
+manual ManualNonTerminalVariants 'a {
+    @vec_one(ManualNonTerminalVariant)
+    @vec_push(Self ManualNonTerminalVariant)
+}
+
+rust"#[derive(Debug)]"
+struct ManualNonTerminalVariant {
+    function: $AtLowerName
+    inputs: OptTupleFieldset
+}
+
+manual OptTupleFieldset = @TupleFields 'a {
+    @vec_empty
+    @tuple_fields(TupleFieldset)
+}
+
+manual TerminalEnumVariants 'a {
+    @vec_empty
+    @vec_push(Self TerminalEnumVariant)
+}
+
+rust"#[derive(Debug)]"
+struct TerminalEnumVariant {
+    name: $DollarUpperName
+    override_: OptEqualAtUpperName
+    lifetimes: Lifetimes
+}
+
+manual OptEqualAtUpperName 'a {
+    @option_none
+    @option_some(_: $Equal $AtUpperName)
+}
+
+manual Path 'a {
+    @vec_one(Name)
+    @vec_push(Self _: $DoubleColon Name)
+}
+
+manual Lifetimes 'a {
+    @vec_empty
+    @vec_push(Self $SingleQuoteLowerName)
+}
+
+rust"#[derive(Debug)]"
+enum Name {
+    Upper($UpperName)
+    Lower($LowerName)
+}
+
+rust"#[derive(Debug)]"
+enum UnderscoreOrLowerName {
+    Underscore($Underscore)
+    Lower($LowerName)
+}
+
+rust"#[derive(Debug)]"
+enum GrammarSymbolOrSelf {
+    Upper($UpperName)
+    DollarUpper($DollarUpperName)
+    Self_($UpperSelfKw)
+}
+
+manual terminal Token 'a {
+    $StartKw 'a
+    $StructKw 'a
+    $EnumKw 'a
+    $ManualKw 'a
+    $TerminalKw 'a
+    $BridgeKw 'a
+    $UpperSelfKw 'a
+
+    $Underscore 'a
+    $LParen 'a
+    $RParen 'a
+    $LSquare 'a
+    $RSquare 'a
+    $LCurly 'a
+    $RCurly 'a
+    $Comma 'a
+    $DoubleColon 'a
+    $Colon 'a
+    $Equal 'a
+    $Octothorpe 'a
+
+    $UpperName 'a
+    $LowerName 'a
+    $DollarUpperName 'a
+    $AtUpperName 'a
+    $AtLowerName 'a
+    $SingleQuoteLowerName 'a
+
+    $RustStringLiteral 'a
+}
+
+bridge crate::cst::azuki_bridge

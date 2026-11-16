@@ -1,6 +1,6 @@
 [package]
 name = "azuki"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 rust-version = "1.98"
 license = "MIT"
@@ -19,7 +19,8 @@ version = "0.8.12"
 features = ["xxh3"]
 
 [build-dependencies]
-kiki = "7.1"
+# Pin the published bootstrap version so later releases cannot depend on themselves.
+azuki = "=1.0.0"
 walkdir = "2"
 
 [dev-dependencies]
