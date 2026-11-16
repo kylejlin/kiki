@@ -632,6 +632,56 @@ impl EpsilonOrTerminal {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub enum EoiOrTerminal {
+    Eoi,
+    Terminal(TerminalId),
+}
+impl PartialEq for EoiOrTerminal {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_usize().eq(&other.as_usize())
+    }
+}
+impl Eq for EoiOrTerminal {}
+impl PartialOrd for EoiOrTerminal {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for EoiOrTerminal {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_usize().cmp(&other.as_usize())
+    }
+}
+impl Hash for EoiOrTerminal {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_usize().hash(state);
+    }
+}
+
+impl EoiOrTerminal {
+    pub const fn as_usize(self) -> usize {
+        match self {
+            Self::Eoi => 0,
+            Self::Terminal(id) => id.raw.get(),
+        }
+    }
+
+    pub const fn from_usize(n: usize) -> Self {
+        match NonZeroUsize::new(n) {
+            None => Self::Eoi,
+            Some(n) => Self::Terminal(TerminalId { raw: n }),
+        }
+    }
+
+    pub const fn into_terminal(self) -> Option<TerminalId> {
+        match self {
+            Self::Eoi => None,
+            Self::Terminal(id) => Some(id),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum RuleId {
     Augmented,
     Original(OriginalRuleId),

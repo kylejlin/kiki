@@ -135,3 +135,11 @@ fn get_non_terminal_first_sets(
 
     out
 }
+
+impl Index<RuleId> for TakeoffCertificate<'_> {
+    type Output = Rule;
+
+    fn index(&self, index: RuleId) -> &Self::Output {
+        &self.preflight[index]
+    }
+}

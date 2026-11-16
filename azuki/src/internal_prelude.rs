@@ -15,7 +15,9 @@ pub(crate) use crate::{
     epsilon_or_terminal_set::*,
     lexer::*,
     ntt::*,
+    oset::*,
     preflight::*,
     source_text::*,
+    takeoff::*,
     token::{self, Token},
 };
