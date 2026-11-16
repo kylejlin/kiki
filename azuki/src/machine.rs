@@ -98,7 +98,34 @@ impl Item {
 
 fn first_set<'a, I>(symbols: I, takeoff: &TakeoffCertificate) -> EpsilonOrTerminalSet
 where
-    I: Iterator<Item = OriginalSymbolId>,
+    I: IntoIterator<Item = OriginalSymbolId>,
 {
-    todo!()
+    let epsilon = EpsilonOrTerminalSingletonSet {
+        value: EpsilonOrTerminal::Epsilon,
+    };
+    let mut out = EpsilonOrTerminalSet::empty();
+
+    out |= epsilon;
+
+    for symbol in symbols {
+        out -= epsilon;
+
+        match symbol.as_terminal() {
+            Ok(terminal) => {
+                out |= EpsilonOrTerminalSingletonSet {
+                    value: EpsilonOrTerminal::Terminal(terminal),
+                };
+                break;
+            }
+            Err(non_terminal) => {
+                let first_set = &takeoff.non_terminal_first_sets[non_terminal];
+                out |= first_set;
+                if !first_set.contains(EpsilonOrTerminal::Epsilon) {
+                    break;
+                }
+            }
+        }
+    }
+
+    out
 }
