@@ -1,0 +1,19 @@
+start Expr
+
+rust"#[derive(Debug, PartialEq, Eq)]"
+enum Expr {
+    Empty
+    Wrap(_: $LParen BoxedExpr _: $RParen)
+}
+
+manual BoxedExpr {
+    @boxed(Expr)
+}
+
+rust"#[derive(Debug)]"
+terminal Token {
+    $LParen = @Unit
+    $RParen = @Unit
+}
+
+bridge crate::azuki_bridge

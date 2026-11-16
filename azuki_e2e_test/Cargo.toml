@@ -1,0 +1,19 @@
+[package]
+name = "azuki_e2e_test"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+publish = false
+autotests = false
+
+[build-dependencies]
+azuki = { path = "../azuki" }
+
+# Each target compiles its generated parser and bridge as a separate crate.
+[[test]]
+name = "balanced_parens"
+path = "src/balanced_parens/mod.rs"
+
+[[test]]
+name = "borrowed_tokens"
+path = "src/borrowed_tokens/mod.rs"

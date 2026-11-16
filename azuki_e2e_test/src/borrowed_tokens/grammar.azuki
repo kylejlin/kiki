@@ -1,0 +1,18 @@
+start Document
+
+rust"#[derive(Debug, PartialEq, Eq)]"
+struct Document {
+    words: Words
+}
+
+manual Words 'src {
+    @empty
+    @push(Self $Word)
+}
+
+rust"#[derive(Debug)]"
+terminal Token 'src {
+    $Word = @Text 'src
+}
+
+bridge crate::azuki_bridge
