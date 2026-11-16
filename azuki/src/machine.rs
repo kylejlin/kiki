@@ -30,7 +30,11 @@ impl Machine {
             takeoff,
         );
 
-        let mut states = HashSet::from([initial_state.clone()]);
+        // Normally, we'd use `HashSet`.
+        // However, at the time of writing, `HashSet::entry` is not available on stable.
+        // So, we use `HashMap<State, ()>` instead.
+        let mut states = HashMap::from([(initial_state.clone(), ())]);
+
         let mut queue = VecDeque::from([initial_state]);
 
         while let Some(start) = queue.pop_front() {
@@ -38,15 +42,15 @@ impl Machine {
                 let dest = goto(&start, symbol_id, takeoff);
                 assert_ne!(dest.items.len(), 0);
 
-                let was_newly_inserted = states.insert(dest.clone());
-                if was_newly_inserted {
-                    queue.push_back(dest);
+                if let std::collections::hash_map::Entry::Vacant(entry) = states.entry(dest) {
+                    queue.push_back(entry.key().clone());
+                    entry.insert(());
                 }
             }
         }
 
         Self {
-            states: states.into(),
+            states: states.into_keys().collect(),
         }
     }
 }

@@ -88,19 +88,3 @@ where
         self.raw.dedup();
     }
 }
-
-impl<T> From<HashSet<T>> for Oset<T>
-where
-    T: Ord,
-{
-    fn from(s: HashSet<T>) -> Self {
-        let mut raw: Vec<T> = s.into_iter().collect();
-
-        raw.sort_unstable();
-
-        // We can safely skip the dedup step,
-        // since hash sets cannot have duplicate values.
-
-        Self { raw }
-    }
-}
