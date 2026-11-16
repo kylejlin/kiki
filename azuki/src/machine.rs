@@ -70,11 +70,14 @@ where
     let mut queue: VecDeque<Item> = current.iter().copied().collect();
 
     while let Some(item) = queue.pop_front() {
-        let Some(next) = item.next(takeoff).and_then(|s| s.as_non_terminal().ok()) else {
+        let Some(next) = item
+            .next_symbol(takeoff)
+            .and_then(|s| s.as_non_terminal().ok())
+        else {
             continue;
         };
 
-        let first = first_set(item.rhs_after_next(takeoff), takeoff);
+        let first = first_set(item.rhs_after_next_symbol(takeoff), takeoff);
 
         for rule_id in takeoff.lhs_to_rule_ids[next].iter().copied() {
             for lookahead in first.iter().filter_map(EpsilonOrTerminal::into_terminal) {
@@ -109,14 +112,14 @@ where
 }
 
 impl Item {
-    fn next<'a>(self, takeoff: &'a TakeoffCertificate<'a>) -> Option<OriginalSymbolId> {
+    fn next_symbol(self, takeoff: &TakeoffCertificate) -> Option<OriginalSymbolId> {
         let rule = &takeoff[self.rule_id];
         rule.rhs.get(self.dot_index).copied()
     }
 
-    fn rhs_after_next<'a>(
+    fn rhs_after_next_symbol(
         self,
-        takeoff: &'a TakeoffCertificate<'a>,
+        takeoff: &TakeoffCertificate,
     ) -> impl Iterator<Item = OriginalSymbolId> {
         let rule = &takeoff[self.rule_id];
         let i = self.dot_index + 1;
@@ -159,7 +162,25 @@ where
 }
 
 fn goto(start: &State, symbol_id: OriginalSymbolId, takeoff: &TakeoffCertificate) -> State {
-    todo!()
+    let items_after_consuming_symbol_id = start.items.iter().filter_map(|item| {
+        if item.next_symbol(takeoff) == Some(symbol_id) {
+            let Item {
+                rule_id,
+                dot_index,
+                lookahead,
+            } = *item;
+
+            Some(Item {
+                rule_id,
+                dot_index: dot_index + 1,
+                lookahead,
+            })
+        } else {
+            None
+        }
+    });
+
+    closure(items_after_consuming_symbol_id, takeoff)
 }
 
 impl State {
@@ -167,7 +188,7 @@ impl State {
         let out: HashSet<OriginalSymbolId> = self
             .items
             .iter()
-            .filter_map(|item| item.next(takeoff))
+            .filter_map(|item| item.next_symbol(takeoff))
             .collect();
         out.into_iter()
     }
