@@ -1,5 +1,9 @@
 use crate::internal_prelude::*;
 
+pub use diagnostic::*;
+
+mod diagnostic;
+
 pub struct Table {
     start_id: StateId,
     terminal_count: usize,
