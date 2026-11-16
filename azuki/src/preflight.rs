@@ -532,6 +532,12 @@ impl From<OriginalNonTerminalId> for NonTerminalId {
     }
 }
 
+impl OriginalNonTerminalId {
+    pub(crate) const fn zero_based_index(self) -> usize {
+        (self.raw.get() & !OriginalSymbolId::HIGH_BIT_MASK) - 1
+    }
+}
+
 pub struct TerminalIdMap<T> {
     raw: Vec<T>,
 }
@@ -570,19 +576,13 @@ impl<T> Index<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
     type Output = T;
 
     fn index(&self, index: OriginalNonTerminalId) -> &Self::Output {
-        let raw_index = index.raw.get() & !OriginalSymbolId::HIGH_BIT_MASK;
-
-        let index = raw_index - 1;
-        &self.raw[index]
+        &self.raw[index.zero_based_index()]
     }
 }
 
 impl<T> IndexMut<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
     fn index_mut(&mut self, index: OriginalNonTerminalId) -> &mut Self::Output {
-        let raw_index = index.raw.get() & !OriginalSymbolId::HIGH_BIT_MASK;
-
-        let index = raw_index - 1;
-        &mut self.raw[index]
+        &mut self.raw[index.zero_based_index()]
     }
 }
 

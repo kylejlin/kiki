@@ -22,8 +22,11 @@ pub enum Goto {
     Err,
 }
 
-pub enum TableConflictError {
-    // TODO
+/// Identifies a conflicting entry using IDs from the inputs to `Table::new`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TableConflictError {
+    pub state_id: StateId,
+    pub lookahead: EoiOrTerminal,
 }
 
 impl Table {
@@ -91,13 +94,14 @@ impl Table {
                 }
 
                 let Some(entry) = out[(state_id, item.lookahead)].mut_err() else {
-                    return Err(todo!());
+                    return Err(TableConflictError {
+                        state_id,
+                        lookahead: item.lookahead,
+                    });
                 };
                 *entry = Action::Reduce(item.rule_id);
             }
         }
-
-        todo!();
 
         Ok(out)
     }
@@ -106,14 +110,18 @@ impl Table {
 impl Index<(StateId, EoiOrTerminal)> for Table {
     type Output = Action;
 
-    fn index(&self, index: (StateId, EoiOrTerminal)) -> &Self::Output {
-        todo!()
+    fn index(&self, (s, t): (StateId, EoiOrTerminal)) -> &Self::Output {
+        let width = self.terminal_count + 1;
+        let start = s.raw * width;
+        &self.actions[start..start + width][t.into_usize()]
     }
 }
 
 impl IndexMut<(StateId, EoiOrTerminal)> for Table {
-    fn index_mut(&mut self, index: (StateId, EoiOrTerminal)) -> &mut Self::Output {
-        todo!()
+    fn index_mut(&mut self, (s, t): (StateId, EoiOrTerminal)) -> &mut Self::Output {
+        let width = self.terminal_count + 1;
+        let start = s.raw * width;
+        &mut self.actions[start..start + width][t.into_usize()]
     }
 }
 
@@ -134,14 +142,18 @@ impl IndexMut<(StateId, TerminalId)> for Table {
 impl Index<(StateId, OriginalNonTerminalId)> for Table {
     type Output = Goto;
 
-    fn index(&self, index: (StateId, OriginalNonTerminalId)) -> &Self::Output {
-        todo!()
+    fn index(&self, (s, n): (StateId, OriginalNonTerminalId)) -> &Self::Output {
+        let width = self.original_non_terminal_count;
+        let start = s.raw * width;
+        &self.gotos[start..start + width][n.zero_based_index()]
     }
 }
 
 impl IndexMut<(StateId, OriginalNonTerminalId)> for Table {
-    fn index_mut(&mut self, index: (StateId, OriginalNonTerminalId)) -> &mut Self::Output {
-        todo!()
+    fn index_mut(&mut self, (s, n): (StateId, OriginalNonTerminalId)) -> &mut Self::Output {
+        let width = self.original_non_terminal_count;
+        let start = s.raw * width;
+        &mut self.gotos[start..start + width][n.zero_based_index()]
     }
 }
 
