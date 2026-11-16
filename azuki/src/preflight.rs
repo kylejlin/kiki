@@ -582,7 +582,7 @@ impl EpsilonOrTerminal {
         }
     }
 
-    pub const fn terminal(self) -> Option<TerminalId> {
+    pub const fn into_terminal(self) -> Option<TerminalId> {
         match self {
             Self::Epsilon => None,
             Self::Terminal(id) => Some(id),
