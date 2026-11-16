@@ -14,6 +14,7 @@ pub(crate) use crate::{
     cst,
     lexer::*,
     ntt::*,
+    preflight::*,
     source_text::*,
     token::{self, Token},
 };
