@@ -76,14 +76,16 @@ impl Table {
 
                 let rule = &takeoff[item.rule_id];
                 if rule.lhs.is_synthetic() {
-                    if item.lookahead == EoiOrTerminal::Eoi {
-                        let entry = out[(state_id, item.lookahead)]
-                            .mut_err()
-                            .expect("The augmented item sorts first, and EOI cannot be shifted");
-                        *entry = Action::Accept;
-                    } else {
-                        unreachable!("The augmented item's lookahead must be EOI")
-                    }
+                    assert_eq!(
+                        item.lookahead,
+                        EoiOrTerminal::Eoi,
+                        "The augmented item's lookahead must be EOI"
+                    );
+
+                    let entry = out[(state_id, item.lookahead)]
+                        .mut_err()
+                        .expect("The augmented item sorts first, and EOI cannot be shifted");
+                    *entry = Action::Accept;
 
                     continue;
                 }
