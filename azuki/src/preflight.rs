@@ -666,21 +666,23 @@ impl Hash for EoiOrTerminal {
     }
 }
 
-impl EoiOrTerminal {
-    pub const fn into_usize(self) -> usize {
+impl UsizePun for EoiOrTerminal {
+    fn into_usize(self) -> usize {
         match self {
             Self::Eoi => 0,
             Self::Terminal(id) => id.raw.get(),
         }
     }
 
-    pub const fn from_usize(n: usize) -> Self {
+    fn from_usize(n: usize) -> Self {
         match NonZeroUsize::new(n) {
             None => Self::Eoi,
             Some(n) => Self::Terminal(TerminalId { raw: n }),
         }
     }
+}
 
+impl EoiOrTerminal {
     pub const fn into_terminal(self) -> Option<TerminalId> {
         match self {
             Self::Eoi => None,
@@ -717,15 +719,15 @@ impl Hash for RuleId {
     }
 }
 
-impl RuleId {
-    pub const fn into_usize(self) -> usize {
+impl UsizePun for RuleId {
+    fn into_usize(self) -> usize {
         match self {
             Self::Augmented => 0,
             Self::Original(id) => id.raw.get(),
         }
     }
 
-    pub const fn from_usize(n: usize) -> Self {
+    fn from_usize(n: usize) -> Self {
         match NonZeroUsize::new(n) {
             None => Self::Augmented,
             Some(n) => Self::Original(OriginalRuleId { raw: n }),
