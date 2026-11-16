@@ -1,23 +1,8 @@
-use crate::internal_prelude::*;
+use super::*;
 
 pub struct NonNormalizedMachine {
     pub states: Vec<State>,
     pub transitions: Vec<NonNormalizedTransition>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct State {
-    pub items: Oset<Item>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Item {
-    pub rule_id: RuleId,
-
-    /// The number of seen RHS symbols.
-    pub dot_index: usize,
-
-    pub lookahead: EoiOrTerminal,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
