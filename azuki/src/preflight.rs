@@ -546,6 +546,12 @@ pub struct OriginalNonTerminalIdMap<T> {
     raw: Vec<T>,
 }
 
+impl<T> OriginalNonTerminalIdMap<T> {
+    pub(crate) fn from_raw(raw: Vec<T>) -> Self {
+        Self { raw }
+    }
+}
+
 impl<T> Index<OriginalNonTerminalId> for OriginalNonTerminalIdMap<T> {
     type Output = T;
 

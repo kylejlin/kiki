@@ -7,7 +7,7 @@ pub struct TakeoffCertificate<'a> {
 
     pub rhs_nonterminal_to_rule_ids: OriginalNonTerminalIdMap<Vec<RuleId>>,
 
-    pub non_terminal_first_sets: TerminalIdMap<EpsilonOrTerminalSet>,
+    pub non_terminal_first_sets: OriginalNonTerminalIdMap<EpsilonOrTerminalSet>,
 }
 
 impl<'a> TakeoffCertificate<'a> {
